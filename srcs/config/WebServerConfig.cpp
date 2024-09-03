@@ -17,12 +17,9 @@ WebServerConfig::WebServerConfig()
 WebServerConfig::WebServerConfig(const WebServerConfig &other)
 {
 	(void)other;
-	throw std::runtime_error("WebServerConfig: copy constructor is not allowed");
 }
 
 WebServerConfig &WebServerConfig::operator=(const WebServerConfig &other)
 {
 	(void)other;
-	throw std::runtime_error("WebServerConfig: assignment operator is not allowed");
-	return *this;
 }
