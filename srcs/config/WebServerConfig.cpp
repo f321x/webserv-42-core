@@ -1,4 +1,4 @@
-#include "configuration.hpp"
+#include "WebServerConfig.hpp"
 
 WebServerConfig::WebServerConfig(const std::string &config_file_path)
 {
