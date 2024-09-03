@@ -1,6 +1,6 @@
 #pragma once
 
-#include "configuration.hpp"
+#include "WebServerConfig.hpp"
 #include "HttpPacket.hpp"
 
 class WebServer
