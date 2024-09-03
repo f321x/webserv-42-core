@@ -8,20 +8,19 @@ int main(int argc, char **argv)
 		return (1);
 	}
 
-	// try to parse config file
 	try
 	{
+		// try to parse config file
 		WebServerConfig config(std::string(argv[1]));
+
+		// init WebServer
+		WebServer server(config);
 	}
 	catch (std::exception &e)
 	{
 		std::cerr << e.what() << std::endl;
 		return (1);
 	}
-
-	// init server
-	WebServer server(config);
-	server.serve();
 
 	return 0;
 }
