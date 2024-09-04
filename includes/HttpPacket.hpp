@@ -13,11 +13,11 @@ enum Method
 class HttpPacket
 {
 public:
-	HttpPacket(const std::string &raw_packet); // deserialize raw packet
 	HttpPacket();							   // construct empty packet
-	~HttpPacket();
+	HttpPacket(const std::string &raw_packet); // deserialize raw packet
 	HttpPacket(const HttpPacket &other);
 	HttpPacket &operator=(const HttpPacket &other);
+	~HttpPacket();
 
 	std::string serializeResponse();
 private:
