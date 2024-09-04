@@ -5,13 +5,17 @@ int main(int argc, char **argv)
 	// check arg count ./webserv configfile_path
 	if (argc != 2)
 	{
+		ERROR("Usage: ./webserv configfile_path");
 		return (1);
 	}
 
-	// try to parse config file
+	WebServer *server;
 	try
 	{
-		WebServerConfig config(std::string(argv[1]));
+		// try to parse config file
+		WebServerConfig config = WebServerConfig(std::string(argv[1]));
+		// init WebServer
+		server = new WebServer(config);
 	}
 	catch (std::exception &e)
 	{
@@ -19,9 +23,8 @@ int main(int argc, char **argv)
 		return (1);
 	}
 
-	// init server
-	WebServer server(config);
-	server.serve();
+	// start server
+	server->serve();
 
 	return 0;
 }
