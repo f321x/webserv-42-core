@@ -2,6 +2,9 @@
 
 #include "WebServerConfig.hpp"
 #include "HttpPacket.hpp"
+#include "logging.hpp"
+#include "TcpSocket.hpp"
+#include "SocketAddress.hpp"
 
 #include <string>
 #include <vector>
@@ -13,12 +16,13 @@ class WebServer
 public:
 	WebServer(const WebServerConfig &config);
 	~WebServer();
-	// void serve();
+	void serve();
 
 private:
-	WebServer();
-	WebServer(const WebServer &other);
-	WebServer &operator=(const WebServer &other);
-
 	WebServerConfig _config;
+	TcpSocket _bind_socket;
+
+	// WebServer();
+	// WebServer(const WebServer &other);
+	// WebServer &operator=(const WebServer &other);
 };
