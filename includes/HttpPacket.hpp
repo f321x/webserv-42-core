@@ -1,6 +1,14 @@
 #pragma once
 
-#include <string>
+#include <cstring>
+#include <map>
+
+enum Method
+{
+	GET,
+	POST,
+	DELETE
+};
 
 class HttpPacket
 {
@@ -11,10 +19,14 @@ public:
 	HttpPacket(const HttpPacket &other);
 	HttpPacket &operator=(const HttpPacket &other);
 
-	std::string serialize();
+	std::string serializeResponse();
 private:
-	// packet header parts
-	// packet body parts
-	// request type
-	// etc...
+	std::string	_raw_packet;
+
+	Method		_method;
+	uint		_status_code;
+	std::string	_status_message;
+	std::string	_uri;
+
+	std::map<std::string, std::string>	_headers;
 };
