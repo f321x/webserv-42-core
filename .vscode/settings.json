@@ -44,7 +44,10 @@
 		"sstream": "cpp",
 		"stdexcept": "cpp",
 		"streambuf": "cpp",
-		"typeinfo": "cpp"
+		"typeinfo": "cpp",
+		"cstring": "cpp",
+		"map": "cpp",
+		"cinttypes": "cpp"
 	},
 	"C_Cpp.default.includePath": [
 		"${workspaceFolder}/includes"
