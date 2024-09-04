@@ -13,7 +13,7 @@ class WebServer
 public:
 	WebServer(const WebServerConfig &config);
 	~WebServer();
-	void serve();
+	// void serve();
 
 private:
 	WebServer();
