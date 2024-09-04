@@ -34,4 +34,6 @@ private:
 
 	std::map<std::string, std::string>	_request_headers;
 	std::map<std::string, std::string>	_response_headers;
+
+	void parseRawPacket();
 };
