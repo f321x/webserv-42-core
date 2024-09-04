@@ -64,13 +64,17 @@ void HttpPacket::parseRawPacket() {
 
 			_uri = tokens[1];
 			_http_version = tokens[2];
-		} else {
-			std::vector<std::string> tokens = split(lines[lInd], ':');
-			if (tokens.size() != 2) {
-				// Invalid header
-			}
-
-			_request_headers.insert(tokens[0], tokens[1]);
+			continue;
 		}
+		if (lines[lInd].empty()) {
+			continue;
+		}
+
+		std::vector<std::string> tokens = split(lines[lInd], ':');
+		if (tokens.size() != 2) {
+			// Invalid header
+		}
+
+		_request_headers.insert(tokens[0], tokens[1]);
 	}
 }
