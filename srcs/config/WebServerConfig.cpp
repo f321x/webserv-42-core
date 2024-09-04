@@ -16,10 +16,22 @@ WebServerConfig::WebServerConfig()
 
 WebServerConfig::WebServerConfig(const WebServerConfig &other)
 {
-	(void)other;
+	if (this != &other)
+	{
+		_bind_ip = other._bind_ip;
+		_bind_port = other._bind_port;
+	}
 }
 
 WebServerConfig &WebServerConfig::operator=(const WebServerConfig &other)
 {
 	(void)other;
+	return *this;
+}
+
+SocketAddress WebServerConfig::get_bind_address() const
+{
+	// can throw on invalid args
+	SocketAddress address = SocketAddress(_bind_ip, _bind_port);
+	return address;
 }
