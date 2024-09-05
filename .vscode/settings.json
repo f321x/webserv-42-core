@@ -45,7 +45,12 @@
 		"stdexcept": "cpp",
 		"streambuf": "cpp",
 		"typeinfo": "cpp",
-		"iomanip": "cpp"
+		"iomanip": "cpp",
+		"chrono": "cpp",
+		"cstring": "cpp",
+		"ctime": "cpp",
+		"ratio": "cpp",
+		"cinttypes": "cpp"
 	},
 	"C_Cpp.default.includePath": [
 		"${workspaceFolder}/includes"
