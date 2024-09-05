@@ -7,11 +7,14 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 
 WebServerConfig::~WebServerConfig()
 {
+	TRACE("WebServerConfig destructor");
 }
 
 WebServerConfig::WebServerConfig()
 {
-	throw std::runtime_error("WebServerConfig: default constructor is not allowed");
+	WARN("Using dummy WebServerConfig constructor");
+	_bind_ip = "0.0.0.0";
+	_bind_port = 8080;
 }
 
 WebServerConfig::WebServerConfig(const WebServerConfig &other)

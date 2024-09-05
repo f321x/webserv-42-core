@@ -17,6 +17,8 @@ std::string get_timestamp()
 void log(const std::string &message, LogLevel level)
 {
 	std::string level_str;
+	if (level < LOG_LEVEL)
+		return;
 	switch (level)
 	{
 	case TRACE:
