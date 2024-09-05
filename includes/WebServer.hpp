@@ -8,6 +8,8 @@
 
 #include <string>
 #include <vector>
+#include <poll.h>
+#include <algorithm>
 #include <iostream>
 #include <stdexcept>
 
@@ -19,10 +21,10 @@ public:
 	void serve();
 
 private:
-	WebServerConfig _config;
 	TcpSocket _bind_socket;
+	std::vector<TcpSocket> _sockets;
+	WebServerConfig _config;
 
-	// WebServer();
-	// WebServer(const WebServer &other);
-	// WebServer &operator=(const WebServer &other);
+	void _handle_client_data(TcpSocket &client_socket);
+	std::vector<pollfd> _get_pollfds();
 };
