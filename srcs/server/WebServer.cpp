@@ -4,6 +4,7 @@ WebServer::WebServer(const WebServerConfig &config) : _config(config)
 {
 	SocketAddress address = config.get_bind_address();
 	_bind_socket.bind_to_address(address);
+	_bind_socket.listen_on_socket();
 	TRACE("WebServer constructed");
 }
 
@@ -18,6 +19,9 @@ void WebServer::serve()
 	// and responding to them.
 	while (true)
 	{
+		TcpSocket client_socket = _bind_socket.accept_connection();
+		std::string client_data = client_socket.read_client_data();
+		INFO("Received data from client: " + client_data);
 		sleep(1);
 	}
 }
