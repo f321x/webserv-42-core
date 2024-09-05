@@ -1,6 +1,6 @@
 NAME := webserv
 
-CC := g++
+CC := c++
 CFLAGS := -std=c++17 -Wall -Wextra -Werror
 INCLUDES := -I./includes
 
