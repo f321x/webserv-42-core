@@ -2,12 +2,9 @@
 
 WebServer::WebServer(const WebServerConfig &config) : _config(config)
 {
-	// dummy address
-	SocketAddress address = SocketAddress("0.0.0.0", 8080);
-	(void)address;
+	SocketAddress address = config.get_bind_address();
 	_bind_socket.bind_to_address(address);
-
-	// _bind_socket.bind_to_address(config.get_bind_address());
+	TRACE("WebServer constructed");
 }
 
 WebServer::~WebServer()

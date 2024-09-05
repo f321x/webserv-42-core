@@ -15,6 +15,9 @@ enum LogLevel
 	ERROR
 };
 
+// set the log level for the webserver
+const LogLevel LOG_LEVEL = TRACE;
+
 void log(const std::string &message, LogLevel level = INFO);
 
 // define logging macros
@@ -27,7 +30,7 @@ void log(const std::string &message, LogLevel level = INFO);
 
 #define INFO(message) log(message, INFO)
 
-#define WARNING(message) log(message, WARNING)
+#define WARN(message) log(message, WARNING)
 
 #define ERROR(message) log(message, ERROR)
 
