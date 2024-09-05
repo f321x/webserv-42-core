@@ -2,6 +2,9 @@
 
 TcpSocket::TcpSocket(int existing_fd) : _socket_fd(existing_fd)
 {
+	// set nonblocking flag
+	int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 TcpSocket::TcpSocket()
@@ -13,6 +16,9 @@ TcpSocket::TcpSocket()
 	{
 		throw std::runtime_error("TcpSocket: failed");
 	}
+	// set nonblocking flag
+	int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 void TcpSocket::bind_to_address(const SocketAddress &address)
@@ -48,7 +54,6 @@ TcpSocket TcpSocket::accept_connection()
 	int client_socket_fd = accept(_socket_fd, (sockaddr *)&client_address, &client_address_len);
 	if (client_socket_fd < 0)
 	{
-		close(_socket_fd);
 		throw std::runtime_error("TcpSocket: failed to accept connection");
 	}
 
@@ -100,8 +105,15 @@ std::string TcpSocket::read_client_data()
 			throw std::runtime_error("TcpSocket: Error reading data from socket");
 		}
 	}
-	DEBUG("Read data from client: " + result);
 	return result;
+}
+
+pollfd TcpSocket::pfd() const
+{
+	pollfd pfd;
+	pfd.fd = _socket_fd;
+	pfd.events = POLLIN;
+	return pfd;
 }
 
 TcpSocket::~TcpSocket()
@@ -118,4 +130,19 @@ TcpSocket &TcpSocket::operator=(const TcpSocket &other)
 	_address = other._address;
 	_socket_fd = other._socket_fd;
 	return *this;
+}
+
+int TcpSocket::fd() const
+{
+	return _socket_fd;
+}
+
+bool TcpSocket::operator==(const TcpSocket &other) const
+{
+	return _socket_fd == other._socket_fd;
+}
+
+bool TcpSocket::operator!=(const TcpSocket &other) const
+{
+	return !(*this == other);
 }

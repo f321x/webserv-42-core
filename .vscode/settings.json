@@ -50,7 +50,10 @@
 		"cstring": "cpp",
 		"ctime": "cpp",
 		"ratio": "cpp",
-		"cinttypes": "cpp"
+		"cinttypes": "cpp",
+		"compare": "cpp",
+		"concepts": "cpp",
+		"numbers": "cpp"
 	},
 	"C_Cpp.default.includePath": [
 		"${workspaceFolder}/includes"
