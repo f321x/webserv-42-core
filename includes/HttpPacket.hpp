@@ -19,6 +19,16 @@ public:
 	HttpPacket &operator=(const HttpPacket &other);
 	~HttpPacket();
 
+	std::string	get_http_version() const;
+	std::string	get_uri() const;
+	Method		get_method() const;
+	std::string	get_req_header(const std::string &key) const;
+	std::map<std::string, std::string> get_req_headers() const;
+
+	void		set_status_code(uint status_code);
+	void		set_status_message(const std::string status_message);
+	void		set_res_header(const std::string key, const std::string value);
+
 	std::string serializeResponse();
 private:
 	std::string	_raw_packet;
