@@ -8,8 +8,7 @@
 		},
 		"vscode": {
 			"extensions": [
-				"bierner.markdown-mermaid",
-				"ms-azuretools.vscode-docker"
+				"ms-vscode.cpptools"
 			]
 		}
 	},
