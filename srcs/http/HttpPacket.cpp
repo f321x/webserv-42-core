@@ -75,6 +75,6 @@ void HttpPacket::parseRawPacket() {
 			// Invalid header
 		}
 
-		_request_headers.insert(tokens[0], tokens[1]);
+		_request_headers.insert(std::make_pair(tokens[0], tokens[1]));
 	}
 }
