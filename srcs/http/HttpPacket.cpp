@@ -1,5 +1,6 @@
 #include "HttpPacket.hpp"
 #include "Utils.hpp"
+#include "logging.hpp"
 
 HttpPacket::HttpPacket() {
 	_raw_packet = "";
@@ -115,18 +116,21 @@ void HttpPacket::parseRawPacket() {
 			}
 
 			_uri = tokens[1];
-			_http_version = tokens[2];
+			_http_version = trim(tokens[2]);
 			continue;
 		}
-		if (lines[lInd].empty()) {
+		if (trim(lines[lInd]).empty()) {
 			continue;
 		}
 
-		std::vector<std::string> tokens = split(lines[lInd], ':');
-		if (tokens.size() != 2) {
+		size_t colonPos = lines[lInd].find(':');
+		if (colonPos == std::string::npos) {
 			// Invalid header
+			continue;
 		}
 
-		_request_headers.insert(std::make_pair(tokens[0], tokens[1]));
+		std::string key = lines[lInd].substr(0, colonPos);
+		std::string value = lines[lInd].substr(colonPos + 1);
+		_request_headers.insert(std::make_pair(trim(key), trim(value)));
 	}
 }
