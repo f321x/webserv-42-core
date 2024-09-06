@@ -37,6 +37,42 @@ HttpPacket &HttpPacket::operator=(const HttpPacket &other) {
 HttpPacket::~HttpPacket() {
 }
 
+std::string HttpPacket::get_http_version() const {
+	return _http_version;
+}
+
+std::string HttpPacket::get_uri() const {
+	return _uri;
+}
+
+Method HttpPacket::get_method() const {
+	return _method;
+}
+
+std::string HttpPacket::get_req_header(const std::string &key) const {
+	std::map<std::string, std::string>::const_iterator it = _request_headers.find(key);
+	if (it == _request_headers.end()) {
+		return "";
+	}
+	return it->second;
+}
+
+std::map<std::string, std::string> HttpPacket::get_req_headers() const {
+	return _request_headers;
+}
+
+void HttpPacket::set_status_code(uint status_code) {
+	_status_code = status_code;
+}
+
+void HttpPacket::set_status_message(const std::string status_message) {
+	_status_message = status_message;
+}
+
+void HttpPacket::set_res_header(const std::string key, const std::string value) {
+	_response_headers.insert(std::make_pair(key, value));
+}
+
 std::string HttpPacket::serializeResponse() {
 	return "";
 }
