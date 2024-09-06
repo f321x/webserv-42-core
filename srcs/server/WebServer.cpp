@@ -1,8 +1,7 @@
 #include "WebServer.hpp"
 
-WebServer::WebServer(const WebServerConfig &config) : _config(config)
+WebServer::WebServer(const WebServerConfig &config, volatile std::sig_atomic_t *shutdown_signal) : _config(config), _shutdown_signal(shutdown_signal)
 {
-    // initialize fd_set
     // create a socket and bind it to the configured address
     _bind_socket.bind_to_address(config.get_bind_address());
     // begin listening for incoming connections
@@ -16,43 +15,54 @@ WebServer::WebServer(const WebServerConfig &config) : _config(config)
 
 WebServer::~WebServer()
 {
+    TRACE("WebServer destructed");
 }
 
-std::vector<pollfd> WebServer::_get_pollfds()
+std::vector<pollfd *> WebServer::_get_pollfds()
 {
-    std::vector<pollfd> pfds;
-    for (const auto &socket : _sockets)
+    std::vector<pollfd *> pfds;
+    for (auto &socket : _sockets)
     {
         pfds.push_back(socket.pfd());
     }
+    // TRACE("Pollfds: " + std::to_string(pfds.size()));
     return pfds;
 }
 
 void WebServer::serve()
 {
-    INFO("Webserver is running");
+    INFO("Webserver is serving");
     while (true)
     {
-        std::vector<pollfd> pfds = WebServer::_get_pollfds();
-        int ready = poll(pfds.data(), pfds.size(), -1);
+        if (*_shutdown_signal)
+            break;
+        std::vector<pollfd *> pfds = WebServer::_get_pollfds();
+        TRACE("Pollfds: " + std::to_string(pfds.size()));
+        int ready = poll(pfds[0], pfds.size(), 100);
+        TRACE("Poll returned: " + std::to_string(ready));
         if (ready < 0)
-        {
             throw std::runtime_error("WebServer: polling file descriptors failed");
-        }
+        else if (ready == 0)
+            continue;
 
         for (size_t i = 0; i < _sockets.size(); ++i)
         {
-            if (_sockets[i].pfd().revents & POLLIN)
+            // TRACE("Checking socket " + std::to_string(_sockets[i].fd()));
+            if ((*(_sockets[i].pfd())).revents && ((*(_sockets[i].pfd())).events == POLLIN))
             {
                 if (_sockets[i].fd() == _bind_socket.fd())
                 {
+                    TRACE("Accepting new connection");
                     TcpSocket new_client_socket = _bind_socket.accept_connection();
                     _sockets.push_back(new_client_socket);
                 }
                 else
                 {
+                    TRACE("Handling client data");
                     _handle_client_data(_sockets[i]);
                 }
+                // clear revents
+                (*(_sockets[i].pfd())).revents = 0;
             }
         }
     }

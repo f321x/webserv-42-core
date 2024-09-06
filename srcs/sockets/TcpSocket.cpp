@@ -1,15 +1,27 @@
 #include "TcpSocket.hpp"
 
+// constructor for new client (accept_connection)
 TcpSocket::TcpSocket(int existing_fd) : _socket_fd(existing_fd)
 {
+	memset(&_address, 0, sizeof(_address));
+	memset(&_pfd, 0, sizeof(_pfd));
+
 	// set nonblocking flag
-	int flags = fcntl(_socket_fd, F_GETFL, 0);
-	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+	// int flags = fcntl(_socket_fd, F_GETFL, 0);
+	// fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+
+	// set pollfd struct
+	_pfd.fd = _socket_fd;
+	_pfd.events = POLLIN;
 }
 
+// constructor for bind socket
 TcpSocket::TcpSocket()
 {
 	_bind_socket = true;
+	memset(&_address, 0, sizeof(_address));
+	memset(&_pfd, 0, sizeof(_pfd));
+
 	// open socket
 	_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_socket_fd < 0)
@@ -17,8 +29,12 @@ TcpSocket::TcpSocket()
 		throw std::runtime_error("TcpSocket: failed");
 	}
 	// set nonblocking flag
-	int flags = fcntl(_socket_fd, F_GETFL, 0);
-	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+	// int flags = fcntl(_socket_fd, F_GETFL, 0);
+	// fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+
+	// set pollfd struct
+	_pfd.fd = _socket_fd;
+	_pfd.events = POLLIN;
 }
 
 void TcpSocket::bind_to_address(const SocketAddress &address)
@@ -108,17 +124,16 @@ std::string TcpSocket::read_client_data()
 	return result;
 }
 
-pollfd TcpSocket::pfd() const
+pollfd *TcpSocket::pfd()
 {
-	pollfd pfd;
-	pfd.fd = _socket_fd;
-	pfd.events = POLLIN;
-	return pfd;
+	return &_pfd;
 }
 
 TcpSocket::~TcpSocket()
 {
 	close(_socket_fd);
+	memset(&_address, 0, sizeof(_address));
+	memset(&_pfd, 0, sizeof(_pfd));
 }
 
 TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _socket_fd(other._socket_fd)
