@@ -1,18 +1,40 @@
 #include "TcpSocket.hpp"
 
+// constructor for new client (accept_connection)
 TcpSocket::TcpSocket(int existing_fd) : _socket_fd(existing_fd)
 {
+	memset(&_address, 0, sizeof(_address));
+	memset(&_pfd, 0, sizeof(_pfd));
+
+	// set nonblocking flag
+	// int flags = fcntl(_socket_fd, F_GETFL, 0);
+	// fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+
+	// set pollfd struct
+	_pfd.fd = _socket_fd;
+	_pfd.events = POLLIN;
 }
 
+// constructor for bind socket
 TcpSocket::TcpSocket()
 {
 	_bind_socket = true;
+	memset(&_address, 0, sizeof(_address));
+	memset(&_pfd, 0, sizeof(_pfd));
+
 	// open socket
 	_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_socket_fd < 0)
 	{
 		throw std::runtime_error("TcpSocket: failed");
 	}
+	// set nonblocking flag
+	// int flags = fcntl(_socket_fd, F_GETFL, 0);
+	// fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+
+	// set pollfd struct
+	_pfd.fd = _socket_fd;
+	_pfd.events = POLLIN;
 }
 
 void TcpSocket::bind_to_address(const SocketAddress &address)
@@ -48,7 +70,6 @@ TcpSocket TcpSocket::accept_connection()
 	int client_socket_fd = accept(_socket_fd, (sockaddr *)&client_address, &client_address_len);
 	if (client_socket_fd < 0)
 	{
-		close(_socket_fd);
 		throw std::runtime_error("TcpSocket: failed to accept connection");
 	}
 
@@ -100,13 +121,19 @@ std::string TcpSocket::read_client_data()
 			throw std::runtime_error("TcpSocket: Error reading data from socket");
 		}
 	}
-	DEBUG("Read data from client: " + result);
 	return result;
+}
+
+pollfd *TcpSocket::pfd()
+{
+	return &_pfd;
 }
 
 TcpSocket::~TcpSocket()
 {
 	close(_socket_fd);
+	memset(&_address, 0, sizeof(_address));
+	memset(&_pfd, 0, sizeof(_pfd));
 }
 
 TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _socket_fd(other._socket_fd)
@@ -118,4 +145,19 @@ TcpSocket &TcpSocket::operator=(const TcpSocket &other)
 	_address = other._address;
 	_socket_fd = other._socket_fd;
 	return *this;
+}
+
+int TcpSocket::fd() const
+{
+	return _socket_fd;
+}
+
+bool TcpSocket::operator==(const TcpSocket &other) const
+{
+	return _socket_fd == other._socket_fd;
+}
+
+bool TcpSocket::operator!=(const TcpSocket &other) const
+{
+	return !(*this == other);
 }
