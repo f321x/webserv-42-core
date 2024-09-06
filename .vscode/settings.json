@@ -47,7 +47,17 @@
 		"typeinfo": "cpp",
 		"cstring": "cpp",
 		"map": "cpp",
-		"cinttypes": "cpp"
+		"cinttypes": "cpp",
+		"iomanip": "cpp",
+		"chrono": "cpp",
+		"cstring": "cpp",
+		"ctime": "cpp",
+		"ratio": "cpp",
+		"cinttypes": "cpp",
+		"compare": "cpp",
+		"concepts": "cpp",
+		"numbers": "cpp",
+		"csignal": "cpp"
 	},
 	"C_Cpp.default.includePath": [
 		"${workspaceFolder}/includes"
