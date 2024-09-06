@@ -29,6 +29,14 @@ TEST_CASE("HttpPacket parsing") {
 		REQUIRE(packet.get_http_version() == "HTTP/1.1");
 		REQUIRE(packet.get_req_header("Host") == "localhost:4242");
 		REQUIRE(packet.get_req_header("User-Agent") == "Mozilla/5.0");
+
+		// Test invalid Method
+		request = "INVALID_METHOD / HTTP/1.1\r\n\r\n";
+		REQUIRE_THROWS_AS(HttpPacket(request), HttpPacket::UnknownMethodException);
+
+		// Test invalid request line
+		request = "GET / ";
+		REQUIRE_THROWS_AS(HttpPacket(request), HttpPacket::InvalidPacketException);
 	}
 
 	SECTION("Response serialization") {

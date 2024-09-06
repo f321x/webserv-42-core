@@ -99,10 +99,10 @@ void HttpPacket::parseRawPacket() {
 
 	for (size_t lInd = 0; lInd < lines.size(); lInd++) {
 		if (lInd == 0) {
-			std::vector<std::string> tokens = split(lines[lInd], ' ');
 			// Request line
+			std::vector<std::string> tokens = split(lines[lInd], ' ');
 			if (tokens.size() != 3) {
-				// Invalid request line
+				throw InvalidPacketException();
 			}
 
 			if (tokens[0] == "GET") {
@@ -112,7 +112,7 @@ void HttpPacket::parseRawPacket() {
 			} else if (tokens[0] == "DELETE") {
 				_method = DELETE;
 			} else {
-				// Throw Error
+				throw UnknownMethodException();
 			}
 
 			_uri = tokens[1];
@@ -125,7 +125,6 @@ void HttpPacket::parseRawPacket() {
 
 		size_t colonPos = lines[lInd].find(':');
 		if (colonPos == std::string::npos) {
-			// Invalid header
 			continue;
 		}
 
