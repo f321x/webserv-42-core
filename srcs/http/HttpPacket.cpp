@@ -10,12 +10,14 @@ HttpPacket::HttpPacket() {
 	_status_message = "";
 	_request_headers = std::map<std::string, std::string>();
 	_response_headers = std::map<std::string, std::string>();
+	_content = "";
 }
 
 HttpPacket::HttpPacket(const std::string &raw_packet) {
 	_raw_packet = raw_packet;
 	parseRawPacket();
 	_response_headers = std::map<std::string, std::string>();
+	_content = "";
 }
 
 HttpPacket::HttpPacket(const HttpPacket &other) {
@@ -31,6 +33,7 @@ HttpPacket &HttpPacket::operator=(const HttpPacket &other) {
 	_status_message = other._status_message;
 	_request_headers = other._request_headers;
 	_response_headers = other._response_headers;
+	_content = other._content;
 	return *this;
 }
 
@@ -73,8 +76,21 @@ void HttpPacket::set_res_header(const std::string key, const std::string value) 
 	_response_headers.insert(std::make_pair(key, value));
 }
 
+void HttpPacket::set_content(const std::string content) {
+	_content = content;
+}
+
 std::string HttpPacket::serializeResponse() {
-	return "";
+	std::string response = "HTTP/1.1 " + std::to_string(_status_code) + " " + _status_message + "\n";
+
+	for (std::map<std::string, std::string>::iterator it = _response_headers.begin(); it != _response_headers.end(); it++) {
+		response += it->first + ": " + it->second + "\n";
+	}
+	response += "\n";
+
+	response += _content;
+
+	return response;
 }
 
 void HttpPacket::parseRawPacket() {

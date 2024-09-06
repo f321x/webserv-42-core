@@ -28,6 +28,7 @@ public:
 	void		set_status_code(uint status_code);
 	void		set_status_message(const std::string status_message);
 	void		set_res_header(const std::string key, const std::string value);
+	void		set_content(const std::string content);
 
 	std::string serializeResponse();
 private:
@@ -44,6 +45,8 @@ private:
 
 	std::map<std::string, std::string>	_request_headers;
 	std::map<std::string, std::string>	_response_headers;
+
+	std::string	_content;
 
 	void parseRawPacket();
 };
