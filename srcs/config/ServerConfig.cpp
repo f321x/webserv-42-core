@@ -1,4 +1,5 @@
 #include "ServerConfig.hpp"
+#include <regex>
 
 //GETTERS
 
@@ -54,5 +55,9 @@ void ServerConfig::addRoute(const std::string& route, const RouteConfig& config)
 		throw std::invalid_argument("Route cannot be empty");
 	if (route[0] != '/')
 		throw std::invalid_argument("Route must start with a forward slash: " + route);
+
+	std::regex validRoutePattern("^/([a-zA-Z0-9_-]+/?)*$");
+	if (!std::regex_match(route, validRoutePattern))
+		throw std::invalid_argument("Route name contains invalid characters.");
 	_routes[route] = config;
 }
