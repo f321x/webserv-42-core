@@ -55,7 +55,10 @@
 		"compare": "cpp",
 		"concepts": "cpp",
 		"numbers": "cpp",
-		"csignal": "cpp"
+		"csignal": "cpp",
+		"bitset": "cpp",
+		"regex": "cpp",
+		"variant": "cpp"
 	},
 	"C_Cpp.default.includePath": [
 		"${workspaceFolder}/includes"
