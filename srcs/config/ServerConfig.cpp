@@ -9,11 +9,13 @@ int ServerConfig::getPort() const { return _port; }
 
 std::vector<std::string> ServerConfig::getServerNames() const { return _server_names; }
 
-std::map<int, std::string> ServerConfig::getErrorPages() const { return error_pages; }
+std::map<int, std::string> ServerConfig::getErrorPages() const { return _error_pages; }
 
 size_t ServerConfig::getClientMaxBodySize() const { return _client_max_body_size; }
 
 std::map<std::string, RouteConfig> ServerConfig::getRoutes() const { return _routes; }
+
+bool ServerConfig::isDefault() const { return _is_default; }
 
 //SETTERS
 
@@ -35,9 +37,9 @@ void ServerConfig::addServerName(const std::string& server_name)
 
 void ServerConfig::addErrorPage(int error_code, const std::string& error_page)
 {
-	if (error_pages.find(error_code) != error_pages.end())
+	if (_error_pages.find(error_code) != _error_pages.end())
 		return;
-	error_pages[error_code] = error_page;
+	_error_pages[error_code] = error_page;
 }
 
 void ServerConfig::setClientMaxBodySize(int size)
@@ -61,3 +63,5 @@ void ServerConfig::addRoute(const std::string& route, const RouteConfig& config)
 		throw std::invalid_argument("Route name contains invalid characters.");
 	_routes[route] = config;
 }
+
+void ServerConfig::setDefault(bool is_default) { _is_default = is_default; }

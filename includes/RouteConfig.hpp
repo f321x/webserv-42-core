@@ -22,7 +22,7 @@ public:
 	//GETTERS
 	std::string getRoot() const;
 	std::vector<std::string> getAcceptedMethods() const;
-	std::string getRedirectionUrl() const;
+	std::string getRedirection() const;
 	bool isAutoindex() const;
 	std::string getDefaultFile() const;
 	bool isDirectoryListing() const;
