@@ -26,12 +26,20 @@ void log(const std::string &message, LogLevel level = INFO);
 
 #define TRACE(message) log(message, TRACE)
 
+#ifndef DEBUG
 #define DEBUG(message) log(message, DEBUG)
+#endif
 
+#ifndef INFO
 #define INFO(message) log(message, INFO)
+#endif
 
+#ifndef WARN
 #define WARN(message) log(message, WARNING)
+#endif
 
+#ifndef ERROR
 #define ERROR(message) log(message, ERROR)
+#endif
 
 #endif
