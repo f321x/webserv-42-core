@@ -29,12 +29,13 @@ TcpSocket::TcpSocket()
 		throw std::runtime_error("TcpSocket: failed");
 	}
 	// set nonblocking flag
-	// int flags = fcntl(_socket_fd, F_GETFL, 0);
-	// fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+	int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 
 	// set pollfd struct
 	_pfd.fd = _socket_fd;
 	_pfd.events = POLLIN;
+	_pfd.revents = 0;
 }
 
 void TcpSocket::bind_to_address(const SocketAddress &address)
@@ -64,7 +65,9 @@ void TcpSocket::listen_on_socket()
 
 TcpSocket TcpSocket::accept_connection()
 {
+	ERROR("Bugged shite");
 	sockaddr_in client_address;
+	memset(&client_address, 0, sizeof(client_address));
 	socklen_t client_address_len = sizeof(client_address);
 
 	int client_socket_fd = accept(_socket_fd, (sockaddr *)&client_address, &client_address_len);
@@ -124,9 +127,9 @@ std::string TcpSocket::read_client_data()
 	return result;
 }
 
-pollfd *TcpSocket::pfd()
+pollfd TcpSocket::pfd()
 {
-	return &_pfd;
+	return _pfd;
 }
 
 TcpSocket::~TcpSocket()

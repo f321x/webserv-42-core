@@ -18,10 +18,10 @@ WebServer::~WebServer()
     TRACE("WebServer destructed");
 }
 
-std::vector<pollfd *> WebServer::_get_pollfds()
+std::vector<pollfd> WebServer::_get_pollfds()
 {
-    std::vector<pollfd *> pfds;
-    for (auto &socket : _sockets)
+    std::vector<pollfd> pfds;
+    for (TcpSocket &socket : _sockets)
     {
         pfds.push_back(socket.pfd());
     }
@@ -36,9 +36,9 @@ void WebServer::serve()
     {
         if (*_shutdown_signal)
             break;
-        std::vector<pollfd *> pfds = WebServer::_get_pollfds();
+        std::vector<pollfd> pfds = WebServer::_get_pollfds();
         TRACE("Pollfds: " + std::to_string(pfds.size()));
-        int ready = poll(pfds[0], pfds.size(), 100);
+        int ready = poll(pfds.data(), pfds.size(), -1);
         TRACE("Poll returned: " + std::to_string(ready));
         if (ready < 0)
             throw std::runtime_error("WebServer: polling file descriptors failed");
@@ -48,8 +48,9 @@ void WebServer::serve()
         for (size_t i = 0; i < _sockets.size(); ++i)
         {
             // TRACE("Checking socket " + std::to_string(_sockets[i].fd()));
-            if ((*(_sockets[i].pfd())).revents && ((*(_sockets[i].pfd())).events == POLLIN))
+            if (pfds.data()[i].revents & POLLIN)
             {
+                TRACE("IN");
                 if (_sockets[i].fd() == _bind_socket.fd())
                 {
                     TRACE("Accepting new connection");
@@ -61,8 +62,9 @@ void WebServer::serve()
                     TRACE("Handling client data");
                     _handle_client_data(_sockets[i]);
                 }
+
                 // clear revents
-                (*(_sockets[i].pfd())).revents = 0;
+                // ((_sockets[i].pfd()))->revents = 0;
             }
         }
     }
