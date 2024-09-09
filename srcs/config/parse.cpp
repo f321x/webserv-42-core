@@ -30,7 +30,11 @@ void parseListen(ServerConfig& server, std::istringstream& stream)
 			server.setHost(host);
 			server.setPort(port);
 		} else {
-			port = std::stoi(host);  // Handle the case where only a port is provided
+			try {
+				port = std::stoi(host);  // Handle the case where only a port is provided
+			} catch (const std::invalid_argument& e) {
+				throw std::runtime_error("Invalid port: " + host);
+			}
 			server.setPort(port);
 		}
 	}

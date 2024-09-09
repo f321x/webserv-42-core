@@ -1,7 +1,7 @@
 NAME := webserv
 
 CC := c++
-CFLAGS := -std=c++17 -Wall -Wextra -Werror
+CFLAGS := -std=c++17 -Wall -Wextra -Werror -g
 INCLUDES := -I./includes -I/usr/local/include
 LIBS := -L/usr/local/lib -lCatch2
 
