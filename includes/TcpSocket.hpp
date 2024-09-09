@@ -26,7 +26,7 @@ public:
 	void bind_to_address(const SocketAddress &address);
 	void listen_on_socket();
 	int fd() const;
-	pollfd *pfd();
+	pollfd pfd();
 	TcpSocket accept_connection();
 	std::string read_client_data();
 
