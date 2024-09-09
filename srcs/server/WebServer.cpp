@@ -15,6 +15,7 @@ WebServer::WebServer(const WebServerConfig &config, volatile std::sig_atomic_t *
 
 WebServer::~WebServer()
 {
+    TRACE("Closing sockets " + std::to_string(_sockets.size()));
     TRACE("WebServer destructed");
 }
 
@@ -25,7 +26,6 @@ std::vector<pollfd> WebServer::_get_pollfds()
     {
         pfds.push_back(socket.pfd());
     }
-    // TRACE("Pollfds: " + std::to_string(pfds.size()));
     return pfds;
 }
 
@@ -37,34 +37,42 @@ void WebServer::serve()
         if (*_shutdown_signal)
             break;
         std::vector<pollfd> pfds = WebServer::_get_pollfds();
-        TRACE("Pollfds: " + std::to_string(pfds.size()));
-        int ready = poll(pfds.data(), pfds.size(), -1);
-        TRACE("Poll returned: " + std::to_string(ready));
+        int ready = poll(pfds.data(), pfds.size(), 2000);
+        // TRACE("Poll returned: " + std::to_string(ready));
         if (ready < 0)
             throw std::runtime_error("WebServer: polling file descriptors failed");
         else if (ready == 0)
             continue;
-
-        for (size_t i = 0; i < _sockets.size(); ++i)
+        for (size_t i = 0; i < pfds.size(); ++i)
         {
-            // TRACE("Checking socket " + std::to_string(_sockets[i].fd()));
-            if (pfds.data()[i].revents & POLLIN)
+            static int count = 0;
+            count++;
+            if (count > 10)
+                exit(0);
+            // TRACE("Checking socket " + std::to_string(pfds[i].fd) + " REVENT: " + std::to_string(pfds[i].revents));
+            if (pfds[i].revents & POLLERR)
             {
-                TRACE("IN");
-                if (_sockets[i].fd() == _bind_socket.fd())
+                DEBUG("POLLERR detected on socket " + std::to_string(pfds[i].fd));
+                _sockets.erase(std::remove(_sockets.begin(), _sockets.end(), _sockets[i]), _sockets.end()); // wonky indexing
+            }
+            else if (pfds[i].revents & POLLIN)
+            {
+                if (pfds[i].fd == _bind_socket.fd())
                 {
-                    TRACE("Accepting new connection");
+                    DEBUG("Accepting new connection");
                     TcpSocket new_client_socket = _bind_socket.accept_connection();
                     _sockets.push_back(new_client_socket);
                 }
                 else
                 {
-                    TRACE("Handling client data");
+                    DEBUG("Handling client data");
                     _handle_client_data(_sockets[i]);
                 }
-
-                // clear revents
-                // ((_sockets[i].pfd()))->revents = 0;
+            }
+            else if (pfds[i].revents & POLLHUP)
+            {
+                WARN("POLLHUP detected on socket " + std::to_string(pfds[i].fd));
+                _sockets.erase(std::remove(_sockets.begin(), _sockets.end(), _sockets[i]), _sockets.end()); // wonky indexing
             }
         }
     }
@@ -72,6 +80,8 @@ void WebServer::serve()
 
 void WebServer::_handle_client_data(TcpSocket &client_socket)
 {
+    DEBUG("HANDLING CLIENT DATA");
+    exit(0);
     try
     {
         std::string client_data = client_socket.read_client_data();

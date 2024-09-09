@@ -3,21 +3,24 @@
 // constructor for new client (accept_connection)
 TcpSocket::TcpSocket(int existing_fd) : _socket_fd(existing_fd)
 {
+	_bind_socket = false;
 	memset(&_address, 0, sizeof(_address));
 	memset(&_pfd, 0, sizeof(_pfd));
 
 	// set nonblocking flag
-	// int flags = fcntl(_socket_fd, F_GETFL, 0);
-	// fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+	int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 
 	// set pollfd struct
-	_pfd.fd = _socket_fd;
+	_pfd.fd = existing_fd;
 	_pfd.events = POLLIN;
+	_pfd.revents = 0;
 }
 
 // constructor for bind socket
 TcpSocket::TcpSocket()
 {
+	TRACE("Creating bind socket");
 	_bind_socket = true;
 	memset(&_address, 0, sizeof(_address));
 	memset(&_pfd, 0, sizeof(_pfd));
@@ -40,8 +43,9 @@ TcpSocket::TcpSocket()
 
 void TcpSocket::bind_to_address(const SocketAddress &address)
 {
+	memset(&_address, 0, sizeof(_address));
 	_address = address.get_sockaddr();
-	if (bind(_socket_fd, (struct sockaddr *)&_address, sizeof(_address)) < 0)
+	if (bind(_socket_fd, (sockaddr *)&_address, sizeof(_address)) < 0)
 	{
 		close(_socket_fd);
 		throw std::runtime_error("TcpSocket: failed to bind");
@@ -65,7 +69,6 @@ void TcpSocket::listen_on_socket()
 
 TcpSocket TcpSocket::accept_connection()
 {
-	ERROR("Bugged shite");
 	sockaddr_in client_address;
 	memset(&client_address, 0, sizeof(client_address));
 	socklen_t client_address_len = sizeof(client_address);
@@ -134,12 +137,13 @@ pollfd TcpSocket::pfd()
 
 TcpSocket::~TcpSocket()
 {
+	DEBUG("Closing socket fd: " + std::to_string(_socket_fd));
 	close(_socket_fd);
 	memset(&_address, 0, sizeof(_address));
 	memset(&_pfd, 0, sizeof(_pfd));
 }
 
-TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _socket_fd(other._socket_fd)
+TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _pfd(other._pfd), _socket_fd(other._socket_fd), _bind_socket(other._bind_socket)
 {
 }
 
@@ -147,6 +151,8 @@ TcpSocket &TcpSocket::operator=(const TcpSocket &other)
 {
 	_address = other._address;
 	_socket_fd = other._socket_fd;
+	_pfd = other._pfd;
+	_bind_socket = other._bind_socket;
 	return *this;
 }
 
