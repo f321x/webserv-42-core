@@ -47,11 +47,13 @@ TEST_CASE("WebServerConfig Parses Server Configurations Correctly", "[WebServerC
     REQUIRE(serverConfig.getClientMaxBodySize() == 1048576);
     // Verify route configurations
 	const auto& routes = serverConfig.getRoutes();
-    const RouteConfig& routeConfig = routes.at("/");
-    REQUIRE(routeConfig.getRoot() == "/var/www");
-    REQUIRE(routeConfig.isAutoindex() == true);
-    REQUIRE(routeConfig.getAcceptedMethods() == std::vector<std::string>{"GET", "POST"});
-    REQUIRE(routeConfig.getDefaultFile() == "index.html");
+	try {
+		const RouteConfig& routeConfig = routes.at("/");
+		REQUIRE(routeConfig.getRoot() == "/var/www");
+		REQUIRE(routeConfig.isAutoindex() == true);
+		REQUIRE(routeConfig.getAcceptedMethods() == std::vector<std::string>{"GET", "POST"});
+		REQUIRE(routeConfig.getDefaultFile() == "index.html");
+	} catch (const std::out_of_range& e) { FAIL("Route not found"); }
 
     // Clean up the temporary file
     removeTempConfigFile(temp_filename);

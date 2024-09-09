@@ -1,4 +1,5 @@
 #include "RouteConfig.hpp"
+#include <iostream>
 
 //GETTERS
 std::string RouteConfig::getRoot() const { return _root; }

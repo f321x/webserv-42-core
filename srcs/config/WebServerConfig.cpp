@@ -20,7 +20,8 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 	std::string line;
 	std::ifstream config_file(config_file_path);
 	std::stack<std::string> context_stack;
-	RouteConfig current_route;
+	// RouteConfig current_route;
+	std::pair<std::string, RouteConfig> current_route = std::make_pair(std::string(), RouteConfig());
 	ServerConfig current_server;
 
 	if (!config_file.is_open())
@@ -37,7 +38,7 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 			else if (token == "location") {
 				std::string root;
 				stream >> root;
-				current_route.setRoot(root);
+				current_route.first = root;
 				context_stack.push("location");
 			} else if (token == "{") {
 				// do nothing
@@ -45,8 +46,9 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 				if (context_stack.empty())
 					throw std::runtime_error("Unexpected '}'");
 				if (context_stack.top() == "location") {
-					current_server.addRoute(current_route.getRoot(), current_route);
-					current_route = RouteConfig();
+					current_server.addRoute(current_route.first, current_route.second);
+					current_route.first.clear();
+					current_route.second = RouteConfig();
 				}
 				context_stack.pop();
 			} else {
@@ -59,7 +61,7 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 				} else if (context_stack.top() == "location") {
 					auto it = route_setters.find(token);
 					if (it != route_setters.end())
-						it->second(current_route, stream);
+						it->second(current_route.second, stream);
 					else
 						throw std::runtime_error("Unknown route directive: " + token);
 				}
@@ -69,6 +71,35 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 	if (!context_stack.empty())
 		throw std::runtime_error("Unexpected EOF");
 	_server_config = current_server;
+}
+
+void WebServerConfig::printConfig() const
+{
+	std::cout << "Port: " << _server_config.getPort() << std::endl;
+	std::cout << "Host: " << _server_config.getHost() << std::endl;
+	std::cout << "Server names: ";
+	for (const auto& name : _server_config.getServerNames())
+		std::cout << name << " ";
+	std::cout << std::endl;
+	std::cout << "Error pages: ";
+	for (const auto& [code, page] : _server_config.getErrorPages())
+		std::cout << code << " -> " << page << " ";
+	std::cout << std::endl;
+	std::cout << "Client max body size: " << _server_config.getClientMaxBodySize() << std::endl;
+	std::cout << "Routes: ";
+	for (const auto& [route, config] : _server_config.getRoutes()) {
+		std::cout << route << " -> ";
+		std::cout << "Root: " << config.getRoot() << ", ";
+		std::cout << "Methods: ";
+		for (const auto& method : config.getAcceptedMethods())
+			std::cout << method << ":";
+		std::cout << ", ";
+		std::cout << "Redirection: " << config.getRedirection() << ", ";
+		std::cout << "Autoindex: " << config.isAutoindex() << ", ";
+		std::cout << "Default file: " << config.getDefaultFile() << ", ";
+		std::cout << "Directory listing: " << (config.isDirectoryListing() ? "true" : "false") << ", ";
+		std::cout << "Upload directory: " << config.getUploadDirectory() << std::endl;
+	}
 }
 
 WebServerConfig::~WebServerConfig()

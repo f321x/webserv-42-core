@@ -17,7 +17,7 @@ private:
 	std::string _upload_directory;
 public:
 	//CONSTRUCTOR
-	RouteConfig() : _root("/"), _autoindex(false), _default_file("index.html") {}
+	RouteConfig() : _autoindex(false), _directory_listing(false) {}
 
 	//GETTERS
 	std::string getRoot() const;

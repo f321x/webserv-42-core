@@ -25,6 +25,8 @@ public:
 	ServerConfig getServerConfig() const;
 	RouteConfig getRouteConfig(const std::string &route) const;
 
+	//debug
+	void printConfig() const;
 private:
 	ServerConfig _server_config;
 	std::string _bind_ip = "0.0.0.0"; // default value
