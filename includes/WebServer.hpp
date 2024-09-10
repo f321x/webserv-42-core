@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <csignal>
 #include <memory>
+#include <unordered_map>
 
 class WebServer
 {
@@ -23,12 +24,14 @@ public:
 	void serve();
 
 private:
-	// TcpSocket _bind_socket;  // commented out to prevent double destruction
 	std::shared_ptr<TcpSocket> _bind_socket;
 	std::vector<std::shared_ptr<TcpSocket>> _sockets; // contains all sockets including the bind socket
+	std::vector<pollfd> _pollfds;
+
 	WebServerConfig _config;
 	volatile std::sig_atomic_t *_shutdown_signal;
 
 	void _handle_client_data(std::shared_ptr<TcpSocket> client_socket);
-	std::vector<pollfd *> _get_pollfds();
+	void _remove_socket(int fd);
+	void _store_socket(std::shared_ptr<TcpSocket> socket);
 };

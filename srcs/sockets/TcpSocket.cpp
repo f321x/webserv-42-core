@@ -5,16 +5,10 @@ TcpSocket::TcpSocket(int existing_fd) : _socket_fd(existing_fd)
 {
 	_bind_socket = false;
 	memset(&_address, 0, sizeof(_address));
-	memset(&_pfd, 0, sizeof(_pfd));
 
 	// set nonblocking flag
 	int flags = fcntl(_socket_fd, F_GETFL, 0);
 	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
-
-	// set pollfd struct
-	_pfd.fd = existing_fd;
-	_pfd.events = POLLIN;
-	_pfd.revents = 0;
 }
 
 // constructor for bind socket
@@ -22,7 +16,6 @@ TcpSocket::TcpSocket()
 {
 	TRACE("Creating bind socket");
 	_bind_socket = true;
-	memset(&_pfd, 0, sizeof(_pfd));
 
 	// open socket
 	_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -30,14 +23,10 @@ TcpSocket::TcpSocket()
 	{
 		throw std::runtime_error("TcpSocket: failed");
 	}
+
 	// set nonblocking flag
 	int flags = fcntl(_socket_fd, F_GETFL, 0);
 	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
-
-	// set pollfd struct
-	_pfd.fd = _socket_fd;
-	_pfd.events = POLLIN;
-	_pfd.revents = 0;
 }
 
 void TcpSocket::bind_to_address(const SocketAddress &address)
@@ -89,6 +78,16 @@ std::shared_ptr<TcpSocket> TcpSocket::accept_connection()
 	return client_socket;
 }
 
+pollfd TcpSocket::new_pfd() const
+{
+	pollfd pfd;
+	memset(&pfd, 0, sizeof(pfd));
+	pfd.fd = _socket_fd;
+	pfd.events = POLLIN;
+	pfd.revents = 0;
+	return pfd;
+}
+
 std::string TcpSocket::read_client_data()
 {
 	std::string result;
@@ -129,20 +128,13 @@ std::string TcpSocket::read_client_data()
 	return result;
 }
 
-pollfd *TcpSocket::pfd()
-{
-	return &_pfd;
-}
-
 TcpSocket::~TcpSocket()
 {
 	DEBUG("Closing socket fd: " + std::to_string(_socket_fd));
 	close(_socket_fd);
-	memset(&_address, 0, sizeof(_address));
-	memset(&_pfd, 0, sizeof(_pfd));
 }
 
-TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _pfd(other._pfd), _socket_fd(other._socket_fd), _bind_socket(other._bind_socket)
+TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _socket_fd(other._socket_fd), _bind_socket(other._bind_socket)  // _pfd(other._pfd), 
 {
 }
 
@@ -150,7 +142,7 @@ TcpSocket &TcpSocket::operator=(const TcpSocket &other)
 {
 	_address = other._address;
 	_socket_fd = other._socket_fd;
-	_pfd = other._pfd;
+	// _pfd = other._pfd;
 	_bind_socket = other._bind_socket;
 	return *this;
 }
