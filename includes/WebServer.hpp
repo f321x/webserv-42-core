@@ -13,6 +13,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <csignal>
+#include <memory>
 
 class WebServer
 {
@@ -22,11 +23,12 @@ public:
 	void serve();
 
 private:
-	TcpSocket _bind_socket;
-	std::vector<TcpSocket> _sockets;
+	// TcpSocket _bind_socket;  // commented out to prevent double destruction
+	std::shared_ptr<TcpSocket> _bind_socket;
+	std::vector<std::shared_ptr<TcpSocket>> _sockets; // contains all sockets including the bind socket
 	WebServerConfig _config;
 	volatile std::sig_atomic_t *_shutdown_signal;
 
-	void _handle_client_data(TcpSocket &client_socket);
-	std::vector<pollfd> _get_pollfds();
+	void _handle_client_data(std::shared_ptr<TcpSocket> client_socket);
+	std::vector<pollfd *> _get_pollfds();
 };
