@@ -22,7 +22,6 @@ TcpSocket::TcpSocket()
 {
 	TRACE("Creating bind socket");
 	_bind_socket = true;
-	memset(&_address, 0, sizeof(_address));
 	memset(&_pfd, 0, sizeof(_pfd));
 
 	// open socket

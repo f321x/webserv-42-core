@@ -67,6 +67,7 @@ void WebServer::serve()
                     DEBUG("Accepting new connection");
                     std::shared_ptr<TcpSocket> new_client_socket = _bind_socket->accept_connection(); // accept the connection, return new socket
                     _sockets.push_back(new_client_socket);                                            // store new socket in the list of sockets
+                    break;                                                                            // may uneccessary, investigate later
                 }
                 else
                 {
