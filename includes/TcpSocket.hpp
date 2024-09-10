@@ -27,13 +27,12 @@ public:
 	void bind_to_address(const SocketAddress &address);
 	void listen_on_socket();
 	int fd() const;
-	pollfd *pfd();
+	pollfd new_pfd() const;
 	std::shared_ptr<TcpSocket> accept_connection();
 	std::string read_client_data();
 
 private:
 	sockaddr_in _address;
-	pollfd _pfd;
 	int _socket_fd;
 	bool _bind_socket = false;
 };
