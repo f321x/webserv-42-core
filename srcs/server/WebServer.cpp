@@ -47,7 +47,7 @@ void WebServer::serve()
         std::vector<pollfd *> pfds = WebServer::_get_pollfds();
 
         // poll the sockets for incoming data (pointer to first element, number of elements, timeout)
-        int ready = poll(pfds[0], pfds.size(), 2000);
+        int ready = poll(pfds[0], pfds.size(), -1);
         DEBUG("Poll returned: " + std::to_string(ready));
 
         if (ready < 0) // error
