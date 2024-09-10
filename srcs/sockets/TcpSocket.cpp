@@ -67,7 +67,7 @@ void TcpSocket::listen_on_socket()
 	DEBUG(ss.str());
 }
 
-TcpSocket TcpSocket::accept_connection()
+std::shared_ptr<TcpSocket> TcpSocket::accept_connection()
 {
 	sockaddr_in client_address;
 	memset(&client_address, 0, sizeof(client_address));
@@ -85,8 +85,8 @@ TcpSocket TcpSocket::accept_connection()
 	   << " port: " << ntohs(client_address.sin_port);
 	DEBUG(ss.str());
 
-	TcpSocket client_socket = TcpSocket(client_socket_fd);
-	client_socket._address = client_address;
+	std::shared_ptr<TcpSocket> client_socket(new TcpSocket(client_socket_fd));
+	client_socket->_address = client_address;
 	return client_socket;
 }
 
@@ -130,9 +130,9 @@ std::string TcpSocket::read_client_data()
 	return result;
 }
 
-pollfd TcpSocket::pfd()
+pollfd *TcpSocket::pfd()
 {
-	return _pfd;
+	return &_pfd;
 }
 
 TcpSocket::~TcpSocket()
