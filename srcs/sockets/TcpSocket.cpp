@@ -126,6 +126,18 @@ std::string TcpSocket::read_client_data()
 	return result;
 }
 
+void TcpSocket::write_data(const std::string &data)
+{
+	if (_bind_socket)
+		throw std::runtime_error("TcpSocket: Cannot write data to a bind socket");
+
+	ssize_t bytes_written = send(_socket_fd, data.c_str(), data.size(), 0);
+	if (bytes_written < 0)
+	{
+		throw std::runtime_error("TcpSocket: failed to write data");
+	}
+}
+
 TcpSocket::~TcpSocket()
 {
 	DEBUG("Closing socket fd: " + std::to_string(_socket_fd));

@@ -109,6 +109,7 @@ void WebServer::_handle_client_data(std::shared_ptr<TcpSocket> client_socket)
     {
         std::string client_data = client_socket->read_client_data();
         DEBUG("Received data from client: " + client_data);
+        client_socket->write_data(std::string("HTTP/1.1 200 OK\r\n\r\nECHO: [\n") + client_data + std::string("]\n"));
         // construct packet class with deserializer constructor
     }
     catch (const std::runtime_error &e)
