@@ -2,7 +2,7 @@ FROM debian:latest
 
 WORKDIR /install
 
-RUN apt-get update && apt-get install -y curl git clang make cmake netcat-openbsd valgrind
+RUN apt-get update && apt-get install -y curl git clang make cmake netcat-openbsd valgrind neovim
 
 RUN curl -sS https://starship.rs/install.sh -o starshipinstall.sh
 RUN sh starshipinstall.sh --yes
