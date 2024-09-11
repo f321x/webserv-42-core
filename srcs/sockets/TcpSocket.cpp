@@ -3,24 +3,19 @@
 // constructor for new client (accept_connection)
 TcpSocket::TcpSocket(int existing_fd) : _socket_fd(existing_fd)
 {
+	_bind_socket = false;
 	memset(&_address, 0, sizeof(_address));
-	memset(&_pfd, 0, sizeof(_pfd));
 
 	// set nonblocking flag
-	// int flags = fcntl(_socket_fd, F_GETFL, 0);
-	// fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
-
-	// set pollfd struct
-	_pfd.fd = _socket_fd;
-	_pfd.events = POLLIN;
+	int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 // constructor for bind socket
 TcpSocket::TcpSocket()
 {
+	TRACE("Creating bind socket");
 	_bind_socket = true;
-	memset(&_address, 0, sizeof(_address));
-	memset(&_pfd, 0, sizeof(_pfd));
 
 	// open socket
 	_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -28,23 +23,26 @@ TcpSocket::TcpSocket()
 	{
 		throw std::runtime_error("TcpSocket: failed");
 	}
-	// set nonblocking flag
-	// int flags = fcntl(_socket_fd, F_GETFL, 0);
-	// fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 
-	// set pollfd struct
-	_pfd.fd = _socket_fd;
-	_pfd.events = POLLIN;
+	// set nonblocking flag
+	int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 void TcpSocket::bind_to_address(const SocketAddress &address)
 {
+	memset(&_address, 0, sizeof(_address));
 	_address = address.get_sockaddr();
-	if (bind(_socket_fd, (struct sockaddr *)&_address, sizeof(_address)) < 0)
+	if (bind(_socket_fd, (sockaddr *)&_address, sizeof(_address)) < 0)
 	{
 		close(_socket_fd);
 		throw std::runtime_error("TcpSocket: failed to bind");
 	}
+}
+
+bool TcpSocket::is_bind_socket() const
+{
+	return _bind_socket;
 }
 
 void TcpSocket::listen_on_socket()
@@ -62,10 +60,14 @@ void TcpSocket::listen_on_socket()
 	DEBUG(ss.str());
 }
 
-TcpSocket TcpSocket::accept_connection()
+std::shared_ptr<TcpSocket> TcpSocket::accept_connection()
 {
 	sockaddr_in client_address;
+	memset(&client_address, 0, sizeof(client_address));
 	socklen_t client_address_len = sizeof(client_address);
+
+	if (!_bind_socket)
+		throw std::runtime_error("TcpSocket: Cannot accept connection on a client socket");
 
 	int client_socket_fd = accept(_socket_fd, (sockaddr *)&client_address, &client_address_len);
 	if (client_socket_fd < 0)
@@ -79,9 +81,19 @@ TcpSocket TcpSocket::accept_connection()
 	   << " port: " << ntohs(client_address.sin_port);
 	DEBUG(ss.str());
 
-	TcpSocket client_socket = TcpSocket(client_socket_fd);
-	client_socket._address = client_address;
+	std::shared_ptr<TcpSocket> client_socket(new TcpSocket(client_socket_fd));
+	client_socket->_address = client_address;
 	return client_socket;
+}
+
+pollfd TcpSocket::new_pfd() const
+{
+	pollfd pfd;
+	memset(&pfd, 0, sizeof(pfd));
+	pfd.fd = _socket_fd;
+	pfd.events = POLLIN;
+	pfd.revents = 0;
+	return pfd;
 }
 
 std::string TcpSocket::read_client_data()
@@ -91,52 +103,48 @@ std::string TcpSocket::read_client_data()
 	ssize_t bytes_read;
 
 	if (_bind_socket)
-	{
 		throw std::runtime_error("TcpSocket: Cannot read data from a bind socket");
-	}
 
 	while (true)
 	{
-		TRACE("Reading data from client");
 		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
 
+		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
 		if (bytes_read > 0)
 		{
 			// Data received, append to result
 			result.append(buffer, bytes_read);
 		}
-		else if (bytes_read == 0)
+		else if (bytes_read <= 0)
 		{
 			// Connection closed by client
 			if (result.empty())
-			{
-				close(_socket_fd);
 				throw std::runtime_error("TcpSocket: Connection closed by client");
-			}
 			break;
-		}
-		else
-		{
-			close(_socket_fd);
-			throw std::runtime_error("TcpSocket: Error reading data from socket");
 		}
 	}
 	return result;
 }
 
-pollfd *TcpSocket::pfd()
+void TcpSocket::write_data(const std::string &data)
 {
-	return &_pfd;
+	if (_bind_socket)
+		throw std::runtime_error("TcpSocket: Cannot write data to a bind socket");
+
+	ssize_t bytes_written = send(_socket_fd, data.c_str(), data.size(), 0);
+	if (bytes_written < 0)
+	{
+		throw std::runtime_error("TcpSocket: failed to write data");
+	}
 }
 
 TcpSocket::~TcpSocket()
 {
+	DEBUG("Closing socket fd: " + std::to_string(_socket_fd));
 	close(_socket_fd);
-	memset(&_address, 0, sizeof(_address));
-	memset(&_pfd, 0, sizeof(_pfd));
 }
 
-TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _socket_fd(other._socket_fd)
+TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _socket_fd(other._socket_fd), _bind_socket(other._bind_socket) // _pfd(other._pfd),
 {
 }
 
@@ -144,6 +152,8 @@ TcpSocket &TcpSocket::operator=(const TcpSocket &other)
 {
 	_address = other._address;
 	_socket_fd = other._socket_fd;
+	// _pfd = other._pfd;
+	_bind_socket = other._bind_socket;
 	return *this;
 }
 

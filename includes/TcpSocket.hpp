@@ -9,6 +9,7 @@
 #include "logging.hpp"
 #include <poll.h>
 #include <fcntl.h>
+#include <memory>
 
 class TcpSocket
 {
@@ -25,14 +26,15 @@ public:
 
 	void bind_to_address(const SocketAddress &address);
 	void listen_on_socket();
-	int fd() const;
-	pollfd *pfd();
-	TcpSocket accept_connection();
-	std::string read_client_data();
+	int fd() const;									// get the file descriptor
+	pollfd new_pfd() const;							// get a new pollfd struct for the socket
+	std::shared_ptr<TcpSocket> accept_connection(); // accept a new connection and return the newly created socket
+	std::string read_client_data();					// read data from the socket
+	void write_data(const std::string &data);		// write data to the socket
+	bool is_bind_socket() const;					// check if the socket belongs to the main listening sockets
 
 private:
 	sockaddr_in _address;
-	pollfd _pfd;
-	int _socket_fd;
-	bool _bind_socket = false;
+	int _socket_fd;			   // the file descriptor of the socket
+	bool _bind_socket = false; // true if the socket is the main listening socket (not a client socket)
 };

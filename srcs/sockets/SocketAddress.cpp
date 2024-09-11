@@ -2,6 +2,7 @@
 
 SocketAddress::SocketAddress(const std::string &address, uint16_t port)
 {
+	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	if (address.empty())
 		throw std::runtime_error("SocketAddress: address is empty");
 	if (port == 0)
