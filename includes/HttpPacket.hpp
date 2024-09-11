@@ -31,6 +31,21 @@ public:
 	void		set_content(const std::string content);
 
 	std::string serializeResponse();
+
+	class InvalidPacketException : public std::exception
+	{
+		virtual const char *what() const throw()
+		{
+			return "Invalid packet";
+		}
+	};
+	class UnknownMethodException : public std::exception
+	{
+		virtual const char *what() const throw()
+		{
+			return "Unknown method";
+		}
+	};
 private:
 	std::string	_raw_packet;
 
