@@ -1,5 +1,7 @@
 #include "ServerConfig.hpp"
+#include "logging.hpp"
 #include <regex>
+#include <iostream>
 
 //GETTERS
 
@@ -9,11 +11,13 @@ int ServerConfig::getPort() const { return _port; }
 
 std::vector<std::string> ServerConfig::getServerNames() const { return _server_names; }
 
-std::map<int, std::string> ServerConfig::getErrorPages() const { return error_pages; }
+std::map<int, std::string> ServerConfig::getErrorPages() const { return _error_pages; }
 
 size_t ServerConfig::getClientMaxBodySize() const { return _client_max_body_size; }
 
 std::map<std::string, RouteConfig> ServerConfig::getRoutes() const { return _routes; }
+
+bool ServerConfig::isDefault() const { return _is_default; }
 
 //SETTERS
 
@@ -35,9 +39,9 @@ void ServerConfig::addServerName(const std::string& server_name)
 
 void ServerConfig::addErrorPage(int error_code, const std::string& error_page)
 {
-	if (error_pages.find(error_code) != error_pages.end())
+	if (_error_pages.find(error_code) != _error_pages.end())
 		return;
-	error_pages[error_code] = error_page;
+	_error_pages[error_code] = error_page;
 }
 
 void ServerConfig::setClientMaxBodySize(int size)
@@ -60,4 +64,20 @@ void ServerConfig::addRoute(const std::string& route, const RouteConfig& config)
 	if (!std::regex_match(route, validRoutePattern))
 		throw std::invalid_argument("Route name contains invalid characters.");
 	_routes[route] = config;
+}
+
+void ServerConfig::setDefault(bool is_default) { _is_default = is_default; }
+
+void ServerConfig::checkServerConfig()
+{
+	if (_port == -1)
+		throw std::runtime_error("Port not set");
+	if (_host.empty())
+		WARN("Warning: Host not set, defaulting to 0.0.0.0 (all interfaces)");
+	if (_server_names.empty()) {
+		WARN("Warning: No server names set, defaulting to localhost");
+		this->_server_names.push_back("127.0.0.1");
+	}
+	if (_routes.empty())
+		throw std::runtime_error("No routes set");
 }
