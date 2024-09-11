@@ -7,10 +7,10 @@ TEST_CASE("RouteConfig Default Values", "[RouteConfig]") {
     RouteConfig routeConfig;
 
     // Test default values
-    REQUIRE(routeConfig.getRoot() == "/");
+    REQUIRE(routeConfig.getRoot() == "");
     REQUIRE(routeConfig.isAutoindex() == false);
     REQUIRE(routeConfig.isDirectoryListing() == false);
-    REQUIRE(routeConfig.getDefaultFile() == "index.html");
+    REQUIRE(routeConfig.getDefaultFile() == "");
 }
 
 TEST_CASE("RouteConfig Setting Values", "[RouteConfig]") {

@@ -9,12 +9,12 @@ class RouteConfig
 {
 private:
 	std::string _root;
-	std::vector<std::string> _accepted_methods;
 	std::string _redirection_url;
-	bool _autoindex;
 	std::string _default_file;
-	bool _directory_listing;
 	std::string _upload_directory;
+	std::vector<std::string> _accepted_methods;
+	bool _autoindex;
+	bool _directory_listing;
 public:
 	//CONSTRUCTOR
 	RouteConfig() : _autoindex(false), _directory_listing(false) {}
