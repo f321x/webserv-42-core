@@ -19,19 +19,17 @@
 class WebServer
 {
 public:
-	WebServer(const WebServerConfig &config, volatile std::sig_atomic_t *shutdown_signal);
+	WebServer(const WebServerConfig &config);
 	~WebServer();
 	void serve();
 
 private:
-	std::shared_ptr<TcpSocket> _bind_socket;
+	std::shared_ptr<TcpSocket> _bind_socket;		  // the main bind socket that listens for incoming connections
 	std::vector<std::shared_ptr<TcpSocket>> _sockets; // contains all sockets including the bind socket
-	std::vector<pollfd> _pollfds;
+	std::vector<pollfd> _pollfds;					  // contains all pollfds for the sockets
+	WebServerConfig _config;						  // the configuration of the server
 
-	WebServerConfig _config;
-	volatile std::sig_atomic_t *_shutdown_signal;
-
-	void _handle_client_data(std::shared_ptr<TcpSocket> client_socket);
-	void _remove_socket(int fd);
-	void _store_socket(std::shared_ptr<TcpSocket> socket);
+	void _handle_client_data(std::shared_ptr<TcpSocket> client_socket); // handle incoming client data
+	void _remove_socket(int fd);										// remove socket from _sockets and _pollfds
+	void _store_socket(std::shared_ptr<TcpSocket> socket);				// store socket in _sockets and _pollfds
 };
