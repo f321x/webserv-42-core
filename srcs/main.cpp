@@ -1,6 +1,5 @@
 #include "WebServer.hpp"
 
-volatile std::sig_atomic_t shutdown_signal = false;
 std::unique_ptr<WebServer> server = nullptr;
 
 void shutdownApplication(int signal)
@@ -8,7 +7,6 @@ void shutdownApplication(int signal)
 	if (signal == SIGINT)
 	{
 		INFO("Shutting down application");
-		shutdown_signal = true;
 		exit(0);
 	}
 }
@@ -21,21 +19,20 @@ int main(int argc, char **argv)
 		ERROR("Usage: ./webserv configfile_path");
 		return (1);
 	}
+	signal(SIGINT, shutdownApplication);
 
 	try
 	{
 		// try to parse config file
 		WebServerConfig config = WebServerConfig(std::string(argv[1]));
 		// init WebServer
-		server = std::make_unique<WebServer>(config, &shutdown_signal);
-
+		server = std::make_unique<WebServer>(config);
 	}
 	catch (std::exception &e)
 	{
 		ERROR(e.what());
 		return (1);
 	}
-	signal(SIGINT, shutdownApplication);
 
 	// start server
 	server->serve();
@@ -43,7 +40,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-// / working demo server
+// // working demo server
 // int main(void)
 // {
 // 	int bind_socket_fd = socket(AF_INET, SOCK_STREAM, 0);

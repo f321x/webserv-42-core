@@ -1,6 +1,6 @@
 #include "WebServer.hpp"
 
-WebServer::WebServer(const WebServerConfig &config, volatile std::sig_atomic_t *shutdown_signal) : _config(config), _shutdown_signal(shutdown_signal)
+WebServer::WebServer(const WebServerConfig &config) : _config(config)
 {
     std::shared_ptr<TcpSocket> _new_bind_socket(new TcpSocket());
     _bind_socket = _new_bind_socket;
@@ -30,9 +30,11 @@ WebServer::~WebServer()
 void WebServer::_remove_socket(int fd)
 {
     auto it = std::find_if(_pollfds.begin(), _pollfds.end(),
-                        [fd](const pollfd& pfd) { return pfd.fd == fd; });
-        
-    if (it != _pollfds.end()) {
+                           [fd](const pollfd &pfd)
+                           { return pfd.fd == fd; });
+
+    if (it != _pollfds.end())
+    {
         size_t index = std::distance(_pollfds.begin(), it);
         _pollfds.erase(it);
         _sockets.erase(_sockets.begin() + index);
@@ -50,10 +52,6 @@ void WebServer::serve()
     INFO("Webserver is serving");
     while (true)
     {
-        // if shutdown signal is set by sigint handler the loop ends to close all sockets
-        if (*_shutdown_signal)
-            break;
-
         // poll the sockets for incoming data (pointer to first element, number of elements, timeout)
         int ready = poll(_pollfds.data(), _pollfds.size(), -1);
         DEBUG("Poll returned: " + std::to_string(ready));
@@ -64,7 +62,7 @@ void WebServer::serve()
             continue;
 
         // iterate trough the pollfds and handle available events
-        for (size_t i = 0; i < _pollfds.size(); ++i)  // wonky indexing 
+        for (size_t i = 0; i < _pollfds.size(); ++i) // wonky indexing
         {
             TRACE("Checking socket " + std::to_string(_pollfds[i].fd) + " REVENT: " + std::to_string(_pollfds[i].revents));
 
@@ -74,7 +72,7 @@ void WebServer::serve()
                 {
                     DEBUG("Accepting new connection");
                     std::shared_ptr<TcpSocket> new_client_socket = _bind_socket->accept_connection(); // accept the connection, return new socket
-                    _store_socket(new_client_socket);                                            // store new socket in the list of sockets
+                    _store_socket(new_client_socket);                                                 // store new socket in the list of sockets
                     break;                                                                            // may uneccessary, investigate later
                 }
                 else
@@ -99,7 +97,7 @@ void WebServer::serve()
 
 void WebServer::_handle_client_data(std::shared_ptr<TcpSocket> client_socket)
 {
-    DEBUG("HANDLING CLIENT DATA");
+    TRACE("HANDLING CLIENT DATA");
     try
     {
         std::string client_data = client_socket->read_client_data();
