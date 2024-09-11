@@ -40,6 +40,11 @@ void TcpSocket::bind_to_address(const SocketAddress &address)
 	}
 }
 
+bool TcpSocket::is_bind_socket() const
+{
+	return _bind_socket;
+}
+
 void TcpSocket::listen_on_socket()
 {
 	if (listen(_socket_fd, 256) < 0)
@@ -60,6 +65,9 @@ std::shared_ptr<TcpSocket> TcpSocket::accept_connection()
 	sockaddr_in client_address;
 	memset(&client_address, 0, sizeof(client_address));
 	socklen_t client_address_len = sizeof(client_address);
+
+	if (!_bind_socket)
+		throw std::runtime_error("TcpSocket: Cannot accept connection on a client socket");
 
 	int client_socket_fd = accept(_socket_fd, (sockaddr *)&client_address, &client_address_len);
 	if (client_socket_fd < 0)

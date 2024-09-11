@@ -2,23 +2,30 @@
 
 WebServer::WebServer(const WebServerConfig &config) : _config(config)
 {
-    std::shared_ptr<TcpSocket> _new_bind_socket(new TcpSocket());
-    _bind_socket = _new_bind_socket;
-
-    // create a socket and bind it to the configured address
-    _bind_socket->bind_to_address(config.get_bind_address());
-    // begin listening for incoming connections
-    _bind_socket->listen_on_socket();
+    // create a new bind socket
+    std::shared_ptr<TcpSocket> _new_bind_socket = _create_bind_socket(config.get_bind_address());
 
     // reserve memory for the vecs to increase performance by preventing reallocation
     _sockets.reserve(256);
     _pollfds.reserve(256);
 
     // Add the listening socket to the poll set
-    _pollfds.push_back(_bind_socket->new_pfd());
-    _sockets.push_back(_bind_socket);
+    _store_socket(_new_bind_socket);
 
     TRACE("WebServer constructed");
+}
+
+std::shared_ptr<TcpSocket> WebServer::_create_bind_socket(const SocketAddress &address)
+{
+    std::shared_ptr<TcpSocket> _new_bind_socket(new TcpSocket());
+
+    // create a socket and bind it to the configured address
+    _new_bind_socket->bind_to_address(address);
+
+    // begin listening for incoming connections
+    _new_bind_socket->listen_on_socket();
+
+    return _new_bind_socket;
 }
 
 WebServer::~WebServer()
@@ -54,7 +61,7 @@ void WebServer::serve()
     {
         // poll the sockets for incoming data (pointer to first element, number of elements, timeout)
         int ready = poll(_pollfds.data(), _pollfds.size(), -1);
-        DEBUG("Poll returned: " + std::to_string(ready));
+        TRACE("Poll returned: " + std::to_string(ready));
 
         if (ready < 0) // error
             throw std::runtime_error("WebServer: polling file descriptors failed");
@@ -68,16 +75,16 @@ void WebServer::serve()
 
             if (_pollfds[i].revents & POLLIN) // POLLIN is set if there is data to read
             {
-                if (_pollfds[i].fd == _bind_socket->fd()) // if the bind socket has data to read its a new connection
+                if (_sockets[i]->is_bind_socket()) // if the bind socket has data to read its a new connection
                 {
-                    DEBUG("Accepting new connection");
-                    std::shared_ptr<TcpSocket> new_client_socket = _bind_socket->accept_connection(); // accept the connection, return new socket
-                    _store_socket(new_client_socket);                                                 // store new socket in the list of sockets
-                    break;                                                                            // may uneccessary, investigate later
+                    TRACE("Accepting new connection");
+                    std::shared_ptr<TcpSocket> new_client_socket = _sockets[i]->accept_connection(); // accept the connection, return new socket
+                    _store_socket(new_client_socket);                                                // store new socket in the list of sockets
+                    break;                                                                           // may uneccessary, investigate later
                 }
                 else
                 {
-                    DEBUG("Handling client data");
+                    TRACE("Handling client data");
                     _handle_client_data(_sockets[i]);
                 }
             }
