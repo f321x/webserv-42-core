@@ -1,11 +1,12 @@
 #include "RouteConfig.hpp"
+#include <iostream>
 
 //GETTERS
 std::string RouteConfig::getRoot() const { return _root; }
 
 std::vector<std::string> RouteConfig::getAcceptedMethods() const { return _accepted_methods; }
 
-std::string RouteConfig::getRedirectionUrl() const { return _redirection_url; }
+std::string RouteConfig::getRedirection() const { return _redirection_url; }
 
 bool RouteConfig::isAutoindex() const { return _autoindex; }
 
