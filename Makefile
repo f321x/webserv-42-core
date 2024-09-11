@@ -1,9 +1,11 @@
 NAME := webserv
 
 CC := c++
-CFLAGS := -std=c++17 -Wall -Wextra -Werror -g
+CFLAGS := -std=c++17 -Wall -Wextra -Werror -g3 -fsanitize=address
 INCLUDES := -I./includes -I/usr/local/include
 LIBS := -L/usr/local/lib -lCatch2
+# NUM_CORES := $(shell nproc)
+# MAKEFLAGS += -j$(NUM_CORES)
 
 SRC_DIR := srcs
 OBJ_DIR := obj
@@ -42,7 +44,7 @@ fclean: clean
 	rm -f $(NAME) $(TEST_NAME)
 
 run: all
-	./$(NAME)
+	./$(NAME) "test"
 
 re: fclean all
 

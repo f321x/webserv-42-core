@@ -20,6 +20,16 @@
 					"ignoreFailures": true
 				}
 			]
-		}
+		},
+    {
+      "name": "Launch",
+      "type": "cppdbg",
+      "program": "${workspaceFolder}/webserv",
+      "args": ["test"],
+      "cwd": "${workspaceFolder}",
+      "request": "launch",
+      "MIMode": "gdb",
+			"miDebuggerPath": "/usr/bin/gdb"
+    }
 	]
 }

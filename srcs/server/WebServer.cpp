@@ -1,32 +1,57 @@
 #include "WebServer.hpp"
 
-WebServer::WebServer(const WebServerConfig &config, volatile std::sig_atomic_t *shutdown_signal) : _config(config), _shutdown_signal(shutdown_signal)
+WebServer::WebServer(const WebServerConfig &config) : _config(config)
 {
-    // create a socket and bind it to the configured address
-    _bind_socket.bind_to_address(config.get_bind_address());
-    // begin listening for incoming connections
-    _bind_socket.listen_on_socket();
+    // create a new bind socket
+    std::shared_ptr<TcpSocket> _new_bind_socket = _create_bind_socket(config.get_bind_address());
+
+    // reserve memory for the vecs to increase performance by preventing reallocation
+    _sockets.reserve(256);
+    _pollfds.reserve(256);
 
     // Add the listening socket to the poll set
-    _sockets.push_back(_bind_socket);
+    _store_socket(_new_bind_socket);
 
     TRACE("WebServer constructed");
 }
 
+std::shared_ptr<TcpSocket> WebServer::_create_bind_socket(const SocketAddress &address)
+{
+    std::shared_ptr<TcpSocket> _new_bind_socket(new TcpSocket());
+
+    // create a socket and bind it to the configured address
+    _new_bind_socket->bind_to_address(address);
+
+    // begin listening for incoming connections
+    _new_bind_socket->listen_on_socket();
+
+    return _new_bind_socket;
+}
+
 WebServer::~WebServer()
 {
+    TRACE("Closing sockets " + std::to_string(_sockets.size()));
     TRACE("WebServer destructed");
 }
 
-std::vector<pollfd *> WebServer::_get_pollfds()
+void WebServer::_remove_socket(int fd)
 {
-    std::vector<pollfd *> pfds;
-    for (auto &socket : _sockets)
+    auto it = std::find_if(_pollfds.begin(), _pollfds.end(),
+                           [fd](const pollfd &pfd)
+                           { return pfd.fd == fd; });
+
+    if (it != _pollfds.end())
     {
-        pfds.push_back(socket.pfd());
+        size_t index = std::distance(_pollfds.begin(), it);
+        _pollfds.erase(it);
+        _sockets.erase(_sockets.begin() + index);
     }
-    // TRACE("Pollfds: " + std::to_string(pfds.size()));
-    return pfds;
+}
+
+void WebServer::_store_socket(std::shared_ptr<TcpSocket> socket)
+{
+    _sockets.push_back(socket);
+    _pollfds.push_back(socket->new_pfd());
 }
 
 void WebServer::serve()
@@ -34,46 +59,57 @@ void WebServer::serve()
     INFO("Webserver is serving");
     while (true)
     {
-        if (*_shutdown_signal)
-            break;
-        std::vector<pollfd *> pfds = WebServer::_get_pollfds();
-        TRACE("Pollfds: " + std::to_string(pfds.size()));
-        int ready = poll(pfds[0], pfds.size(), 100);
+        // poll the sockets for incoming data (pointer to first element, number of elements, timeout)
+        int ready = poll(_pollfds.data(), _pollfds.size(), -1);
         TRACE("Poll returned: " + std::to_string(ready));
-        if (ready < 0)
+
+        if (ready < 0) // error
             throw std::runtime_error("WebServer: polling file descriptors failed");
-        else if (ready == 0)
+        else if (ready == 0) // no new events
             continue;
 
-        for (size_t i = 0; i < _sockets.size(); ++i)
+        // iterate trough the pollfds and handle available events
+        for (size_t i = 0; i < _pollfds.size(); ++i) // wonky indexing
         {
-            // TRACE("Checking socket " + std::to_string(_sockets[i].fd()));
-            if ((*(_sockets[i].pfd())).revents && ((*(_sockets[i].pfd())).events == POLLIN))
+            TRACE("Checking socket " + std::to_string(_pollfds[i].fd) + " REVENT: " + std::to_string(_pollfds[i].revents));
+
+            if (_pollfds[i].revents & POLLIN) // POLLIN is set if there is data to read
             {
-                if (_sockets[i].fd() == _bind_socket.fd())
+                if (_sockets[i]->is_bind_socket()) // if the bind socket has data to read its a new connection
                 {
                     TRACE("Accepting new connection");
-                    TcpSocket new_client_socket = _bind_socket.accept_connection();
-                    _sockets.push_back(new_client_socket);
+                    std::shared_ptr<TcpSocket> new_client_socket = _sockets[i]->accept_connection(); // accept the connection, return new socket
+                    _store_socket(new_client_socket);                                                // store new socket in the list of sockets
+                    break;                                                                           // may uneccessary, investigate later
                 }
                 else
                 {
                     TRACE("Handling client data");
                     _handle_client_data(_sockets[i]);
                 }
-                // clear revents
-                (*(_sockets[i].pfd())).revents = 0;
+            }
+            else if (_pollfds[i].revents & POLLHUP)
+            {
+                WARN("POLLHUP detected on socket " + std::to_string(_pollfds[i].fd));
+                _remove_socket(_pollfds[i].fd);
+            }
+            else if (_pollfds[i].revents & POLLERR)
+            {
+                WARN("POLLERR detected on socket " + std::to_string(_pollfds[i].fd));
+                _remove_socket(_pollfds[i].fd);
             }
         }
     }
 }
 
-void WebServer::_handle_client_data(TcpSocket &client_socket)
+void WebServer::_handle_client_data(std::shared_ptr<TcpSocket> client_socket)
 {
+    TRACE("HANDLING CLIENT DATA");
     try
     {
-        std::string client_data = client_socket.read_client_data();
+        std::string client_data = client_socket->read_client_data();
         DEBUG("Received data from client: " + client_data);
+        client_socket->write_data(std::string("HTTP/1.1 200 OK\r\n\r\nECHO: [\n") + client_data + std::string("]\n"));
         // construct packet class with deserializer constructor
     }
     catch (const std::runtime_error &e)
@@ -81,23 +117,6 @@ void WebServer::_handle_client_data(TcpSocket &client_socket)
         // Client disconnected or error occurred
         INFO("Client disconnected: " + std::string(e.what()));
         // remove the client socket from the list of sockets
-        _sockets.erase(std::remove(_sockets.begin(), _sockets.end(), client_socket), _sockets.end());
+        _remove_socket(client_socket->fd());
     }
 }
-
-// WebServer::WebServer()
-// {
-// 	throw std::runtime_error("Webserver cannot be instanciated without WebServerConfig");
-// }
-
-// WebServer::WebServer(const WebServer &other)
-// {
-// 	(void)other;
-// 	throw std::runtime_error("Webserver cannot be copied");
-// }
-
-// WebServer &WebServer::operator=(const WebServer &other)
-// {
-// 	(void)other;
-// 	throw std::runtime_error("Webserver cannot be copied");
-// }

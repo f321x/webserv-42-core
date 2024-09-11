@@ -62,5 +62,7 @@
 	},
 	"C_Cpp.default.includePath": [
 		"${workspaceFolder}/includes"
-	]
+	],
+	"files.autoSave": "onFocusChange",
+	"C_Cpp.errorSquiggles": "enabled"
 }

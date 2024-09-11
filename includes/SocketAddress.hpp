@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <cstring>
 
 // constructor can throw and should be caught by the caller
 class SocketAddress
