@@ -95,34 +95,24 @@ std::string TcpSocket::read_client_data()
 	ssize_t bytes_read;
 
 	if (_bind_socket)
-	{
 		throw std::runtime_error("TcpSocket: Cannot read data from a bind socket");
-	}
 
 	while (true)
 	{
-		TRACE("Reading data from client");
 		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
 
+		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
 		if (bytes_read > 0)
 		{
 			// Data received, append to result
 			result.append(buffer, bytes_read);
 		}
-		else if (bytes_read == 0)
+		else if (bytes_read <= 0)
 		{
 			// Connection closed by client
 			if (result.empty())
-			{
-				close(_socket_fd);
 				throw std::runtime_error("TcpSocket: Connection closed by client");
-			}
 			break;
-		}
-		else
-		{
-			close(_socket_fd);
-			throw std::runtime_error("TcpSocket: Error reading data from socket");
 		}
 	}
 	return result;
@@ -134,7 +124,7 @@ TcpSocket::~TcpSocket()
 	close(_socket_fd);
 }
 
-TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _socket_fd(other._socket_fd), _bind_socket(other._bind_socket)  // _pfd(other._pfd), 
+TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _socket_fd(other._socket_fd), _bind_socket(other._bind_socket) // _pfd(other._pfd),
 {
 }
 
