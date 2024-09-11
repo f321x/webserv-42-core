@@ -17,7 +17,7 @@ private:
 	bool _is_default;
 
 public:
-	ServerConfig() : _port(80), _client_max_body_size(1048576), _is_default(false) {};
+	ServerConfig() : _port(-1), _client_max_body_size(1048576), _is_default(false) {};
 
 	//GETTERS
 	std::string getHost() const;
@@ -36,4 +36,7 @@ public:
 	void setClientMaxBodySize(int size);
 	void addRoute(const std::string& route, const RouteConfig& config);
 	void setDefault(bool is_default);
+
+	//CHECKER
+	void checkServerConfig();
 };

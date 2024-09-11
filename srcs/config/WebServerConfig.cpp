@@ -70,6 +70,11 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 	}
 	if (!context_stack.empty())
 		throw std::runtime_error("Unexpected EOF");
+	try {
+		current_server.checkServerConfig();
+	} catch (const std::exception &e) {
+		throw std::runtime_error("Invalid server config: " + std::string(e.what()));
+	}
 	_server_config = current_server;
 }
 

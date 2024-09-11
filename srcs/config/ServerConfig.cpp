@@ -1,5 +1,7 @@
 #include "ServerConfig.hpp"
+#include "logging.hpp"
 #include <regex>
+#include <iostream>
 
 //GETTERS
 
@@ -65,3 +67,17 @@ void ServerConfig::addRoute(const std::string& route, const RouteConfig& config)
 }
 
 void ServerConfig::setDefault(bool is_default) { _is_default = is_default; }
+
+void ServerConfig::checkServerConfig()
+{
+	if (_port == -1)
+		throw std::runtime_error("Port not set");
+	if (_host.empty())
+		WARN("Warning: Host not set, defaulting to 0.0.0.0 (all interfaces)");
+	if (_server_names.empty()) {
+		WARN("Warning: No server names set, defaulting to localhost");
+		this->_server_names.push_back("127.0.0.1");
+	}
+	if (_routes.empty())
+		throw std::runtime_error("No routes set");
+}

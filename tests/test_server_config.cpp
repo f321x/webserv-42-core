@@ -5,7 +5,7 @@ TEST_CASE("ServerConfig Default Values", "[ServerConfig]") {
     ServerConfig serverConfig;
 
     // Test default port
-    REQUIRE(serverConfig.getPort() == 80);  // Assuming default port is 80
+    REQUIRE(serverConfig.getPort() == -1);  // Default is -1 (invalid port)
 
     // Test default host
     REQUIRE(serverConfig.getHost() == "");  // Assuming default host is an empty string
