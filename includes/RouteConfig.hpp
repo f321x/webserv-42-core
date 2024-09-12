@@ -14,10 +14,9 @@ private:
 	std::string _upload_directory;
 	std::vector<std::string> _accepted_methods;
 	bool _autoindex;
-	bool _directory_listing;
 public:
 	//CONSTRUCTOR
-	RouteConfig() : _autoindex(false), _directory_listing(false) {}
+	RouteConfig() : _autoindex(false) {}
 
 	//GETTERS
 	std::string getRoot() const;
@@ -36,4 +35,7 @@ public:
 	void setRoot(const std::string& root);
 	void setDirectoryListing(bool dl);
 	void setAcceptedMethods(const std::vector<std::string>& methods);
+
+	//CHECKER
+	void checkRouteConfig() const;
 };

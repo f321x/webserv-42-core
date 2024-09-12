@@ -12,8 +12,6 @@ bool RouteConfig::isAutoindex() const { return _autoindex; }
 
 std::string RouteConfig::getDefaultFile() const { return _default_file; }
 
-bool RouteConfig::isDirectoryListing() const { return _directory_listing;}
-
 std::string RouteConfig::getUploadDirectory() const { return _upload_directory; }
 
 //SETTERS
@@ -27,8 +25,6 @@ void RouteConfig::setUploadDirectory(const std::string& dir) { _upload_directory
 
 void RouteConfig::setRoot(const std::string& root) { _root = root; }
 
-void RouteConfig::setDirectoryListing(bool dl) { _directory_listing = dl; }
-
 void RouteConfig::setAcceptedMethods(const std::vector<std::string>& methods)
 {
 	for (const auto& method : methods)
@@ -39,4 +35,13 @@ void RouteConfig::setAcceptedMethods(const std::vector<std::string>& methods)
 			throw std::invalid_argument("Invalid method: " + method);
 		_accepted_methods.push_back(method);
 	}
+}
+
+void RouteConfig::checkRouteConfig() const
+{
+	if (_root.empty())
+		throw std::runtime_error("Root cannot be empty");
+	if (_accepted_methods.empty())
+		throw std::runtime_error("Accepted methods cannot be empty");
+	
 }

@@ -183,26 +183,6 @@ void parseDefaultFile(RouteConfig& route, std::istringstream& stream)
 	INFO("ADDED Default file: " + route.getDefaultFile());
 }
 
-void parseDirectoryListing(RouteConfig& route, std::istringstream& stream)
-{
-	std::string value;
-	stream >> value;
-
-	if (value.back() == ';')
-		value.pop_back();  // Remove trailing semicolon
-	else
-		throw std::runtime_error("Expected ';' at the end of the directory_listing directive");
-
-	if (value == "on")
-		route.setDirectoryListing(true);
-	else if (value == "off")
-		route.setDirectoryListing(false);
-	else
-		throw std::runtime_error("Invalid directory_listing value: " + value);
-	ensureNoTrailingTokens(stream);
-	INFO("ADDED Directory listing: " + value);
-}
-
 void parseUploadDirectory(RouteConfig& route, std::istringstream& stream)
 {
 	std::string upload_directory;

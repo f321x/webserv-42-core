@@ -14,7 +14,6 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 		{"redirection", parseRedirection},
 		{"autoindex", parseAutoindex},
 		{"default_file", parseDefaultFile},
-		{"directory_listing", parseDirectoryListing},
 		{"upload_directory", parseUploadDirectory}
 	};
 	std::string line;
