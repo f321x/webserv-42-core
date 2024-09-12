@@ -64,5 +64,9 @@
 		"${workspaceFolder}/includes"
 	],
 	"files.autoSave": "onFocusChange",
-	"C_Cpp.errorSquiggles": "enabled"
+	"C_Cpp.errorSquiggles": "enabled",
+	"editor.defaultFormatter": "ms-vscode.cpptools",
+	"editor.formatOnPaste": true,
+	"editor.formatOnSave": true,
+	"editor.formatOnType": true
 }
