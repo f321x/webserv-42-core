@@ -1,5 +1,6 @@
 #include "RouteConfig.hpp"
 #include "ServerConfig.hpp"
+#include "logging.hpp"
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -39,6 +40,7 @@ void parseListen(ServerConfig& server, std::istringstream& stream)
 		}
 	}
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Host: " + server.getHost() + " Port: " + std::to_string(server.getPort()));
 }
 
 void parseServerName(ServerConfig& server, std::istringstream& stream)
@@ -53,6 +55,7 @@ void parseServerName(ServerConfig& server, std::istringstream& stream)
 
 	server.addServerName(server_name);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Server name: " + server_name);
 }
 
 void parseErrorPage(ServerConfig& server, std::istringstream& stream)
@@ -72,6 +75,7 @@ void parseErrorPage(ServerConfig& server, std::istringstream& stream)
 
 	server.addErrorPage(error_code, error_page);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Error page: " + std::to_string(error_code) + " " + error_page);
 }
 
 void parseClientMaxBodySize(ServerConfig& server, std::istringstream& stream)
@@ -87,6 +91,7 @@ void parseClientMaxBodySize(ServerConfig& server, std::istringstream& stream)
 
 	server.setClientMaxBodySize(size);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Client max body size: " + std::to_string(size));
 }
 
 void parseRoot(RouteConfig& route, std::istringstream& stream)
@@ -101,6 +106,7 @@ void parseRoot(RouteConfig& route, std::istringstream& stream)
 
 	route.setRoot(root);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Root: " + route.getRoot());
 }
 
 void parseAcceptedMethods(RouteConfig& route, std::istringstream& stream)
@@ -124,6 +130,7 @@ void parseAcceptedMethods(RouteConfig& route, std::istringstream& stream)
 
 	route.setAcceptedMethods(methods);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Accepted methods");
 }
 
 void parseRedirection(RouteConfig& route, std::istringstream& stream)
@@ -138,6 +145,7 @@ void parseRedirection(RouteConfig& route, std::istringstream& stream)
 
 	route.setRedirectionUrl(redirection_url);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Redirection URL: " + route.getRedirection());
 }
 
 void parseAutoindex(RouteConfig& route, std::istringstream& stream)
@@ -157,6 +165,7 @@ void parseAutoindex(RouteConfig& route, std::istringstream& stream)
 	else
 		throw std::runtime_error("Invalid autoindex value: " + value);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Autoindex: " + value);
 }
 
 void parseDefaultFile(RouteConfig& route, std::istringstream& stream)
@@ -171,6 +180,7 @@ void parseDefaultFile(RouteConfig& route, std::istringstream& stream)
 
 	route.setDefaultFile(default_file);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Default file: " + route.getDefaultFile());
 }
 
 void parseDirectoryListing(RouteConfig& route, std::istringstream& stream)
@@ -190,6 +200,7 @@ void parseDirectoryListing(RouteConfig& route, std::istringstream& stream)
 	else
 		throw std::runtime_error("Invalid directory_listing value: " + value);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Directory listing: " + value);
 }
 
 void parseUploadDirectory(RouteConfig& route, std::istringstream& stream)
@@ -204,4 +215,5 @@ void parseUploadDirectory(RouteConfig& route, std::istringstream& stream)
 
 	route.setUploadDirectory(upload_directory);
 	ensureNoTrailingTokens(stream);
+	INFO("ADDED Upload directory: " + route.getUploadDirectory());
 }
