@@ -45,19 +45,28 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 			} else if (token == "}") {
 				if (context_stack.empty())
 					throw std::runtime_error("Unexpected '}'");
-				if (context_stack.top() == "location") {
+				else if (context_stack.top() == "location") {
+					INFO("Adding route: " + current_route.first);
 					current_server.addRoute(current_route.first, current_route.second);
 					current_route.first.clear();
 					current_route.second = RouteConfig();
+				} else if (context_stack.top() == "server") {
+					try {
+						current_server.checkServerConfig();
+					} catch (const std::exception &e) {
+						throw std::runtime_error("Invalid server config: " + std::string(e.what()));
+					}
+					_server_configs.push_back(current_server);
+					current_server = ServerConfig();
 				}
 				context_stack.pop();
 			} else {
 				if (context_stack.top() == "server") {
 					auto it = server_setters.find(token);
-					if (it != server_setters.end())
-						it->second(current_server, stream);
-					else
-						throw std::runtime_error("Unknown server directive: " + token);
+				if (it != server_setters.end())
+					it->second(current_server, stream);
+				else
+					throw std::runtime_error("Unknown server directive: " + token);
 				} else if (context_stack.top() == "location") {
 					auto it = route_setters.find(token);
 					if (it != route_setters.end())
@@ -70,40 +79,36 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 	}
 	if (!context_stack.empty())
 		throw std::runtime_error("Unexpected EOF");
-	try {
-		current_server.checkServerConfig();
-	} catch (const std::exception &e) {
-		throw std::runtime_error("Invalid server config: " + std::string(e.what()));
-	}
-	_server_config = current_server;
 }
 
 void WebServerConfig::printConfig() const
 {
-	std::cout << "Port: " << _server_config.getPort() << std::endl;
-	std::cout << "Host: " << _server_config.getHost() << std::endl;
-	std::cout << "Server names: ";
-	for (const auto& name : _server_config.getServerNames())
-		std::cout << name << " ";
-	std::cout << std::endl;
-	std::cout << "Error pages: ";
-	for (const auto& [code, page] : _server_config.getErrorPages())
-		std::cout << code << " -> " << page << " ";
-	std::cout << std::endl;
-	std::cout << "Client max body size: " << _server_config.getClientMaxBodySize() << std::endl;
-	std::cout << "Routes: ";
-	for (const auto& [route, config] : _server_config.getRoutes()) {
-		std::cout << route << " -> ";
-		std::cout << "Root: " << config.getRoot() << ", ";
-		std::cout << "Methods: ";
-		for (const auto& method : config.getAcceptedMethods())
-			std::cout << method << ":";
-		std::cout << ", ";
-		std::cout << "Redirection: " << config.getRedirection() << ", ";
-		std::cout << "Autoindex: " << config.isAutoindex() << ", ";
-		std::cout << "Default file: " << config.getDefaultFile() << ", ";
-		std::cout << "Directory listing: " << (config.isDirectoryListing() ? "true" : "false") << ", ";
-		std::cout << "Upload directory: " << config.getUploadDirectory() << std::endl;
+	for (const auto& server : _server_configs) {
+		std::cout << "Server config:" << std::endl;
+		std::cout << "Listen: " << server.getPort() << std::endl;
+		std::cout << "Server names: ";
+		for (const auto& name : server.getServerNames())
+			std::cout << name << " ";
+		std::cout << std::endl;
+		std::cout << "Error pages: ";
+		for (const auto& [code, page] : server.getErrorPages())
+			std::cout << code << " -> " << page << " ";
+		std::cout << std::endl;
+		std::cout << "Client max body size: " << server.getClientMaxBodySize() << std::endl;
+		std::cout << "Routes: ";
+		for (const auto& [route, config] : server.getRoutes()) {
+			std::cout << route << " -> ";
+			std::cout << "Root: " << config.getRoot() << ", ";
+			std::cout << "Methods: ";
+			for (const auto& method : config.getAcceptedMethods())
+				std::cout << method << ":";
+			std::cout << ", ";
+			std::cout << "Redirection: " << config.getRedirection() << ", ";
+			std::cout << "Autoindex: " << config.isAutoindex() << ", ";
+			std::cout << "Default file: " << config.getDefaultFile() << ", ";
+			std::cout << "Directory listing: " << (config.isDirectoryListing() ? "true" : "false") << ", ";
+			std::cout << "Upload directory: " << config.getUploadDirectory() << std::endl;
+		}
 	}
 }
 
@@ -141,7 +146,7 @@ SocketAddress WebServerConfig::get_bind_address() const
 	return address;
 }
 
-ServerConfig WebServerConfig::getServerConfig() const
+std::vector<ServerConfig> WebServerConfig::getServerConfigs() const
 {
-	return _server_config;
+	return _server_configs;
 }

@@ -40,20 +40,27 @@ TEST_CASE("WebServerConfig Parses Server Configurations Correctly", "[WebServerC
     WebServerConfig webConfig(temp_filename);
 
     // Verify the server configurations were parsed correctly
-    const ServerConfig& serverConfig = webConfig.getServerConfig();
+    const std::vector<ServerConfig>& serverConfigs = webConfig.getServerConfigs();
     
+    // Assuming only one server block is defined in this test
+    REQUIRE(serverConfigs.size() == 1);
+    const ServerConfig& serverConfig = serverConfigs[0];
+
     REQUIRE(serverConfig.getPort() == 8080);
     REQUIRE(serverConfig.getServerNames() == std::vector<std::string>{"example.com"});
     REQUIRE(serverConfig.getClientMaxBodySize() == 1048576);
+    
     // Verify route configurations
-	const auto& routes = serverConfig.getRoutes();
-	try {
-		const RouteConfig& routeConfig = routes.at("/");
-		REQUIRE(routeConfig.getRoot() == "/var/www");
-		REQUIRE(routeConfig.isAutoindex() == true);
-		REQUIRE(routeConfig.getAcceptedMethods() == std::vector<std::string>{"GET", "POST"});
-		REQUIRE(routeConfig.getDefaultFile() == "index.html");
-	} catch (const std::out_of_range& e) { FAIL("Route not found"); }
+    const auto& routes = serverConfig.getRoutes();
+    try {
+        const RouteConfig& routeConfig = routes.at("/");
+        REQUIRE(routeConfig.getRoot() == "/var/www");
+        REQUIRE(routeConfig.isAutoindex() == true);
+        REQUIRE(routeConfig.getAcceptedMethods() == std::vector<std::string>{"GET", "POST"});
+        REQUIRE(routeConfig.getDefaultFile() == "index.html");
+    } catch (const std::out_of_range& e) { 
+        FAIL("Route not found"); 
+    }
 
     // Clean up the temporary file
     removeTempConfigFile(temp_filename);
@@ -96,11 +103,14 @@ TEST_CASE("WebServerConfig Parses Multiple Routes", "[WebServerConfig]") {
     std::string temp_filename = createTempConfigFile(config_data);
 
     WebServerConfig webConfig(temp_filename);
-    const ServerConfig& serverConfig = webConfig.getServerConfig();
+    const std::vector<ServerConfig>& serverConfigs = webConfig.getServerConfigs();
+
+    REQUIRE(serverConfigs.size() == 1);
+    const ServerConfig& serverConfig = serverConfigs[0];
 
     REQUIRE(serverConfig.getPort() == 8080);
 
-	const auto& routes = serverConfig.getRoutes();
+    const auto& routes = serverConfig.getRoutes();
     const RouteConfig& route1 = routes.at("/site1");
     REQUIRE(route1.getRoot() == "/var/www/site1");
     REQUIRE(route1.isAutoindex() == false);
@@ -146,11 +156,71 @@ TEST_CASE("WebServerConfig Handles Redirection Parsing", "[WebServerConfig]") {
     std::string temp_filename = createTempConfigFile(config_data);
 
     WebServerConfig webConfig(temp_filename);
-    const ServerConfig& serverConfig = webConfig.getServerConfig();
+    const std::vector<ServerConfig>& serverConfigs = webConfig.getServerConfigs();
 
-	const auto& routes = serverConfig.getRoutes();
+    REQUIRE(serverConfigs.size() == 1);
+    const ServerConfig& serverConfig = serverConfigs[0];
+
+    const auto& routes = serverConfig.getRoutes();
     const RouteConfig& route = routes.at("/redirect");
     REQUIRE(route.getRedirection() == "http://example.com");
+
+    // Clean up the temporary file
+    removeTempConfigFile(temp_filename);
+}
+
+// New Test Case: Testing multiple server blocks
+TEST_CASE("WebServerConfig Parses Multiple Server Blocks", "[WebServerConfig]") {
+    std::string config_data = R"(
+        server {
+            listen 8080;
+            server_name server1.com;
+            location / {
+                root /var/www/server1;
+                autoindex on;
+                methods GET;
+            }
+        }
+
+        server {
+            listen 9090;
+            server_name server2.com;
+            location / {
+                root /var/www/server2;
+                autoindex off;
+                methods POST;
+            }
+        }
+    )";
+
+    std::string temp_filename = createTempConfigFile(config_data);
+
+    WebServerConfig webConfig(temp_filename);
+    const std::vector<ServerConfig>& serverConfigs = webConfig.getServerConfigs();
+
+    REQUIRE(serverConfigs.size() == 2);  // Ensure two server blocks are parsed
+
+    // Test first server block
+    const ServerConfig& serverConfig1 = serverConfigs[0];
+    REQUIRE(serverConfig1.getPort() == 8080);
+    REQUIRE(serverConfig1.getServerNames() == std::vector<std::string>{"server1.com"});
+    
+    const auto& routes1 = serverConfig1.getRoutes();
+    const RouteConfig& route1 = routes1.at("/");
+    REQUIRE(route1.getRoot() == "/var/www/server1");
+    REQUIRE(route1.isAutoindex() == true);
+    REQUIRE(route1.getAcceptedMethods() == std::vector<std::string>{"GET"});
+
+    // Test second server block
+    const ServerConfig& serverConfig2 = serverConfigs[1];
+    REQUIRE(serverConfig2.getPort() == 9090);
+    REQUIRE(serverConfig2.getServerNames() == std::vector<std::string>{"server2.com"});
+    
+    const auto& routes2 = serverConfig2.getRoutes();
+    const RouteConfig& route2 = routes2.at("/");
+    REQUIRE(route2.getRoot() == "/var/www/server2");
+    REQUIRE(route2.isAutoindex() == false);
+    REQUIRE(route2.getAcceptedMethods() == std::vector<std::string>{"POST"});
 
     // Clean up the temporary file
     removeTempConfigFile(temp_filename);
