@@ -1,7 +1,6 @@
 #pragma once
 
 #include "logging.hpp"
-#include "SocketAddress.hpp"
 #include "RouteConfig.hpp"
 #include "ServerConfig.hpp"
 #include <string>

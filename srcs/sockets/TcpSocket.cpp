@@ -29,10 +29,9 @@ TcpSocket::TcpSocket()
 	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-void TcpSocket::bind_to_address(const SocketAddress &address)
+void TcpSocket::bind_to_address(const sockaddr_in &address)
 {
-	memset(&_address, 0, sizeof(_address));
-	_address = address.get_sockaddr();
+	_address = address;
 	if (bind(_socket_fd, (sockaddr *)&_address, sizeof(_address)) < 0)
 	{
 		close(_socket_fd);

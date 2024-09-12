@@ -2,20 +2,28 @@
 
 WebServer::WebServer(const WebServerConfig &config) : _config(config)
 {
-    // create a new bind socket
-    std::shared_ptr<TcpSocket> _new_bind_socket = _create_bind_socket(config.get_bind_address());
-
     // reserve memory for the vecs to increase performance by preventing reallocation
     _sockets.reserve(256);
     _pollfds.reserve(256);
 
-    // Add the listening socket to the poll set
-    _store_socket(_new_bind_socket);
+    // find unique ports
+    std::unordered_set<uint16_t> unique_ports;
+    for (const ServerConfig &server_config : config.getServerConfigs())
+        unique_ports.insert(server_config.getPort());
+
+    // create a new bind sockets for each port in configuration
+    for (int port : unique_ports)
+    {
+        sockaddr_in server_address = _compose_sockaddr("0.0.0.0", port);
+        std::shared_ptr<TcpSocket> _new_bind_socket = _create_bind_socket(server_address);
+        // Add the listening socket to the poll set
+        _store_socket(_new_bind_socket);
+    }
 
     TRACE("WebServer constructed");
 }
 
-std::shared_ptr<TcpSocket> WebServer::_create_bind_socket(const SocketAddress &address)
+std::shared_ptr<TcpSocket> WebServer::_create_bind_socket(const sockaddr_in &address)
 {
     std::shared_ptr<TcpSocket> _new_bind_socket(new TcpSocket());
 
@@ -119,4 +127,14 @@ void WebServer::_handle_client_data(std::shared_ptr<TcpSocket> client_socket)
         // remove the client socket from the list of sockets
         _remove_socket(client_socket->fd());
     }
+}
+
+sockaddr_in WebServer::_compose_sockaddr(const std::string &addr, int port)
+{
+    sockaddr_in sockaddr;
+    memset(&sockaddr, 0, sizeof(sockaddr));
+    sockaddr.sin_family = AF_INET;
+    sockaddr.sin_port = htons(port);
+    sockaddr.sin_addr.s_addr = inet_addr(addr.c_str());
+    return sockaddr;
 }
