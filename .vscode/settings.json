@@ -58,7 +58,8 @@
 		"csignal": "cpp",
 		"bitset": "cpp",
 		"regex": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"unordered_set": "cpp"
 	},
 	"C_Cpp.default.includePath": [
 		"${workspaceFolder}/includes"
