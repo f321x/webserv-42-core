@@ -22,13 +22,13 @@ public:
 
 	// should return the bind SocketAddress
 	SocketAddress get_bind_address() const;
-	ServerConfig getServerConfig() const;
+	std::vector<ServerConfig> getServerConfigs() const;
 	RouteConfig getRouteConfig(const std::string &route) const;
 
 	//debug
 	void printConfig() const;
 private:
-	ServerConfig _server_config;
+	std::vector<ServerConfig> _server_configs;
 	std::string _bind_ip = "0.0.0.0"; // default value
 	uint16_t _bind_port = 8080;		  // default value
 };
