@@ -21,16 +21,16 @@ public:
 	WebServerConfig &operator=(const WebServerConfig &other);
 
 	// should return the bind SocketAddress
-	SocketAddress get_bind_address() const;
+	// SocketAddress get_bind_address() const;
+
 	std::vector<ServerConfig> getServerConfigs() const;
 	RouteConfig getRouteConfig(const std::string &route) const;
 
-	//debug
+	// debug
 	void printConfig() const;
+
 private:
 	std::vector<ServerConfig> _server_configs;
-	std::string _bind_ip = "0.0.0.0"; // default value
-	uint16_t _bind_port = 8080;		  // default value
 };
 
 // ServerConfig setters
