@@ -1,10 +1,10 @@
 #include "WebServer.hpp"
 
-WebServer::WebServer(const WebServerConfig &config) : _config(config)
+WebServer::WebServer(const WebServerConfig &config)
 {
     // reserve memory for the vecs to increase performance by preventing reallocation
-    _sockets.reserve(256);
-    _pollfds.reserve(256);
+    _sockets.reserve(512);
+    _pollfds.reserve(512);
 
     // find unique ports
     std::unordered_set<uint16_t> unique_ports;
@@ -14,26 +14,12 @@ WebServer::WebServer(const WebServerConfig &config) : _config(config)
     // create a new bind sockets for each port in configuration
     for (int port : unique_ports)
     {
-        sockaddr_in server_address = _compose_sockaddr("0.0.0.0", port);
-        std::shared_ptr<TcpSocket> _new_bind_socket = _create_bind_socket(server_address);
+        auto new_bind_socket = std::make_unique<HttpSocket>(port, config);
         // Add the listening socket to the poll set
-        _store_socket(_new_bind_socket);
+        _store_socket(std::move(new_bind_socket));
     }
 
     TRACE("WebServer constructed");
-}
-
-std::shared_ptr<TcpSocket> WebServer::_create_bind_socket(const sockaddr_in &address)
-{
-    std::shared_ptr<TcpSocket> _new_bind_socket(new TcpSocket());
-
-    // create a socket and bind it to the configured address
-    _new_bind_socket->bind_to_address(address);
-
-    // begin listening for incoming connections
-    _new_bind_socket->listen_on_socket();
-
-    return _new_bind_socket;
 }
 
 WebServer::~WebServer()
@@ -42,26 +28,8 @@ WebServer::~WebServer()
     TRACE("WebServer destructed");
 }
 
-void WebServer::_remove_socket(int fd)
-{
-    auto it = std::find_if(_pollfds.begin(), _pollfds.end(),
-                           [fd](const pollfd &pfd)
-                           { return pfd.fd == fd; });
-
-    if (it != _pollfds.end())
-    {
-        size_t index = std::distance(_pollfds.begin(), it);
-        _pollfds.erase(it);
-        _sockets.erase(_sockets.begin() + index);
-    }
-}
-
-void WebServer::_store_socket(std::shared_ptr<TcpSocket> socket)
-{
-    _sockets.push_back(socket);
-    _pollfds.push_back(socket->new_pfd());
-}
-
+// main loop of the server
+// poll for new events on bind sockets and handle events accordingly
 void WebServer::serve()
 {
     INFO("Webserver is serving");
@@ -83,17 +51,30 @@ void WebServer::serve()
 
             if (_pollfds[i].revents & POLLIN) // POLLIN is set if there is data to read
             {
-                if (_sockets[i]->is_bind_socket()) // if the bind socket has data to read its a new connection
+                if (_sockets[i]->is_bind_socket) // if the bind socket has data to read its a new connection
                 {
                     TRACE("Accepting new connection");
-                    std::shared_ptr<TcpSocket> new_client_socket = _sockets[i]->accept_connection(); // accept the connection, return new socket
-                    _store_socket(new_client_socket);                                                // store new socket in the list of sockets
-                    break;                                                                           // may uneccessary, investigate later
+                    std::unique_ptr<HttpSocket> new_client_socket = _sockets[i]->accept_connection(); // accept the connection, return new socket
+                    _store_socket(std::move(new_client_socket));                                      // store new socket in the list of sockets
+                    break;                                                                            // may uneccessary, investigate later
                 }
                 else
                 {
                     TRACE("Handling client data");
-                    _handle_client_data(_sockets[i]);
+                    try
+                    {
+                        _sockets[i]->handle_client_data(); // handle the client data
+                    }
+                    catch (ReadingFailedErr &e)
+                    {
+                        DEBUG("Reading failed: " + std::string(e.what()));
+                        _remove_socket(_pollfds[i].fd);
+                    }
+                    catch (WritingFailedErr &e)
+                    {
+                        DEBUG("Writing failed: " + std::string(e.what()));
+                        _remove_socket(_pollfds[i].fd);
+                    }
                 }
             }
             else if (_pollfds[i].revents & POLLHUP)
@@ -110,31 +91,24 @@ void WebServer::serve()
     }
 }
 
-void WebServer::_handle_client_data(std::shared_ptr<TcpSocket> client_socket)
+// remove a socket from both the pollfds and sockets vecs
+void WebServer::_remove_socket(int fd)
 {
-    TRACE("HANDLING CLIENT DATA");
-    try
+    auto it = std::find_if(_pollfds.begin(), _pollfds.end(),
+                           [fd](const pollfd &pfd)
+                           { return pfd.fd == fd; });
+
+    if (it != _pollfds.end())
     {
-        std::string client_data = client_socket->read_client_data();
-        DEBUG("Received data from client: " + client_data);
-        client_socket->write_data(std::string("HTTP/1.1 200 OK\r\n\r\nECHO: [\n") + client_data + std::string("]\n"));
-        // construct packet class with deserializer constructor
-    }
-    catch (const std::runtime_error &e)
-    {
-        // Client disconnected or error occurred
-        INFO("Client disconnected: " + std::string(e.what()));
-        // remove the client socket from the list of sockets
-        _remove_socket(client_socket->fd());
+        size_t index = std::distance(_pollfds.begin(), it);
+        _pollfds.erase(it);
+        _sockets.erase(_sockets.begin() + index);
     }
 }
 
-sockaddr_in WebServer::_compose_sockaddr(const std::string &addr, int port)
+// store a socket in both the pollfds and sockets vecs
+void WebServer::_store_socket(std::unique_ptr<HttpSocket> socket)
 {
-    sockaddr_in sockaddr;
-    memset(&sockaddr, 0, sizeof(sockaddr));
-    sockaddr.sin_family = AF_INET;
-    sockaddr.sin_port = htons(port);
-    sockaddr.sin_addr.s_addr = inet_addr(addr.c_str());
-    return sockaddr;
+    _pollfds.push_back(socket->new_pfd());
+    _sockets.push_back(std::move(socket));
 }

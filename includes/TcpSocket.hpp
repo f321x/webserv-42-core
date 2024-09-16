@@ -29,7 +29,7 @@ public:
 	void listen_on_socket();
 	int fd() const;									// get the file descriptor
 	pollfd new_pfd() const;							// get a new pollfd struct for the socket
-	std::shared_ptr<TcpSocket> accept_connection(); // accept a new connection and return the newly created socket
+	std::unique_ptr<TcpSocket> accept_connection(); // accept a new connection and return the newly created socket
 	std::string read_client_data();					// read data from the socket
 	void write_data(const std::string &data);		// write data to the socket
 	bool is_bind_socket() const;					// check if the socket belongs to the main listening sockets
