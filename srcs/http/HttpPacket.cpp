@@ -173,3 +173,14 @@ bool HttpPacket::is_final_response() const
 {
 	return _final_response;
 }
+
+std::string HttpPacket::getPureHostname() const
+{
+	std::string host = get_req_header("Host");
+	size_t colonPos = host.find(':');
+	if (colonPos != std::string::npos)
+	{
+		host = host.substr(0, colonPos);
+	}
+	return host;
+}
