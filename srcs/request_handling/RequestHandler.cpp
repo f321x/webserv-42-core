@@ -1,7 +1,8 @@
 #include "RequestHandler.hpp"
 
-std::string handle_request(std::string request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
+std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
+    (void)available_configs;
     // Parse the request
     std::unique_ptr<HttpPacket> packet;
     try
@@ -15,4 +16,7 @@ std::string handle_request(std::string request, const std::shared_ptr<std::vecto
     }
 
     // Find the server config
+
+    // dummy response
+    return internal_server_error();
 }

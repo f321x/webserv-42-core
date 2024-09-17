@@ -9,4 +9,4 @@
 #include <vector>
 #include <memory>
 
-std::string handle_request(std::string request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
+std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);

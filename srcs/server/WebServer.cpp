@@ -75,6 +75,10 @@ void WebServer::serve()
                         DEBUG("Writing failed: " + std::string(e.what()));
                         _remove_socket(_pollfds[i].fd);
                     }
+                    catch (IsFinalResponse) // may not the most elegant solution
+                    {
+                        _remove_socket(_pollfds[i].fd);
+                    }
                 }
             }
             else if (_pollfds[i].revents & POLLHUP)

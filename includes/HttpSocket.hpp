@@ -1,7 +1,8 @@
 #pragma once
 
-#include <TcpSocket.hpp>
-#include <WebServerConfig.hpp>
+#include "TcpSocket.hpp"
+#include "WebServerConfig.hpp"
+#include "RequestHandler.hpp"
 
 #include <unordered_set>
 
@@ -62,4 +63,10 @@ class WritingFailedErr : public HttpSocketError
 {
 public:
     explicit WritingFailedErr(const std::string &message) : HttpSocketError(message) {}
+};
+
+class IsFinalResponse : public HttpSocketError
+{
+public:
+    explicit IsFinalResponse(const std::string &message) : HttpSocketError(message) {}
 };

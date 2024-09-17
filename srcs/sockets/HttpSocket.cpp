@@ -73,12 +73,17 @@ void HttpSocket::handle_client_data()
     }
 
     DEBUG("Received data from client: " + client_data);
-    WARN("Implement request parsing here");
+    std::unique_ptr<HttpPacket> response = handle_request(client_data, _available_configs);
 
     // write response to client
     try
     {
-        _socket->write_data(std::string("HTTP/1.1 200 OK\r\n\r\nECHO: [\n") + client_data + std::string("]\n"));
+        DEBUG("Sending response to client: " + response->serializeResponse());
+        _socket->write_data(response->serializeResponse());
+        if (response->is_final_response())
+        {
+            throw IsFinalResponse("HttpSocket: Final response sent");
+        }
     }
     catch (const std::exception &e)
     {
