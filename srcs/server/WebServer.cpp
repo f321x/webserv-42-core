@@ -36,7 +36,7 @@ void WebServer::serve()
     while (true)
     {
         // poll the sockets for incoming data (pointer to first element, number of elements, timeout)
-        int ready = poll(_pollfds.data(), _pollfds.size(), -1);
+        int ready = poll(_pollfds.data(), _pollfds.size(), 2000);
         TRACE("Poll returned: " + std::to_string(ready));
 
         if (ready < 0) // error
@@ -47,7 +47,7 @@ void WebServer::serve()
         // iterate trough the pollfds and handle available events
         for (size_t i = 0; i < _pollfds.size(); ++i) // wonky indexing
         {
-            TRACE("Checking socket " + std::to_string(_pollfds[i].fd) + " REVENT: " + std::to_string(_pollfds[i].revents));
+            // TRACE("Checking socket " + std::to_string(_pollfds[i].fd) + " REVENT: " + std::to_string(_pollfds[i].revents));
 
             if (_pollfds[i].revents & POLLIN) // POLLIN is set if there is data to read
             {
@@ -89,6 +89,11 @@ void WebServer::serve()
             else if (_pollfds[i].revents & POLLERR)
             {
                 WARN("POLLERR detected on socket " + std::to_string(_pollfds[i].fd));
+                _remove_socket(_pollfds[i].fd);
+            }
+            else if (!_sockets[i]->is_bind_socket && std::chrono::steady_clock::now() - _sockets[i]->last_activity() > std::chrono::seconds(CONNECTION_TIMEOUT))
+            {
+                WARN("Client socket timed out");
                 _remove_socket(_pollfds[i].fd);
             }
         }
