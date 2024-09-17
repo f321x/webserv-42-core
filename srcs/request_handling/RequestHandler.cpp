@@ -2,7 +2,6 @@
 
 std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
-    (void)available_configs;
     // Parse the request
     std::unique_ptr<HttpPacket> packet;
     try
@@ -16,7 +15,12 @@ std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std
     }
 
     // Find the server config
-
+    auto invalid_config_packet = validate_against_config(packet, available_configs);
     // dummy response
     return internal_server_error();
+}
+
+std::optional<std::unique_ptr<HttpPacket>> validate_against_config(const std::unique_ptr<HttpPacket> &packet, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
+{
+    return std::nullopt;
 }
