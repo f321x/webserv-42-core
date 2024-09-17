@@ -24,13 +24,14 @@ public:
 	Method get_method() const;
 	std::string get_req_header(const std::string &key) const;
 	std::map<std::string, std::string> get_req_headers() const;
-	bool is_final_response() const;
+	std::string getPureHostname() const;
 
 	void set_status_code(uint status_code);
 	void set_status_message(const std::string status_message);
 	void set_res_header(const std::string key, const std::string value);
 	void set_content(const std::string content);
 	void set_final_response();
+	bool is_final_response() const;
 
 	std::string serializeResponse();
 

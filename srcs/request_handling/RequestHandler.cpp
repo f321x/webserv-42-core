@@ -17,44 +17,46 @@ std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std
     }
 
     // Find the server config
-    (void)available_configs;
-    // auto valid_config = find_valid_configuration(request_packet, available_configs);
-    // if (!valid_config.has_value())
-    // {
-    //     return bad_request(); // use corect error type
-    // }
-
-    if (!check_keep_alive(request_packet))
+    auto valid_config = find_valid_configuration(*request_packet, *available_configs);
+    if (!valid_config.has_value())
+        return bad_request(); // use correct error type
+    if (!check_keep_alive(*request_packet))
         response_packet->set_final_response();
 
     return dummy_response();
 }
 
-std::optional<std::unique_ptr<ServerConfig>> find_valid_configuration(const std::unique_ptr<HttpPacket> &packet, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
+std::optional<std::unique_ptr<ServerConfig>> find_valid_configuration(const HttpPacket &packet, const std::vector<ServerConfig> &available_configs)
 {
-    (void)packet;
-    (void)available_configs;
-    // for (const auto &server_config : *available_configs)
-    // {
-    //     for (const auto &route_config : server_config.get_route_configs())
-    //     {
-    //         if (route_config.get_path() == packet->get_uri())
-    //         {
-    //             return std::nullopt;
-    //         }
-    //     }
-    // }
+    std::vector<ServerConfig> configs(available_configs.begin(), available_configs.end());
+
+    for (auto it = configs.begin(); it != configs.end();)
+    {
+        if (!(it->getHost() == packet.getPureHostname()))
+            it = configs.erase(it);
+        else
+            it++;
+
+        // for (const auto &route_config : server_config.get_route_configs())
+        // {
+        //     if (route_config.get_path() == packet->get_uri())
+        //     {
+        //         return std::nullopt;
+        //     }
+        // }
+    }
+
     return std::nullopt;
 }
 
 // https://datatracker.ietf.org/doc/html/rfc9112#section-9.3
-bool check_keep_alive(const std::unique_ptr<HttpPacket> &packet)
+bool check_keep_alive(const HttpPacket &packet)
 {
-    if (packet->get_req_header("Connection") == "keep-alive")
+    if (packet.get_req_header("Connection") == "keep-alive")
         return true;
-    if (packet->get_http_version() == "HTTP/1.0")
+    if (packet.get_http_version() == "HTTP/1.0")
         return false;
-    if (packet->get_req_header("Connection") == "close")
+    if (packet.get_req_header("Connection") == "close")
         return false;
 
     return true;
