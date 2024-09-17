@@ -4,6 +4,7 @@
 #include "HttpPacket.hpp"
 #include "logging.hpp"
 #include "HttpSocket.hpp"
+#include "RequestHandler.hpp"
 
 #include <string>
 #include <vector>
