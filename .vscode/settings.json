@@ -69,5 +69,6 @@
 	"editor.defaultFormatter": "ms-vscode.cpptools",
 	"editor.formatOnPaste": true,
 	"editor.formatOnSave": true,
-	"editor.formatOnType": true
+	"editor.formatOnType": true,
+	"C_Cpp.default.cppStandard": "c++17"
 }
