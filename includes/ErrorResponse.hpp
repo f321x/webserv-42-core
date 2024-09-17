@@ -1,7 +1,9 @@
 #pragma once
 
-#include <string>
-#include <HttpPacket.hpp>
+#include "HttpPacket.hpp"
 
-std::string internal_server_error();
-std::string bad_request();
+#include <string>
+#include <memory>
+
+std::unique_ptr<HttpPacket> internal_server_error();
+std::unique_ptr<HttpPacket> bad_request();
