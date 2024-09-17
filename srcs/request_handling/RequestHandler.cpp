@@ -17,21 +17,23 @@ std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std
     }
 
     // Find the server config
-    auto valid_config = find_valid_configuration(request_packet, available_configs);
-    if (!valid_config.has_value())
-    {
-        return bad_request(); // use corect error type
-    }
+    (void)available_configs;
+    // auto valid_config = find_valid_configuration(request_packet, available_configs);
+    // if (!valid_config.has_value())
+    // {
+    //     return bad_request(); // use corect error type
+    // }
 
     if (!check_keep_alive(request_packet))
         response_packet->set_final_response();
 
-    // dummy response
-    return internal_server_error();
+    return dummy_response();
 }
 
 std::optional<std::unique_ptr<ServerConfig>> find_valid_configuration(const std::unique_ptr<HttpPacket> &packet, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
+    (void)packet;
+    (void)available_configs;
     // for (const auto &server_config : *available_configs)
     // {
     //     for (const auto &route_config : server_config.get_route_configs())
@@ -56,4 +58,15 @@ bool check_keep_alive(const std::unique_ptr<HttpPacket> &packet)
         return false;
 
     return true;
+}
+
+std::unique_ptr<HttpPacket> dummy_response()
+{
+    std::unique_ptr<HttpPacket> response_packet = std::make_unique<HttpPacket>();
+    response_packet->set_status_code(200);
+    response_packet->set_status_message("OK");
+    response_packet->set_res_header("Content-Type", "text/html");
+    response_packet->set_res_header("Content-Length", "38");
+    response_packet->set_content("<html><body><h1>Hello, Browser!</h1></body></html>");
+    return response_packet;
 }

@@ -34,4 +34,5 @@ private:
 	void _handle_client_data(std::unique_ptr<HttpSocket> &client_socket); // handle incoming client data
 	void _remove_socket(int fd);										  // remove socket from _sockets and _pollfds
 	void _store_socket(std::unique_ptr<HttpSocket> socket);				  // store socket in _sockets and _pollfds
+	void _handle_timeouts();											  // handle timeouts for client sockets
 };

@@ -35,6 +35,7 @@ void WebServer::serve()
     INFO("Webserver is serving");
     while (true)
     {
+        _handle_timeouts();
         // poll the sockets for incoming data (pointer to first element, number of elements, timeout)
         int ready = poll(_pollfds.data(), _pollfds.size(), 2000);
         TRACE("Poll returned: " + std::to_string(ready));
@@ -91,11 +92,6 @@ void WebServer::serve()
                 WARN("POLLERR detected on socket " + std::to_string(_pollfds[i].fd));
                 _remove_socket(_pollfds[i].fd);
             }
-            else if (!_sockets[i]->is_bind_socket && std::chrono::steady_clock::now() - _sockets[i]->last_activity() > std::chrono::seconds(CONNECTION_TIMEOUT))
-            {
-                WARN("Client socket timed out");
-                _remove_socket(_pollfds[i].fd);
-            }
         }
     }
 }
@@ -120,4 +116,16 @@ void WebServer::_store_socket(std::unique_ptr<HttpSocket> socket)
 {
     _pollfds.push_back(socket->new_pfd());
     _sockets.push_back(std::move(socket));
+}
+
+void WebServer::_handle_timeouts()
+{
+    for (size_t i = 0; i < _sockets.size(); ++i)
+    {
+        if (!_sockets[i]->is_bind_socket && std::chrono::steady_clock::now() - _sockets[i]->last_activity() > std::chrono::seconds(CONNECTION_TIMEOUT))
+        {
+            DEBUG("Client socket timed out");
+            _remove_socket(_pollfds[i].fd);
+        }
+    }
 }

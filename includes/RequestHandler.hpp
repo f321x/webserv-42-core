@@ -12,3 +12,5 @@
 
 std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
 bool check_keep_alive(const std::unique_ptr<HttpPacket> &packet);
+std::optional<std::unique_ptr<ServerConfig>> find_valid_configuration(const std::unique_ptr<HttpPacket> &packet, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
+std::unique_ptr<HttpPacket> dummy_response();
