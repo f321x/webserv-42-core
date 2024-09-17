@@ -23,11 +23,13 @@ public:
     std::unique_ptr<HttpSocket> accept_connection();
     pollfd new_pfd() const;
     void handle_client_data();
+    std::chrono::steady_clock::time_point last_activity() const;
 
 private:
     // private variables
     std::unique_ptr<TcpSocket> _socket;
     std::shared_ptr<std::vector<ServerConfig>> _available_configs;
+    std::chrono::steady_clock::time_point _last_activity;
 
     // private functions
     sockaddr_in _compose_sockaddr(const std::string &addr, int port);

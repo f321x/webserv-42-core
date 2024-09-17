@@ -21,6 +21,7 @@ HttpSocket::HttpSocket(std::unique_ptr<TcpSocket> socket, std::shared_ptr<std::v
 {
     _socket = std::move(socket);
     _available_configs = available_configs;
+    _last_activity = std::chrono::steady_clock::now();
 }
 
 HttpSocket::~HttpSocket()
@@ -58,6 +59,7 @@ pollfd HttpSocket::new_pfd() const
 void HttpSocket::handle_client_data()
 {
     TRACE("HANDLING CLIENT DATA");
+    _last_activity = std::chrono::steady_clock::now();
     if (is_bind_socket)
         throw IsBindSocketErr("HttpSocket: Cannot handle client data on a bind socket");
 
@@ -111,4 +113,9 @@ sockaddr_in HttpSocket::_compose_sockaddr(const std::string &addr, int port)
     sockaddr.sin_port = htons(port);
     sockaddr.sin_addr.s_addr = inet_addr(addr.c_str());
     return sockaddr;
+}
+
+std::chrono::steady_clock::time_point HttpSocket::last_activity() const
+{
+    return _last_activity;
 }

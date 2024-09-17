@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+const uint8_t CONNECTION_TIMEOUT = 30; // seconds
+
 class WebServer
 {
 public:
