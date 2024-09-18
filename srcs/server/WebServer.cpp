@@ -39,7 +39,7 @@ void WebServer::serve()
         _handle_timeouts();
         // poll the sockets for incoming data (pointer to first element, number of elements, timeout)
         int ready = poll(_pollfds.data(), _pollfds.size(), 2000);
-        TRACE("Poll returned: " + std::to_string(ready));
+        // TRACE("Poll returned: " + std::to_string(ready));
 
         if (ready < 0) // error
             throw std::runtime_error("WebServer: polling file descriptors failed");

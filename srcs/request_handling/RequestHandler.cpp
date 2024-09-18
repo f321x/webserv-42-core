@@ -23,6 +23,30 @@ std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std
     if (!check_keep_alive(*request_packet))
         response_packet->set_final_response();
 
+    // Handle the request according to the requested method
+    try
+    {
+        switch (request_packet->get_method())
+        {
+        case Method::GET:
+            handle_get(*request_packet, *response_packet, valid_config.value());
+            break;
+        case Method::POST:
+            handle_post(*request_packet, *response_packet, valid_config.value());
+            break;
+        case Method::DELETE:
+            handle_delete(*request_packet, *response_packet, valid_config.value());
+            break;
+        default:
+            throw std::runtime_error("Unknown method");
+        }
+    }
+    catch (std::exception &e)
+    {
+        DEBUG("Failed to handle request: " + std::string(e.what()));
+        return internal_server_error();
+    }
+
     return dummy_response();
 }
 
