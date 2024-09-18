@@ -9,6 +9,9 @@
 #include <vector>
 #include <optional>
 #include <memory>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
 bool check_keep_alive(const HttpPacket &packet);
