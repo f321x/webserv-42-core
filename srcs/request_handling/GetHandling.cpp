@@ -24,4 +24,6 @@ std::string load_file(const std::string &filepath)
 
     // Close the file
     file.close();
+
+    return file_contents;
 }
