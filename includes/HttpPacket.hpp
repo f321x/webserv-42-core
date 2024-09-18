@@ -2,13 +2,7 @@
 
 #include <string>
 #include <map>
-
-enum Method
-{
-	GET,
-	POST,
-	DELETE
-};
+#include "Utils.hpp"
 
 class HttpPacket
 {
