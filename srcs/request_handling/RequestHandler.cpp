@@ -68,7 +68,7 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(con
         // check packet against available routes
         std::map<std::string, RouteConfig> routes = it->getRoutes();
         std::string matching_route = find_longest_matching_route(packet.get_uri(), routes);
-        if (matching_route.empty())
+        if (matching_route.empty() || packet.get_uri().length() < matching_route.length())
         {
             it = configs.erase(it);
             continue;
@@ -95,42 +95,4 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(con
     }
     else
         throw std::runtime_error("Multiple configurations found");
-}
-
-// https://datatracker.ietf.org/doc/html/rfc9112#section-9.3
-bool check_keep_alive(const HttpPacket &packet)
-{
-    if (packet.get_req_header("Connection") == "keep-alive")
-        return true;
-    if (packet.get_http_version() == "HTTP/1.0")
-        return false;
-    if (packet.get_req_header("Connection") == "close")
-        return false;
-
-    return true;
-}
-
-std::string find_longest_matching_route(const std::string &uri, const std::map<std::string, RouteConfig> &routes)
-{
-    std::string longest_matching_route;
-    for (const auto &route : routes)
-    {
-        if (uri.compare(0, route.first.length(), route.first) == 0)
-        {
-            if (route.first.length() > longest_matching_route.length())
-                longest_matching_route = route.first;
-        }
-    }
-    return longest_matching_route;
-}
-
-std::unique_ptr<HttpPacket> dummy_response()
-{
-    std::unique_ptr<HttpPacket> response_packet = std::make_unique<HttpPacket>();
-    response_packet->set_status_code(200);
-    response_packet->set_status_message("OK");
-    response_packet->set_res_header("Content-Type", "text/html");
-    response_packet->set_res_header("Content-Length", "38");
-    response_packet->set_content("<html><body><h1>Hello, Browser!</h1></body></html>");
-    return response_packet;
 }
