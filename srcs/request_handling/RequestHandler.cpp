@@ -67,14 +67,15 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(con
 
         // check packet against available routes
         std::map<std::string, RouteConfig> routes = it->getRoutes();
-        if (routes.find(packet.get_uri()) == routes.end())
+        std::string matching_route = find_longest_matching_route(packet.get_uri(), routes);
+        if (matching_route.empty())
         {
             it = configs.erase(it);
             continue;
         }
 
         // validate method
-        auto accepted_methods = routes.at(packet.get_uri()).getAcceptedMethods();
+        auto accepted_methods = routes.at(matching_route).getAcceptedMethods();
         if (std::find(accepted_methods.begin(), accepted_methods.end(), packet.get_method()) == accepted_methods.end())
         {
             it = configs.erase(it);
@@ -89,7 +90,7 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(con
     else if (configs.size() == 1)
     {
         valid_config.first = configs[0];
-        valid_config.second = configs[0].getRoutes().at(packet.get_uri());
+        valid_config.second = configs[0].getRoutes().at(find_longest_matching_route(packet.get_uri(), configs[0].getRoutes()));
         return valid_config;
     }
     else
@@ -107,6 +108,20 @@ bool check_keep_alive(const HttpPacket &packet)
         return false;
 
     return true;
+}
+
+std::string find_longest_matching_route(const std::string &uri, const std::map<std::string, RouteConfig> &routes)
+{
+    std::string longest_matching_route;
+    for (const auto &route : routes)
+    {
+        if (uri.compare(0, route.first.length(), route.first) == 0)
+        {
+            if (route.first.length() > longest_matching_route.length())
+                longest_matching_route = route.first;
+        }
+    }
+    return longest_matching_route;
 }
 
 std::unique_ptr<HttpPacket> dummy_response()
