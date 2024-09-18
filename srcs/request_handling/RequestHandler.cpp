@@ -26,27 +26,50 @@ std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std
     return dummy_response();
 }
 
-std::optional<std::unique_ptr<ServerConfig>> find_valid_configuration(const HttpPacket &packet, const std::vector<ServerConfig> &available_configs)
+std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(const HttpPacket &packet, const std::vector<ServerConfig> &available_configs)
 {
     std::vector<ServerConfig> configs(available_configs.begin(), available_configs.end());
+    std::pair<ServerConfig, RouteConfig> valid_config;
 
     for (auto it = configs.begin(); it != configs.end();)
     {
-        if (!(it->getHost() == packet.getPureHostname()))
+        // check against server_name
+        auto server_names = it->getServerNames();
+        if (std::find(server_names.begin(), server_names.end(), packet.getPureHostname()) == server_names.end())
+        {
             it = configs.erase(it);
-        else
-            it++;
+            continue;
+        }
 
-        // for (const auto &route_config : server_config.get_route_configs())
-        // {
-        //     if (route_config.get_path() == packet->get_uri())
-        //     {
-        //         return std::nullopt;
-        //     }
-        // }
+        // check packet against available routes
+        std::map<std::string, RouteConfig> routes = it->getRoutes();
+        if (routes.find(packet.get_uri()) == routes.end())
+        {
+            it = configs.erase(it);
+            continue;
+        }
+
+        // validate method
+        auto accepted_methods = routes.at(packet.get_uri()).getAcceptedMethods();
+        if (std::find(accepted_methods.begin(), accepted_methods.end(), packet.get_method()) == accepted_methods.end())
+        {
+            it = configs.erase(it);
+            continue;
+        }
+
+        it++;
     }
 
-    return std::nullopt;
+    if (configs.size() == 0)
+        return std::nullopt;
+    else if (configs.size() == 1)
+    {
+        valid_config.first = configs[0];
+        valid_config.second = configs[0].getRoutes().at(packet.get_uri());
+        return valid_config;
+    }
+    else
+        throw std::runtime_error("Multiple configurations found");
 }
 
 // https://datatracker.ietf.org/doc/html/rfc9112#section-9.3

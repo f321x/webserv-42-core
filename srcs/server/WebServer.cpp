@@ -7,14 +7,15 @@ WebServer::WebServer(const WebServerConfig &config)
     _pollfds.reserve(512);
 
     // find unique ports
-    std::unordered_set<uint16_t> unique_ports;
+    std::unordered_set<HostPortPair, HostPortPairHash> unique_hosts;
     for (const ServerConfig &server_config : config.getServerConfigs())
-        unique_ports.insert(server_config.getPort());
+        unique_hosts.insert(HostPortPair{server_config.getHost(), server_config.getPort()});
 
     // create a new bind sockets for each port in configuration
-    for (int port : unique_ports)
+    for (HostPortPair host : unique_hosts)
     {
-        auto new_bind_socket = std::make_unique<HttpSocket>(port, config);
+        INFO("Creating bind socket for " + host.host + ":" + std::to_string(host.port));
+        auto new_bind_socket = std::make_unique<HttpSocket>(host, config);
         // Add the listening socket to the poll set
         _store_socket(std::move(new_bind_socket));
     }

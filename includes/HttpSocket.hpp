@@ -3,6 +3,7 @@
 #include "TcpSocket.hpp"
 #include "WebServerConfig.hpp"
 #include "RequestHandler.hpp"
+#include "Utils.hpp"
 
 #include <unordered_set>
 
@@ -10,7 +11,7 @@ class HttpSocket
 {
 public:
     // bind socket (stores all configs suitable for the port)
-    HttpSocket(uint16_t port, const WebServerConfig &config);
+    HttpSocket(const HostPortPair &host, const WebServerConfig &config);
     // client socket (takes accepted socket and configs)
     HttpSocket(std::unique_ptr<TcpSocket> socket, std::shared_ptr<std::vector<ServerConfig>> available_configs);
     ~HttpSocket();

@@ -73,11 +73,14 @@ void ServerConfig::checkServerConfig()
 	if (_port == -1)
 		throw std::runtime_error("Port not set");
 	if (_host.empty())
+	{
 		WARN("Warning: Host not set, defaulting to 0.0.0.0 (all interfaces)");
+		this->_host = "0.0.0.0";
+	}
 	if (_server_names.empty())
 	{
 		WARN("Warning: No server names set, defaulting to localhost");
-		this->_server_names.push_back("127.0.0.1");
+		this->_server_names.push_back("localhost");
 	}
 	if (_routes.empty())
 		throw std::runtime_error("No routes set");
