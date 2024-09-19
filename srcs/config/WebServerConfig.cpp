@@ -13,8 +13,7 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 		{"redirection", parseRedirection},
 		{"autoindex", parseAutoindex},
 		{"default_file", parseDefaultFile},
-		{"upload_directory", parseUploadDirectory}
-	};
+		{"upload_directory", parseUploadDirectory}};
 	std::string line;
 	std::ifstream config_file(config_file_path);
 	std::stack<std::string> context_stack;
@@ -122,7 +121,7 @@ void WebServerConfig::printConfig() const
 			std::cout << "Redirection: " << config.getRedirection() << ", ";
 			std::cout << "Autoindex: " << config.isAutoindex() << ", ";
 			std::cout << "Default file: " << config.getDefaultFile() << ", ";
-			std::cout << "Directory listing: " << (config.isDirectoryListing() ? "true" : "false") << ", ";
+			// std::cout << "Directory listing: " << (config.isDirectoryListing() ? "true" : "false") << ", ";
 			std::cout << "Upload directory: " << config.getUploadDirectory() << std::endl;
 		}
 	}
