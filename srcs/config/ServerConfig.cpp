@@ -3,11 +3,11 @@
 #include <regex>
 #include <iostream>
 
-//GETTERS
+// GETTERS
 
 std::string ServerConfig::getHost() const { return _host; }
 
-int ServerConfig::getPort() const { return _port; }
+uint16_t ServerConfig::getPort() const { return static_cast<uint16_t>(_port); }
 
 std::vector<std::string> ServerConfig::getServerNames() const { return _server_names; }
 
@@ -19,9 +19,9 @@ std::map<std::string, RouteConfig> ServerConfig::getRoutes() const { return _rou
 
 bool ServerConfig::isDefault() const { return _is_default; }
 
-//SETTERS
+// SETTERS
 
-void ServerConfig::setHost(const std::string& host) { _host = host; }
+void ServerConfig::setHost(const std::string &host) { _host = host; }
 
 void ServerConfig::setPort(int port)
 {
@@ -30,14 +30,14 @@ void ServerConfig::setPort(int port)
 	_port = port;
 }
 
-void ServerConfig::addServerName(const std::string& server_name)
+void ServerConfig::addServerName(const std::string &server_name)
 {
 	if (std::find(_server_names.begin(), _server_names.end(), server_name) != _server_names.end())
 		return;
 	_server_names.push_back(server_name);
 }
 
-void ServerConfig::addErrorPage(int error_code, const std::string& error_page)
+void ServerConfig::addErrorPage(int error_code, const std::string &error_page)
 {
 	if (_error_pages.find(error_code) != _error_pages.end())
 		return;
@@ -51,7 +51,7 @@ void ServerConfig::setClientMaxBodySize(int size)
 	_client_max_body_size = size;
 }
 
-void ServerConfig::addRoute(const std::string& route, const RouteConfig& config)
+void ServerConfig::addRoute(const std::string &route, const RouteConfig &config)
 {
 	if (_routes.find(route) != _routes.end())
 		throw std::invalid_argument("Route already exists: " + route);
@@ -73,10 +73,14 @@ void ServerConfig::checkServerConfig()
 	if (_port == -1)
 		throw std::runtime_error("Port not set");
 	if (_host.empty())
+	{
 		WARN("Warning: Host not set, defaulting to 0.0.0.0 (all interfaces)");
-	if (_server_names.empty()) {
+		this->_host = "0.0.0.0";
+	}
+	if (_server_names.empty())
+	{
 		WARN("Warning: No server names set, defaulting to localhost");
-		this->_server_names.push_back("127.0.0.1");
+		this->_server_names.push_back("localhost");
 	}
 	if (_routes.empty())
 		throw std::runtime_error("No routes set");
