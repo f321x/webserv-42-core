@@ -3,7 +3,7 @@
 std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
     std::unique_ptr<HttpPacket> request_packet;
-    std::unique_ptr<HttpPacket> response_packet;
+    std::unique_ptr<HttpPacket> response_packet = std::make_unique<HttpPacket>();
 
     // Parse the request
     try
@@ -29,7 +29,7 @@ std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std
         switch (request_packet->get_method())
         {
         case Method::GET:
-            handle_get(*request_packet, *response_packet, valid_config.value());
+            response_packet = handle_get(*request_packet, std::move(response_packet), valid_config.value());
             break;
         case Method::POST:
             handle_post(*request_packet, *response_packet, valid_config.value());
@@ -38,7 +38,7 @@ std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std
             handle_delete(*request_packet, *response_packet, valid_config.value());
             break;
         default:
-            throw std::runtime_error("Unknown method");
+            return bad_request();
         }
     }
     catch (std::exception &e)
@@ -47,7 +47,7 @@ std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std
         return internal_server_error();
     }
 
-    return dummy_response();
+    return response_packet;
 }
 
 std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(const HttpPacket &packet, const std::vector<ServerConfig> &available_configs)
