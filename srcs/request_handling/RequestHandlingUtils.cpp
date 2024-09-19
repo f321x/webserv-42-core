@@ -26,3 +26,112 @@ std::string find_longest_matching_route(const std::string &uri, const std::map<s
     }
     return longest_matching_route;
 }
+
+std::string get_content_type(const std::string &file_ending)
+{
+    if (file_ending == "html" || file_ending == "htm")
+        return "text/html";
+    if (file_ending == "css")
+        return "text/css";
+    if (file_ending == "js")
+        return "text/javascript";
+    if (file_ending == "jpg" || file_ending == "jpeg")
+        return "image/jpeg";
+    if (file_ending == "png")
+        return "image/png";
+    if (file_ending == "gif")
+        return "image/gif";
+    if (file_ending == "ico")
+        return "image/x-icon";
+    if (file_ending == "svg")
+        return "image/svg+xml";
+    if (file_ending == "pdf")
+        return "application/pdf";
+    if (file_ending == "json")
+        return "application/json";
+    if (file_ending == "xml")
+        return "application/xml";
+    if (file_ending == "zip")
+        return "application/zip";
+    if (file_ending == "tar")
+        return "application/x-tar";
+    if (file_ending == "gz")
+        return "application/gzip";
+    if (file_ending == "mp3")
+        return "audio/mpeg";
+    if (file_ending == "wav")
+        return "audio/wav";
+    if (file_ending == "mp4")
+        return "video/mp4";
+    if (file_ending == "mpeg")
+        return "video/mpeg";
+    if (file_ending == "webm")
+        return "video/webm";
+    if (file_ending == "ogg")
+        return "video/ogg";
+    if (file_ending == "flac")
+        return "audio/flac";
+    if (file_ending == "txt")
+        return "text/plain";
+    if (file_ending == "csv")
+        return "text/csv";
+    if (file_ending == "rtf")
+        return "application/rtf";
+    if (file_ending == "doc")
+        return "application/msword";
+    if (file_ending == "docx")
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    if (file_ending == "xls")
+        return "application/vnd.ms-excel";
+    if (file_ending == "xlsx")
+        return "application/vnd.open";
+    if (file_ending == "ppt")
+        return "application/vnd.ms-powerpoint";
+    if (file_ending == "pptx")
+        return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    if (file_ending == "odt")
+        return "application/vnd.oasis.opendocument.text";
+    if (file_ending == "ods")
+        return "application/vnd.oasis.opendocument.spreadsheet";
+    if (file_ending == "odp")
+        return "application/vnd.oasis.opendocument.presentation";
+    if (file_ending == "odg")
+        return "application/vnd.oasis.opendocument.graphics";
+    if (file_ending == "odc")
+        return "application/vnd.oasis.opendocument.chart";
+    if (file_ending == "odb")
+        return "application/vnd.oasis.opendocument.database";
+    if (file_ending == "odf")
+        return "application/vnd.oasis.opendocument.formula";
+    if (file_ending == "odm")
+        return "application/vnd.oasis.opendocument.text-master";
+    if (file_ending == "ott")
+        return "application/vnd.oasis.opendocument.text-template";
+    if (file_ending == "ots")
+        return "application/vnd.oasis.opendocument.spreadsheet-template";
+    if (file_ending == "otp")
+        return "application/vnd.oasis.opendocument.presentation-template";
+    if (file_ending == "otg")
+        return "application/vnd.oasis.opendocument.graphics-template";
+    if (file_ending == "otc")
+        return "application/vnd.oasis.opendocument.chart-template";
+    if (file_ending == "otf")
+        return "application/vnd.oasis.opendocument.formula-template";
+    if (file_ending == "otm")
+        return "application/vnd.oasis.opendocument.text-master-template";
+    if (file_ending == "oth")
+        return "application/vnd.oasis.opendocument.text-web";
+    if (file_ending == "ott")
+        return "application/vnd.oasis.opendocument.text-template";
+    if (file_ending == "ots")
+        return "application/vnd.oasis.opendocument.spreadsheet-template";
+    if (file_ending == "otp")
+        return "application/vnd.oasis.opendocument.presentation-template";
+    if (file_ending == "otg")
+        return "application/vnd.oasis.opendocument.graphics-template";
+    if (file_ending == "otc")
+        return "application/vnd.oasis.opendocument.chart-template";
+    if (file_ending == "otf")
+        return "application/vnd.oasis.opendocument.formula-template";
+    return "application/octet-stream";
+}
