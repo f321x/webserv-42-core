@@ -29,10 +29,9 @@ TcpSocket::TcpSocket()
 	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-void TcpSocket::bind_to_address(const SocketAddress &address)
+void TcpSocket::bind_to_address(const sockaddr_in &address)
 {
-	memset(&_address, 0, sizeof(_address));
-	_address = address.get_sockaddr();
+	_address = address;
 	if (bind(_socket_fd, (sockaddr *)&_address, sizeof(_address)) < 0)
 	{
 		close(_socket_fd);
@@ -60,7 +59,7 @@ void TcpSocket::listen_on_socket()
 	DEBUG(ss.str());
 }
 
-std::shared_ptr<TcpSocket> TcpSocket::accept_connection()
+std::unique_ptr<TcpSocket> TcpSocket::accept_connection()
 {
 	sockaddr_in client_address;
 	memset(&client_address, 0, sizeof(client_address));
@@ -81,7 +80,7 @@ std::shared_ptr<TcpSocket> TcpSocket::accept_connection()
 	   << " port: " << ntohs(client_address.sin_port);
 	DEBUG(ss.str());
 
-	std::shared_ptr<TcpSocket> client_socket(new TcpSocket(client_socket_fd));
+	std::unique_ptr<TcpSocket> client_socket(new TcpSocket(client_socket_fd));
 	client_socket->_address = client_address;
 	return client_socket;
 }
