@@ -26,6 +26,13 @@ public:
 			return "Invalid packet";
 		}
 	};
+	class UnknownMethodException : public std::exception
+	{
+		virtual const char *what() const throw()
+		{
+			return "Unknown method";
+		}
+	};
 
 private:
 	BasePacket _base_packet;
