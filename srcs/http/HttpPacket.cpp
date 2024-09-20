@@ -4,183 +4,194 @@
 
 HttpPacket::HttpPacket()
 {
-	_raw_packet = "";
-	_method = GET;
-	_uri = "";
-	_http_version = "";
-	_status_code = 0;
-	_status_message = "";
-	_request_headers = std::map<std::string, std::string>();
-	_response_headers = std::map<std::string, std::string>();
-	_content = "";
+  _raw_packet = "";
+  _method = GET;
+  _uri = "";
+  _http_version = "";
+  _status_code = 0;
+  _status_message = "";
+  _request_headers = std::map<std::string, std::string>();
+  _response_headers = std::map<std::string, std::string>();
+  _content = "";
 }
 
-HttpPacket::HttpPacket(const std::string &raw_packet)
+HttpPacket::HttpPacket(const std::string& raw_packet)
 {
-	_raw_packet = raw_packet;
-	parseRawPacket();
-	_response_headers = std::map<std::string, std::string>();
-	_content = "";
+  _raw_packet = raw_packet;
+  parseRawPacket();
+  _response_headers = std::map<std::string, std::string>();
+  _content = "";
 }
 
-HttpPacket::HttpPacket(const HttpPacket &other)
+HttpPacket::HttpPacket(const HttpPacket& other)
 {
-	*this = other;
+  *this = other;
 }
 
-HttpPacket &HttpPacket::operator=(const HttpPacket &other)
+HttpPacket&
+HttpPacket::operator=(const HttpPacket& other)
 {
-	_raw_packet = other._raw_packet;
-	_method = other._method;
-	_uri = other._uri;
-	_http_version = other._http_version;
-	_status_code = other._status_code;
-	_status_message = other._status_message;
-	_request_headers = other._request_headers;
-	_response_headers = other._response_headers;
-	_content = other._content;
-	return *this;
+  _raw_packet = other._raw_packet;
+  _method = other._method;
+  _uri = other._uri;
+  _http_version = other._http_version;
+  _status_code = other._status_code;
+  _status_message = other._status_message;
+  _request_headers = other._request_headers;
+  _response_headers = other._response_headers;
+  _content = other._content;
+  return *this;
 }
 
-HttpPacket::~HttpPacket()
+HttpPacket::~HttpPacket() {}
+
+std::string
+HttpPacket::get_http_version() const
 {
+  return _http_version;
 }
 
-std::string HttpPacket::get_http_version() const
+std::string
+HttpPacket::get_uri() const
 {
-	return _http_version;
+  return _uri;
 }
 
-std::string HttpPacket::get_uri() const
+Method
+HttpPacket::get_method() const
 {
-	return _uri;
+  return _method;
 }
 
-Method HttpPacket::get_method() const
+std::string
+HttpPacket::get_req_header(const std::string& key) const
 {
-	return _method;
+  std::map<std::string, std::string>::const_iterator it =
+    _request_headers.find(key);
+  if (it == _request_headers.end()) {
+    return "";
+  }
+  return it->second;
 }
 
-std::string HttpPacket::get_req_header(const std::string &key) const
+std::map<std::string, std::string>
+HttpPacket::get_req_headers() const
 {
-	std::map<std::string, std::string>::const_iterator it = _request_headers.find(key);
-	if (it == _request_headers.end())
-	{
-		return "";
-	}
-	return it->second;
+  return _request_headers;
 }
 
-std::map<std::string, std::string> HttpPacket::get_req_headers() const
+void
+HttpPacket::set_status_code(uint status_code)
 {
-	return _request_headers;
+  _status_code = status_code;
 }
 
-void HttpPacket::set_status_code(uint status_code)
+void
+HttpPacket::set_status_message(const std::string status_message)
 {
-	_status_code = status_code;
+  _status_message = status_message;
 }
 
-void HttpPacket::set_status_message(const std::string status_message)
+void
+HttpPacket::set_res_header(const std::string key, const std::string value)
 {
-	_status_message = status_message;
+  _response_headers.insert(std::make_pair(key, value));
 }
 
-void HttpPacket::set_res_header(const std::string key, const std::string value)
+void
+HttpPacket::set_content(const std::string content)
 {
-	_response_headers.insert(std::make_pair(key, value));
+  _content = content;
 }
 
-void HttpPacket::set_content(const std::string content)
+void
+HttpPacket::set_calc_content_length()
 {
-	_content = content;
+  set_res_header("Content-Length", std::to_string(_content.size()));
 }
 
-std::string HttpPacket::serializeResponse()
+std::string
+HttpPacket::serializeResponse()
 {
-	std::string response = "HTTP/1.1 " + std::to_string(_status_code) + " " + _status_message + "\n";
+  set_calc_content_length();
 
-	for (std::map<std::string, std::string>::iterator it = _response_headers.begin(); it != _response_headers.end(); it++)
-	{
-		response += it->first + ": " + it->second + "\n";
-	}
-	response += "\n";
+  std::string response =
+    "HTTP/1.1 " + std::to_string(_status_code) + " " + _status_message + "\n";
 
-	response += _content;
+  for (std::map<std::string, std::string>::iterator it =
+         _response_headers.begin();
+       it != _response_headers.end();
+       it++) {
+    response += it->first + ": " + it->second + "\n";
+  }
+  response += "\n";
 
-	return response;
+  response += _content;
+
+  return response;
 }
 
-void HttpPacket::parseRawPacket()
+void
+HttpPacket::parseRawPacket()
 {
-	std::vector<std::string> lines = split(_raw_packet, '\n');
+  std::vector<std::string> lines = split(_raw_packet, '\n');
 
-	for (size_t lInd = 0; lInd < lines.size(); lInd++)
-	{
-		if (lInd == 0)
-		{
-			// Request line
-			std::vector<std::string> tokens = split(lines[lInd], ' ');
-			if (tokens.size() != 3)
-			{
-				throw InvalidPacketException();
-			}
+  for (size_t lInd = 0; lInd < lines.size(); lInd++) {
+    if (lInd == 0) {
+      // Request line
+      std::vector<std::string> tokens = split(lines[lInd], ' ');
+      if (tokens.size() != 3) {
+        throw InvalidPacketException();
+      }
 
-			if (tokens[0] == "GET")
-			{
-				_method = GET;
-			}
-			else if (tokens[0] == "POST")
-			{
-				_method = POST;
-			}
-			else if (tokens[0] == "DELETE")
-			{
-				_method = DELETE;
-			}
-			else
-			{
-				throw UnknownMethodException();
-			}
+      if (tokens[0] == "GET") {
+        _method = GET;
+      } else if (tokens[0] == "POST") {
+        _method = POST;
+      } else if (tokens[0] == "DELETE") {
+        _method = DELETE;
+      } else {
+        throw UnknownMethodException();
+      }
 
-			_uri = tokens[1];
-			_http_version = trim(tokens[2]);
-			continue;
-		}
-		if (trim(lines[lInd]).empty())
-		{
-			continue;
-		}
+      _uri = tokens[1];
+      _http_version = trim(tokens[2]);
+      continue;
+    }
+    if (trim(lines[lInd]).empty()) {
+      continue;
+    }
 
-		size_t colonPos = lines[lInd].find(':');
-		if (colonPos == std::string::npos)
-		{
-			continue;
-		}
+    size_t colonPos = lines[lInd].find(':');
+    if (colonPos == std::string::npos) {
+      continue;
+    }
 
-		std::string key = lines[lInd].substr(0, colonPos);
-		std::string value = lines[lInd].substr(colonPos + 1);
-		_request_headers.insert(std::make_pair(trim(key), trim(value)));
-	}
+    std::string key = lines[lInd].substr(0, colonPos);
+    std::string value = lines[lInd].substr(colonPos + 1);
+    _request_headers.insert(std::make_pair(trim(key), trim(value)));
+  }
 }
 
-void HttpPacket::set_final_response()
+void
+HttpPacket::set_final_response()
 {
-	_final_response = true;
+  _final_response = true;
 }
 
-bool HttpPacket::is_final_response() const
+bool
+HttpPacket::is_final_response() const
 {
-	return _final_response;
+  return _final_response;
 }
 
-std::string HttpPacket::getPureHostname() const
+std::string
+HttpPacket::getPureHostname() const
 {
-	std::string host = get_req_header("Host");
-	size_t colonPos = host.find(':');
-	if (colonPos != std::string::npos)
-	{
-		host = host.substr(0, colonPos);
-	}
-	return host;
+  std::string host = get_req_header("Host");
+  size_t colonPos = host.find(':');
+  if (colonPos != std::string::npos) {
+    host = host.substr(0, colonPos);
+  }
+  return host;
 }

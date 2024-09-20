@@ -62,5 +62,6 @@ private:
 
 	std::string _content;
 
-	void parseRawPacket();
+	void	parseRawPacket();
+	void	set_calc_content_length();
 };
