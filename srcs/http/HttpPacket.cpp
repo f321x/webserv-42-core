@@ -81,7 +81,13 @@ void HttpPacket::set_content(const std::string content) {
 	_content = content;
 }
 
+void HttpPacket::set_calc_content_length() {
+	set_res_header("Content-Length", std::to_string(_content.size()));
+}
+
 std::string HttpPacket::serializeResponse() {
+	set_calc_content_length();
+
 	std::string response = "HTTP/1.1 " + std::to_string(_status_code) + " " + _status_message + "\n";
 
 	for (std::map<std::string, std::string>::iterator it = _response_headers.begin(); it != _response_headers.end(); it++) {
