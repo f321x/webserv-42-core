@@ -7,7 +7,7 @@ ResponsePacket::ResponsePacket()
 	_final_response = false;
 }
 
-ResponsePacket::ResponsePacket(const ResponsePacket &other)
+ResponsePacket::ResponsePacket(const ResponsePacket &other) : BasePacket(other)
 {
 	*this = other;
 }

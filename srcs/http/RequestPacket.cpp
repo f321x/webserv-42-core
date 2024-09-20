@@ -6,17 +6,15 @@ RequestPacket::RequestPacket()
 	_method = GET;
 	_uri = "";
 	_http_version = "";
-	_base_packet = BasePacket();
 }
 
 RequestPacket::RequestPacket(const std::string &raw_packet)
 {
 	_raw_packet = raw_packet;
-	_base_packet = BasePacket();
 	parseRawPacket();
 }
 
-RequestPacket::RequestPacket(const RequestPacket &other)
+RequestPacket::RequestPacket(const RequestPacket &other) : BasePacket(other)
 {
 	*this = other;
 }
@@ -27,7 +25,6 @@ RequestPacket &RequestPacket::operator=(const RequestPacket &other)
 	_method = other._method;
 	_uri = other._uri;
 	_http_version = other._http_version;
-	_base_packet = other._base_packet;
 	return *this;
 }
 
@@ -48,7 +45,60 @@ Method RequestPacket::get_method() const
 	return _method;
 }
 
-std::string RequestPacket::getPureHostname() const
+void RequestPacket::parseRawPacket()
+{
+	std::vector<std::string> lines = split(_raw_packet, '\n');
+
+	for (size_t lInd = 0; lInd < lines.size(); lInd++)
+	{
+		if (lInd == 0)
+		{
+			// Request line
+			std::vector<std::string> tokens = split(lines[lInd], ' ');
+			if (tokens.size() != 3)
+			{
+				throw InvalidPacketException();
+			}
+
+			if (tokens[0] == "GET")
+			{
+				_method = GET;
+			}
+			else if (tokens[0] == "POST")
+			{
+				_method = POST;
+			}
+			else if (tokens[0] == "DELETE")
+			{
+				_method = DELETE;
+			}
+			else
+			{
+				throw UnknownMethodException();
+			}
+
+			_uri = tokens[1];
+			_http_version = trim(tokens[2]);
+			continue;
+		}
+		if (trim(lines[lInd]).empty())
+		{
+			continue;
+		}
+
+		size_t colonPos = lines[lInd].find(':');
+		if (colonPos == std::string::npos)
+		{
+			continue;
+		}
+
+		std::string key = lines[lInd].substr(0, colonPos);
+		std::string value = lines[lInd].substr(colonPos + 1);
+		set_res_header(trim(key), trim(value));
+	}
+}
+
+std::string RequestPacket::getPureHostname()
 {
 	std::string host = get_req_header("Host");
 	size_t colonPos = host.find(':');

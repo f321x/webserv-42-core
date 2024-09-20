@@ -20,6 +20,8 @@ BasePacket &BasePacket::operator=(const BasePacket &other)
   return *this;
 }
 
+BasePacket::~BasePacket() {}
+
 std::string BasePacket::get_req_header(const std::string &key)
 {
   std::map<std::string, std::string>::const_iterator it =

@@ -17,7 +17,7 @@ public:
 	Method get_method() const;
 
 	// ToDo: move this to utils
-	std::string getPureHostname() const;
+	std::string getPureHostname();
 
 	class InvalidPacketException : public std::exception
 	{
@@ -35,8 +35,6 @@ public:
 	};
 
 private:
-	BasePacket _base_packet;
-
 	std::string _raw_packet;
 	Method _method;
 	std::string _uri;
