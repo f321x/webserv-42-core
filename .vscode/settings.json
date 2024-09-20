@@ -58,11 +58,17 @@
 		"csignal": "cpp",
 		"bitset": "cpp",
 		"regex": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"unordered_set": "cpp"
 	},
 	"C_Cpp.default.includePath": [
 		"${workspaceFolder}/includes"
 	],
 	"files.autoSave": "onFocusChange",
-	"C_Cpp.errorSquiggles": "enabled"
+	"C_Cpp.errorSquiggles": "enabled",
+	"editor.defaultFormatter": "ms-vscode.cpptools",
+	"editor.formatOnPaste": true,
+	"editor.formatOnSave": true,
+	"editor.formatOnType": true,
+	"C_Cpp.default.cppStandard": "c++17"
 }

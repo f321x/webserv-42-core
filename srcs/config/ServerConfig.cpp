@@ -1,23 +1,27 @@
 #include "ServerConfig.hpp"
+#include "logging.hpp"
 #include <regex>
+#include <iostream>
 
-//GETTERS
+// GETTERS
 
 std::string ServerConfig::getHost() const { return _host; }
 
-int ServerConfig::getPort() const { return _port; }
+uint16_t ServerConfig::getPort() const { return static_cast<uint16_t>(_port); }
 
 std::vector<std::string> ServerConfig::getServerNames() const { return _server_names; }
 
-std::map<int, std::string> ServerConfig::getErrorPages() const { return error_pages; }
+std::map<int, std::string> ServerConfig::getErrorPages() const { return _error_pages; }
 
 size_t ServerConfig::getClientMaxBodySize() const { return _client_max_body_size; }
 
 std::map<std::string, RouteConfig> ServerConfig::getRoutes() const { return _routes; }
 
-//SETTERS
+bool ServerConfig::isDefault() const { return _is_default; }
 
-void ServerConfig::setHost(const std::string& host) { _host = host; }
+// SETTERS
+
+void ServerConfig::setHost(const std::string &host) { _host = host; }
 
 void ServerConfig::setPort(int port)
 {
@@ -26,18 +30,18 @@ void ServerConfig::setPort(int port)
 	_port = port;
 }
 
-void ServerConfig::addServerName(const std::string& server_name)
+void ServerConfig::addServerName(const std::string &server_name)
 {
 	if (std::find(_server_names.begin(), _server_names.end(), server_name) != _server_names.end())
 		return;
 	_server_names.push_back(server_name);
 }
 
-void ServerConfig::addErrorPage(int error_code, const std::string& error_page)
+void ServerConfig::addErrorPage(int error_code, const std::string &error_page)
 {
-	if (error_pages.find(error_code) != error_pages.end())
+	if (_error_pages.find(error_code) != _error_pages.end())
 		return;
-	error_pages[error_code] = error_page;
+	_error_pages[error_code] = error_page;
 }
 
 void ServerConfig::setClientMaxBodySize(int size)
@@ -47,7 +51,7 @@ void ServerConfig::setClientMaxBodySize(int size)
 	_client_max_body_size = size;
 }
 
-void ServerConfig::addRoute(const std::string& route, const RouteConfig& config)
+void ServerConfig::addRoute(const std::string &route, const RouteConfig &config)
 {
 	if (_routes.find(route) != _routes.end())
 		throw std::invalid_argument("Route already exists: " + route);
@@ -60,4 +64,24 @@ void ServerConfig::addRoute(const std::string& route, const RouteConfig& config)
 	if (!std::regex_match(route, validRoutePattern))
 		throw std::invalid_argument("Route name contains invalid characters.");
 	_routes[route] = config;
+}
+
+void ServerConfig::setDefault(bool is_default) { _is_default = is_default; }
+
+void ServerConfig::checkServerConfig()
+{
+	if (_port == -1)
+		throw std::runtime_error("Port not set");
+	if (_host.empty())
+	{
+		WARN("Warning: Host not set, defaulting to 0.0.0.0 (all interfaces)");
+		this->_host = "0.0.0.0";
+	}
+	if (_server_names.empty())
+	{
+		WARN("Warning: No server names set, defaulting to localhost");
+		this->_server_names.push_back("localhost");
+	}
+	if (_routes.empty())
+		throw std::runtime_error("No routes set");
 }
