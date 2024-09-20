@@ -94,6 +94,10 @@ void RequestPacket::parseRawPacket()
 
 		std::string key = lines[lInd].substr(0, colonPos);
 		std::string value = lines[lInd].substr(colonPos + 1);
+		if (key.length() == 0 || value.length() == 0)
+		{
+			continue;
+		}
 		set_res_header(trim(key), trim(value));
 	}
 }
