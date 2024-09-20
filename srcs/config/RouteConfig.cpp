@@ -21,6 +21,8 @@ std::vector<Method> RouteConfig::getAcceptedMethods() const // added enum for ea
 
 std::string RouteConfig::getRedirection() const { return _redirection_url; }
 
+std::string RouteConfig::getRoute() const { return _route; }
+
 bool RouteConfig::isAutoindex() const { return _autoindex; }
 
 std::string RouteConfig::getDefaultFile() const { return _default_file; }
@@ -38,7 +40,9 @@ void RouteConfig::setUploadDirectory(const std::string &dir) { _upload_directory
 
 void RouteConfig::setRoot(const std::string &root) { _root = root; }
 
-void RouteConfig::setAcceptedMethods(const std::vector<std::string>& methods)
+void RouteConfig::setRoute(const std::string &route) { _route = route; }
+
+void RouteConfig::setAcceptedMethods(const std::vector<std::string> &methods)
 {
 	for (const auto &method : methods)
 	{
@@ -56,5 +60,4 @@ void RouteConfig::checkRouteConfig() const
 		throw std::runtime_error("Root cannot be empty");
 	if (_accepted_methods.empty())
 		throw std::runtime_error("Accepted methods cannot be empty");
-	
 }

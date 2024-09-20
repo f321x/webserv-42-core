@@ -27,6 +27,15 @@ std::string find_longest_matching_route(const std::string &uri, const std::map<s
     return longest_matching_route;
 }
 
+bool has_file_ending(const std::string &uri)
+{
+    size_t dot_pos = uri.rfind('.');
+    if (dot_pos == std::string::npos)
+        return false; // No dot found, so no file ending
+
+    return true;
+}
+
 std::string get_content_type(const std::string &file_ending)
 {
     if (file_ending == "html" || file_ending == "htm")
