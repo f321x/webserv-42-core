@@ -1,7 +1,7 @@
 #include "RequestHandler.hpp"
 
 // https://datatracker.ietf.org/doc/html/rfc9112#section-9.3
-bool check_keep_alive(const HttpPacket &packet)
+bool check_keep_alive(RequestPacket &packet)
 {
     if (packet.get_req_header("Connection") == "keep-alive")
         return true;
