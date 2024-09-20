@@ -1,18 +1,35 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Launch",
-            "type": "cppdbg",
-            "program": "${workspaceFolder}/webserv",
-            "args": ["test"],
-            "cwd": "${workspaceFolder}",
-            "request": "launch",
-            "MIMode": "gdb",
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "webserv test debug",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/test",
+			"args": ["['WebServerConfig']"],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"externalConsole": false,
+			"MIMode": "gdb",  // Use GDB instead of LLDB
+			"miDebuggerPath": "/usr/bin/gdb",  // Path to GDB
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			]
+		},
+    {
+      "name": "Launch",
+      "type": "cppdbg",
+      "program": "${workspaceFolder}/webserv",
+      "args": ["test"],
+      "cwd": "${workspaceFolder}",
+      "request": "launch",
+      "MIMode": "gdb",
 			"miDebuggerPath": "/usr/bin/gdb"
-        }
-    ]
+    }
+	]
 }

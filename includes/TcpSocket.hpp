@@ -1,12 +1,13 @@
 #pragma once
 
-#include "SocketAddress.hpp"
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <unistd.h>
 #include <sstream>
 #include <stdexcept>
 #include <cstring>
 #include "logging.hpp"
+#include <arpa/inet.h>
 #include <poll.h>
 #include <fcntl.h>
 #include <memory>
@@ -24,11 +25,11 @@ public:
 	bool operator!=(const TcpSocket &other) const;
 	TcpSocket &operator=(const TcpSocket &other);
 
-	void bind_to_address(const SocketAddress &address);
+	void bind_to_address(const sockaddr_in &address); // bind the socket to the address
 	void listen_on_socket();
 	int fd() const;									// get the file descriptor
 	pollfd new_pfd() const;							// get a new pollfd struct for the socket
-	std::shared_ptr<TcpSocket> accept_connection(); // accept a new connection and return the newly created socket
+	std::unique_ptr<TcpSocket> accept_connection(); // accept a new connection and return the newly created socket
 	std::string read_client_data();					// read data from the socket
 	void write_data(const std::string &data);		// write data to the socket
 	bool is_bind_socket() const;					// check if the socket belongs to the main listening sockets
