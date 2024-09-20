@@ -6,7 +6,7 @@
 #include <memory>
 #include <optional>
 
-#include "HttpPacket.hpp"
+#include "RequestPacket.hpp"
 #include "ServerConfig.hpp"
 #include "RouteConfig.hpp"
 
@@ -30,7 +30,7 @@ struct UriInfo
     std::string path;
 };
 
-bool check_keep_alive(const HttpPacket &packet);
+bool check_keep_alive(RequestPacket &packet);
 std::string find_longest_matching_route(const std::string &uri, const std::map<std::string, RouteConfig> &routes);
 std::string get_content_type(const std::string &file_ending);
 bool has_file_ending(const std::string &uri);

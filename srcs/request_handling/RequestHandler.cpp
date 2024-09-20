@@ -1,14 +1,14 @@
 #include "RequestHandler.hpp"
 
-std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
+std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
-    std::unique_ptr<HttpPacket> request_packet;
-    std::unique_ptr<HttpPacket> response_packet = std::make_unique<HttpPacket>();
+    std::unique_ptr<RequestPacket> request_packet;
+    std::unique_ptr<ResponsePacket> response_packet = std::make_unique<ResponsePacket>();
 
     // Parse the request
     try
     {
-        request_packet = std::make_unique<HttpPacket>(request);
+        request_packet = std::make_unique<RequestPacket>(request);
     }
     catch (...)
     {
@@ -50,7 +50,7 @@ std::unique_ptr<HttpPacket> handle_request(const std::string &request, const std
     return response_packet;
 }
 
-std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(const HttpPacket &packet, const std::vector<ServerConfig> &available_configs)
+std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(RequestPacket &packet, const std::vector<ServerConfig> &available_configs)
 {
     std::vector<ServerConfig> configs(available_configs.begin(), available_configs.end());
     std::pair<ServerConfig, RouteConfig> valid_config;
