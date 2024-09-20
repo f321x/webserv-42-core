@@ -9,7 +9,7 @@ public:
 	BasePacket();
 	BasePacket(const BasePacket &other);
 	BasePacket &operator=(const BasePacket &other);
-	~BasePacket();
+	virtual ~BasePacket();
 
 	std::string get_req_header(const std::string &key);
 	std::map<std::string, std::string> get_req_headers();
