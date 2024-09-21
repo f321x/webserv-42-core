@@ -144,3 +144,14 @@ std::string get_content_type(const std::string &file_ending)
         return "application/vnd.oasis.opendocument.formula-template";
     return "application/octet-stream";
 }
+
+std::string get_pure_hostname(RequestPacket &packet)
+{
+    std::string host = packet.get_header("Host");
+    size_t colonPos = host.find(':');
+    if (colonPos != std::string::npos)
+    {
+        host = host.substr(0, colonPos);
+    }
+    return host;
+}

@@ -101,14 +101,3 @@ void RequestPacket::parseRawPacket()
 		set_header(trim(key), trim(value));
 	}
 }
-
-std::string RequestPacket::getPureHostname()
-{
-	std::string host = get_header("Host");
-	size_t colonPos = host.find(':');
-	if (colonPos != std::string::npos)
-	{
-		host = host.substr(0, colonPos);
-	}
-	return host;
-}
