@@ -3,11 +3,11 @@
 // https://datatracker.ietf.org/doc/html/rfc9112#section-9.3
 bool check_keep_alive(RequestPacket &packet)
 {
-    if (packet.get_req_header("Connection") == "keep-alive")
+    if (packet.get_header("Connection") == "keep-alive")
         return true;
     if (packet.get_http_version() == "HTTP/1.0")
         return false;
-    if (packet.get_req_header("Connection") == "close")
+    if (packet.get_header("Connection") == "close")
         return false;
 
     return true;
