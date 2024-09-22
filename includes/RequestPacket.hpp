@@ -16,19 +16,16 @@ public:
 	std::string get_uri() const;
 	Method get_method() const;
 
-	// ToDo: move this to utils
-	std::string getPureHostname();
-
 	class InvalidPacketException : public std::exception
 	{
-		virtual const char *what() const throw()
+		const char *what() const noexcept override
 		{
 			return "Invalid packet";
 		}
 	};
 	class UnknownMethodException : public std::exception
 	{
-		virtual const char *what() const throw()
+		const char *what() const noexcept override
 		{
 			return "Unknown method";
 		}
