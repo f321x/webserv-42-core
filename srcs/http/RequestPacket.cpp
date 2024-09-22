@@ -109,7 +109,7 @@ void RequestPacket::parseRawPacket()
 
 	// Body
 	size_t bodyStart = _raw_packet.find("\n\n");
-	uint iOffset = 2;
+	unsigned int iOffset = 2;
 	if (bodyStart == std::string::npos)
 	{
 		bodyStart = _raw_packet.find("\r\n\r\n");
@@ -119,7 +119,16 @@ void RequestPacket::parseRawPacket()
 	{
 		return;
 	}
-	size_t contentLength = std::stoi(contentLengthString);
+
+	size_t contentLength;
+	try
+	{
+		contentLength = std::stoul(contentLengthString);
+	}
+	catch (const std::exception &e)
+	{
+		throw InvalidPacketException();
+	}
 
 	if (bodyStart + iOffset + contentLength > _raw_packet.length())
 	{
