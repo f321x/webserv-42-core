@@ -1,6 +1,6 @@
 #include "RequestHandler.hpp"
 
-std::unique_ptr<HttpPacket> handle_get(const HttpPacket &request_packet, std::unique_ptr<HttpPacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
+std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 {
     UriInfo uri_info = get_uri_info(request_packet.get_uri(), config_pair.second);
     switch (uri_info.type)
