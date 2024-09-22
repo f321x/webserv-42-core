@@ -81,9 +81,9 @@ void RequestPacket::parseRawPacket()
 			_http_version = trim(tokens[2]);
 			continue;
 		}
-		if (trim(lines[lInd]).empty())
+		else if (trim(lines[lInd]).empty())
 		{
-			continue;
+			break;
 		}
 
 		size_t colonPos = lines[lInd].find(':');
@@ -100,4 +100,39 @@ void RequestPacket::parseRawPacket()
 		}
 		set_header(trim(key), trim(value));
 	}
+
+	std::string contentLengthString = get_header("Content-Length");
+	if (contentLengthString == "")
+	{
+		return;
+	}
+
+	// Body
+	size_t bodyStart = _raw_packet.find("\n\n");
+	unsigned int iOffset = 2;
+	if (bodyStart == std::string::npos)
+	{
+		bodyStart = _raw_packet.find("\r\n\r\n");
+		iOffset = 4;
+	}
+	if (bodyStart == std::string::npos)
+	{
+		return;
+	}
+
+	size_t contentLength;
+	try
+	{
+		contentLength = std::stoul(contentLengthString);
+	}
+	catch (const std::exception &e)
+	{
+		throw InvalidPacketException();
+	}
+
+	if (bodyStart + iOffset + contentLength > _raw_packet.length())
+	{
+		throw InvalidPacketException();
+	}
+	set_content(_raw_packet.substr(bodyStart + iOffset));
 }
