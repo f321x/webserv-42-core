@@ -151,7 +151,7 @@ std::string get_pure_hostname(RequestPacket &packet)
     size_t colonPos = host.find(':');
     if (colonPos != std::string::npos)
     {
-        host = host.substr(0, colonPos);
+        host = host.resize(0, colonPos);
     }
     return host;
 }
