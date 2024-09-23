@@ -34,7 +34,7 @@ private:
 
 // ServerConfig setters
 void parseListen(ServerConfig &server, std::istringstream &stream);
-void parseServerName(ServerConfig &server, std::istringstream &stream);
+void parseServerNames(ServerConfig &server, std::istringstream &stream);
 void parseErrorPage(ServerConfig &server, std::istringstream &stream);
 void parseClientMaxBodySize(ServerConfig &server, std::istringstream &stream);
 // RouteConfig setters

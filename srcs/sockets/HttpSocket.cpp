@@ -67,7 +67,7 @@ void HttpSocket::handle_client_data()
     std::string client_data;
     try
     {
-        std::unique_ptr<HttpPacket> header_packet = std::make_unique<HttpPacket>(_socket->read_request_header());
+        // std::unique_ptr<HttpPacket> header_packet = std::make_unique<HttpPacket>(_socket->read_request_header());
         // int content_length = header_packet->get();
     }
     catch (const std::exception &e)
@@ -76,13 +76,13 @@ void HttpSocket::handle_client_data()
     }
 
     DEBUG("Received data from client: " + client_data);
-    std::unique_ptr<HttpPacket> response = handle_request(client_data, _available_configs);
+    std::unique_ptr<ResponsePacket> response = handle_request(client_data, _available_configs);
 
     // write response to client
     try
     {
-        DEBUG("Sending response to client: " + response->serializeResponse());
-        _socket->write_data(response->serializeResponse());
+        DEBUG("Sending response to client: " + response->serialize());
+        _socket->write_data(response->serialize());
         if (response->is_final_response())
         {
             throw IsFinalResponse("HttpSocket: Final response sent");
