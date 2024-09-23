@@ -1,3 +1,5 @@
 webserv
 /obj
 test
+/rust_target
+/tests/request_tester/target

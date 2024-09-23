@@ -177,6 +177,8 @@ bool HttpPacket::is_final_response() const
 std::string HttpPacket::getPureHostname() const
 {
 	std::string host = get_req_header("Host");
+	if (host.empty())
+		host = get_req_header("host");
 	size_t colonPos = host.find(':');
 	if (colonPos != std::string::npos)
 	{

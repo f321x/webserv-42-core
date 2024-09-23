@@ -67,7 +67,8 @@ void HttpSocket::handle_client_data()
     std::string client_data;
     try
     {
-        client_data = _socket->read_client_data();
+        std::unique_ptr<HttpPacket> header_packet = std::make_unique<HttpPacket>(_socket->read_request_header());
+        // int content_length = header_packet->get();
     }
     catch (const std::exception &e)
     {
