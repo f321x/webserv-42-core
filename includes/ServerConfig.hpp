@@ -21,7 +21,7 @@ public:
 
 	// GETTERS
 	std::string getHost() const;
-	uint16_t getPort() const;
+	int getPort() const;
 	std::vector<std::string> getServerNames() const;
 	std::map<int, std::string> getErrorPages() const;
 	size_t getClientMaxBodySize() const;
