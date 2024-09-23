@@ -1,7 +1,6 @@
 #pragma once
 
 #include "WebServerConfig.hpp"
-#include "HttpPacket.hpp"
 #include "logging.hpp"
 #include "HttpSocket.hpp"
 #include "RequestHandler.hpp"

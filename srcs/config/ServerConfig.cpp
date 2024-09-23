@@ -7,7 +7,7 @@
 
 std::string ServerConfig::getHost() const { return _host; }
 
-uint16_t ServerConfig::getPort() const { return static_cast<uint16_t>(_port); }
+int ServerConfig::getPort() const { return _port; }
 
 std::vector<std::string> ServerConfig::getServerNames() const { return _server_names; }
 

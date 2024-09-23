@@ -1,13 +1,13 @@
 #include "RequestHandler.hpp"
 
 // https://datatracker.ietf.org/doc/html/rfc9112#section-9.3
-bool check_keep_alive(const HttpPacket &packet)
+bool check_keep_alive(RequestPacket &packet)
 {
-    if (packet.get_req_header("Connection") == "keep-alive")
+    if (packet.get_header("Connection") == "keep-alive")
         return true;
     if (packet.get_http_version() == "HTTP/1.0")
         return false;
-    if (packet.get_req_header("Connection") == "close")
+    if (packet.get_header("Connection") == "close")
         return false;
 
     return true;
@@ -143,4 +143,15 @@ std::string get_content_type(const std::string &file_ending)
     if (file_ending == "otf")
         return "application/vnd.oasis.opendocument.formula-template";
     return "application/octet-stream";
+}
+
+std::string get_pure_hostname(RequestPacket &packet)
+{
+    std::string host = packet.get_header("Host");
+    size_t colonPos = host.find(':');
+    if (colonPos != std::string::npos)
+    {
+        host.resize(colonPos);
+    }
+    return host;
 }
