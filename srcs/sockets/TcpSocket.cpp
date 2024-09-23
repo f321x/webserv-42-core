@@ -95,7 +95,7 @@ pollfd TcpSocket::new_pfd() const
 	return pfd;
 }
 
-std::string TcpSocket::read_client_data()
+std::string TcpSocket::read_request_header()
 {
 	std::string result;
 	char buffer[1024];
@@ -113,6 +113,72 @@ std::string TcpSocket::read_client_data()
 		{
 			// Data received, append to result
 			result.append(buffer, bytes_read);
+
+			// Check if we have received the full header
+			if (result.find("\r\n\r\n") != std::string::npos)
+				return result;
+		}
+		else if (bytes_read <= 0)
+		{
+			// Connection closed by client
+			if (result.empty())
+				throw std::runtime_error("TcpSocket: Connection closed by client");
+			break;
+		}
+	}
+	throw std::runtime_error("TcpSocket: failed to read request header");
+}
+
+std::string TcpSocket::read_request_body_unchunked(int max_body_size)
+{
+	std::string result;
+	char buffer[1024];
+	ssize_t bytes_read;
+
+	while (true)
+	{
+		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
+
+		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
+		if (bytes_read > 0)
+		{
+			// Data received, append to result
+			result.append(buffer, bytes_read);
+
+			// Check if we have received the full header
+			if (result.size() > max_body_size)
+				throw std::runtime_error("TcpSocket: Request body too large");
+		}
+		else if (bytes_read <= 0)
+		{
+			// Connection closed by client
+			if (result.empty())
+				throw std::runtime_error("TcpSocket: Connection closed by client");
+			break;
+		}
+	}
+	return result;
+}
+
+std::string TcpSocket::read_request_body_chunked(int max_body_size)
+{
+	std::string result;
+	char buffer[1024];
+	ssize_t bytes_read;
+
+	while (true)
+	{
+		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
+
+		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
+		if (bytes_read > 0)
+		{
+			// Data received, append to result
+			result.append(buffer, bytes_read);
+
+			// Check if we have received the full header
+			if (result.size() > max_body_size)
+				throw std::runtime_error("TcpSocket: Request body too large");
 		}
 		else if (bytes_read <= 0)
 		{

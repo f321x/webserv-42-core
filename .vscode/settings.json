@@ -70,5 +70,18 @@
 	"editor.formatOnPaste": true,
 	"editor.formatOnSave": true,
 	"editor.formatOnType": true,
-	"C_Cpp.default.cppStandard": "c++17"
+	"C_Cpp.default.cppStandard": "c++17",
+	"rust-analyzer.cargo.extraEnv": {
+        "RUSTUP_HOME": "/root/.rustup",
+        "CARGO_HOME": "/root/.cargo",
+        "CARGO_TARGET_DIR": "/workspace/rust_target",
+		"PATH": "/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+		"RUSTUP_TOOLCHAIN": "stable-x86_64-unknown-linux-gnu"
+      },
+      "rust-analyzer.checkOnSave.extraEnv": {
+        "RUSTUP_HOME": "/root/.rustup",
+        "CARGO_HOME": "/root/.cargo",
+        "CARGO_TARGET_DIR": "/workspace/rust_target",
+		"PATH": "/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      }
 }
