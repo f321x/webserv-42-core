@@ -4,7 +4,7 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 {
 	std::map<std::string, std::function<void(ServerConfig &, std::istringstream &)>> server_setters = {
 		{"listen", parseListen},
-		{"server_name", parseServerName},
+		{"server_name", parseServerNames},
 		{"error_page", parseErrorPage},
 		{"client_max_body_size", parseClientMaxBodySize}};
 	std::map<std::string, std::function<void(RouteConfig &, std::istringstream &)>> route_setters = {
