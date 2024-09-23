@@ -56,6 +56,19 @@ pollfd HttpSocket::new_pfd() const
     return _socket->new_pfd();
 }
 
+int HttpSocket::_smallest_max_body_size() const
+{
+    size_t smallest = INT_MAX;
+    for (const ServerConfig &config : *_available_configs)
+    {
+        if (config.getClientMaxBodySize() < smallest)
+        {
+            smallest = config.getClientMaxBodySize();
+        }
+    }
+    return smallest;
+}
+
 void HttpSocket::handle_client_data()
 {
     TRACE("HANDLING CLIENT DATA");
@@ -63,12 +76,24 @@ void HttpSocket::handle_client_data()
     if (is_bind_socket)
         throw IsBindSocketErr("HttpSocket: Cannot handle client data on a bind socket");
 
+    std::unique_ptr<ResponsePacket> response = nullptr;
     // read data from client
     std::string client_data;
     try
     {
-        // std::unique_ptr<HttpPacket> header_packet = std::make_unique<HttpPacket>(_socket->read_request_header());
-        // int content_length = header_packet->get();
+        std::string partial_packet = _socket->read_request_header();
+        client_data += partial_packet;
+        std::unique_ptr<RequestPacket> header_only_packet = std::make_unique<RequestPacket>(partial_packet);
+
+        // deduct the bytes we already read in excess (bytes after the header) from the promised content length
+        int remaining_bytes = header_only_packet->get_content_length_header() - header_only_packet->get_content_size();
+
+        if (header_only_packet->get_content_length_header() > _smallest_max_body_size())
+            return _write_client_response(payload_too_large());
+        else if (header_only_packet->is_chunked())
+            client_data += _socket->read_request_body_chunked(_smallest_max_body_size());
+        else
+            client_data += _socket->read_request_body_unchunked(_smallest_max_body_size(), remaining_bytes);
     }
     catch (const std::exception &e)
     {
@@ -76,8 +101,13 @@ void HttpSocket::handle_client_data()
     }
 
     DEBUG("Received data from client: " + client_data);
-    std::unique_ptr<ResponsePacket> response = handle_request(client_data, _available_configs);
+    response = handle_request(client_data, _available_configs);
 
+    return _write_client_response(std::move(response));
+}
+
+void HttpSocket::_write_client_response(std::unique_ptr<ResponsePacket> response)
+{
     // write response to client
     try
     {

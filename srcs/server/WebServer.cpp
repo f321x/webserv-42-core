@@ -9,7 +9,13 @@ WebServer::WebServer(const WebServerConfig &config)
     // find unique ports
     std::unordered_set<HostPortPair, HostPortPairHash> unique_hosts;
     for (const ServerConfig &server_config : config.getServerConfigs())
-        unique_hosts.insert(HostPortPair{server_config.getHost(), server_config.getPort()});
+    {
+        int port = server_config.getPort();
+        if (port < 0 || port > 65535)
+            throw std::runtime_error("Port number " + std::to_string(port) + " is out of the valid range for an unsigned short.");
+        unsigned short ushort_port = static_cast<unsigned short>(port);
+        unique_hosts.insert(HostPortPair{server_config.getHost(), ushort_port});
+    }
 
     // create a new bind sockets for each port in configuration
     for (HostPortPair host : unique_hosts)

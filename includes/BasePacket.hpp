@@ -11,9 +11,9 @@ public:
 	BasePacket &operator=(const BasePacket &other);
 	virtual ~BasePacket();
 
-	std::string get_header(const std::string &key);
+	std::string get_header(const std::string &key) const;
 	std::map<std::string, std::string> get_headers();
-	std::string get_content();
+	std::string get_content() const;
 
 	void set_header(const std::string key, const std::string value);
 	void set_content(const std::string content);

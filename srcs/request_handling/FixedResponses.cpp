@@ -18,6 +18,15 @@ std::unique_ptr<ResponsePacket> bad_request()
     return response_packet;
 }
 
+std::unique_ptr<ResponsePacket> payload_too_large()
+{
+    auto response_packet = std::make_unique<ResponsePacket>();
+    response_packet->set_status_code(413);
+    response_packet->set_status_message("Payload Too Large");
+    response_packet->set_final_response();
+    return response_packet;
+}
+
 std::unique_ptr<ResponsePacket> dummy_response()
 {
     std::unique_ptr<ResponsePacket> response_packet = std::make_unique<ResponsePacket>();
