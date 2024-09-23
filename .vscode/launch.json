@@ -22,10 +22,10 @@
 			]
 		},
     {
-      "name": "Launch",
+      "name": "webserv server debug",
       "type": "cppdbg",
       "program": "${workspaceFolder}/webserv",
-      "args": ["test"],
+      "args": [""],
       "cwd": "${workspaceFolder}",
       "request": "launch",
       "MIMode": "gdb",

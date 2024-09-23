@@ -22,7 +22,7 @@ BasePacket &BasePacket::operator=(const BasePacket &other)
 
 BasePacket::~BasePacket() {}
 
-std::string BasePacket::get_header(const std::string &key)
+std::string BasePacket::get_header(const std::string &key) const
 {
   std::map<std::string, std::string>::const_iterator it =
       _headers.find(key);
@@ -38,7 +38,7 @@ std::map<std::string, std::string> BasePacket::get_headers()
   return _headers;
 }
 
-std::string BasePacket::get_content()
+std::string BasePacket::get_content() const
 {
   return _content;
 }

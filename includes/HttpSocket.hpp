@@ -6,6 +6,7 @@
 #include "Utils.hpp"
 
 #include <unordered_set>
+#include <limits.h>
 
 class HttpSocket
 {
@@ -35,6 +36,8 @@ private:
     // private functions
     sockaddr_in _compose_sockaddr(const std::string &addr, int port);
     std::unique_ptr<TcpSocket> _create_bind_socket(const sockaddr_in &address);
+    int _smallest_max_body_size() const;
+    void _write_client_response(std::unique_ptr<ResponsePacket> response);
 };
 
 class HttpSocketError : public std::exception

@@ -15,6 +15,9 @@ public:
 	std::string get_http_version() const;
 	std::string get_uri() const;
 	Method get_method() const;
+	int get_content_length_header() const;
+	bool is_chunked() const;
+	size_t get_content_size() const;
 
 	class InvalidPacketException : public std::exception
 	{

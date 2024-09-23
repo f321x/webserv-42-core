@@ -136,3 +136,37 @@ void RequestPacket::parseRawPacket()
 	}
 	set_content(_raw_packet.substr(bodyStart + iOffset));
 }
+
+int RequestPacket::get_content_length_header() const
+{
+	std::string contentLengthString = get_header("Content-Length");
+	if (contentLengthString == "")
+	{
+		return 0;
+	}
+
+	try
+	{
+		return std::stoi(contentLengthString);
+	}
+	catch (const std::exception &e)
+	{
+		return 0;
+	}
+}
+
+bool RequestPacket::is_chunked() const
+{
+	std::string transferEncoding = get_header("Transfer-Encoding");
+	if (transferEncoding == "")
+	{
+		return false;
+	}
+
+	return transferEncoding == "chunked";
+}
+
+size_t RequestPacket::get_content_size() const
+{
+	return _content.length();
+}

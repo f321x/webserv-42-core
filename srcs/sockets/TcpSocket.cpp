@@ -129,12 +129,13 @@ std::string TcpSocket::read_request_header()
 	throw std::runtime_error("TcpSocket: failed to read request header");
 }
 
-std::string TcpSocket::read_request_body_unchunked(int max_body_size)
+std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t promised_content_length)
 {
 	std::string result;
 	char buffer[1024];
 	ssize_t bytes_read;
 
+	result = _buffer;
 	while (true)
 	{
 		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
@@ -145,7 +146,15 @@ std::string TcpSocket::read_request_body_unchunked(int max_body_size)
 			// Data received, append to result
 			result.append(buffer, bytes_read);
 
-			// Check if we have received the full header
+			// Check if we have received the full body
+			if (result.size() == promised_content_length && promised_content_length >= 0)
+				break;
+			else if (result.size() > promised_content_length && promised_content_length >= 0)
+			{
+				_buffer = result.substr(promised_content_length);
+				return result.substr(0, promised_content_length);
+			}
+
 			if (result.size() > max_body_size)
 				throw std::runtime_error("TcpSocket: Request body too large");
 		}
@@ -154,6 +163,11 @@ std::string TcpSocket::read_request_body_unchunked(int max_body_size)
 			// Connection closed by client
 			if (result.empty())
 				throw std::runtime_error("TcpSocket: Connection closed by client");
+			else if (promised_content_length > 0 && result.size() < promised_content_length)
+			{
+				_buffer = result;
+				return "";
+			}
 			break;
 		}
 	}
@@ -162,33 +176,8 @@ std::string TcpSocket::read_request_body_unchunked(int max_body_size)
 
 std::string TcpSocket::read_request_body_chunked(int max_body_size)
 {
-	std::string result;
-	char buffer[1024];
-	ssize_t bytes_read;
-
-	while (true)
-	{
-		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
-
-		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
-		if (bytes_read > 0)
-		{
-			// Data received, append to result
-			result.append(buffer, bytes_read);
-
-			// Check if we have received the full header
-			if (result.size() > max_body_size)
-				throw std::runtime_error("TcpSocket: Request body too large");
-		}
-		else if (bytes_read <= 0)
-		{
-			// Connection closed by client
-			if (result.empty())
-				throw std::runtime_error("TcpSocket: Connection closed by client");
-			break;
-		}
-	}
-	return result;
+	(void)max_body_size;
+	throw std::runtime_error("TcpSocket: Chunked encoding not implemented");
 }
 
 void TcpSocket::write_data(const std::string &data)
