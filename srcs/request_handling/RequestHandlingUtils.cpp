@@ -147,7 +147,12 @@ std::string get_content_type(const std::string &file_ending)
 
 std::string get_pure_hostname(RequestPacket &packet)
 {
-    std::string host = packet.get_header("Host");
+    std::string host;
+    host = packet.get_header("Host");
+    if (host.empty())
+    {
+        host = packet.get_header("host");
+    }
     size_t colonPos = host.find(':');
     if (colonPos != std::string::npos)
     {

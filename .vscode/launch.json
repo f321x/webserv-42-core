@@ -25,7 +25,7 @@
       "name": "webserv server debug",
       "type": "cppdbg",
       "program": "${workspaceFolder}/webserv",
-      "args": [""],
+      "args": [],
       "cwd": "${workspaceFolder}",
       "request": "launch",
       "MIMode": "gdb",

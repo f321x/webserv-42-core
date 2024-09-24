@@ -106,6 +106,7 @@ std::string TcpSocket::read_request_header()
 
 	while (true)
 	{
+		memset(buffer, 0, sizeof(buffer));
 		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
 
 		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
@@ -138,6 +139,7 @@ std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t 
 	result = _buffer;
 	while (true)
 	{
+		memset(buffer, 0, sizeof(buffer));
 		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
 
 		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
@@ -162,7 +164,7 @@ std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t 
 		{
 			// Connection closed by client
 			if (result.empty())
-				throw std::runtime_error("TcpSocket: Connection closed by client");
+				break;
 			else if (promised_content_length > 0 && result.size() < promised_content_length)
 			{
 				_buffer = result;
