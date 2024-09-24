@@ -196,8 +196,8 @@ void TcpSocket::write_data(const std::string &data)
 
 TcpSocket::~TcpSocket()
 {
-	DEBUG("Closing socket fd: " + std::to_string(_socket_fd));
 	close(_socket_fd);
+	DEBUG("Closed socket fd: " + std::to_string(_socket_fd));
 }
 
 TcpSocket::TcpSocket(const TcpSocket &other) : _address(other._address), _socket_fd(other._socket_fd), _bind_socket(other._bind_socket) // _pfd(other._pfd),
