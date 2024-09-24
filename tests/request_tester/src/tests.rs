@@ -1,5 +1,6 @@
-use reqwest::blocking::Client;
+use reqwest::Client;
 use dotenvy::dotenv;
+use tokio::task::JoinSet;
 use std::env;
 
 fn load_env() -> String {
@@ -7,49 +8,66 @@ fn load_env() -> String {
 	env::var("SERVER").expect("SERVER must be set")
 }
 
-#[test]
-fn test_request_index() {
+#[tokio::test]
+async fn test_request_index() {
 	let server = load_env();
 	let client = Client::new();
-	let response = client.get(server).send().unwrap();
+	let response = client.get(server).send().await.unwrap();
 	dbg!(&response);
 	assert!(response.status().is_success());
 }
 
-#[test]
-fn test_request_not_found() {
+#[tokio::test]
+async fn test_request_not_found() {
 	let server = load_env();
 	let client = Client::new();
-	let response = client.get(format!("{}/not-found-1234.html", server)).send().unwrap();
+	let response = client.get(format!("{}/not-found-1234.html", server)).send().await.unwrap();
 	dbg!(&response);
 	assert!(response.status() == 404);
 }
 
-#[test]
-fn send_two_requests_at_once() {
+#[tokio::test]
+async fn send_two_requests_at_once() {
 	let server = load_env();
 	let client = Client::new();
-	let response1 = client.get(&server).send().unwrap();
-	let response2 = client.get(server).send().unwrap();
+	let response1 = client.get(&server).send().await.unwrap();
+	let response2 = client.get(server).send().await.unwrap();
 	dbg!(&response1);
 	dbg!(&response2);
 	assert!(response1.status().is_success());
 	assert!(response2.status().is_success());
 }
 
-#[test]
-fn send_thousand_requests_at_once() {
+#[tokio::test]
+async fn send_thousand_requests_after_each_other() {
 	let server = load_env();
 	let client = Client::new();
 	let mut responses = Vec::new();
 	for _ in 0..1000 {
-		let response = client.get(&server).send().unwrap();
+		let response = client.get(&server).send().await.unwrap();
 		responses.push(response);
 	}
 	for response in responses {
 		assert!(response.status().is_success());
 	}
 }
+
+#[tokio::test]
+async fn send_many_requests_in_parallel() {
+	let server = load_env();
+	let mut futures = JoinSet::new();
+	for _ in 0..1000 {
+		let server_clone = server.clone();
+		futures.spawn(async move {
+			let client = Client::new();
+			let response = client.get(server_clone).send().await.unwrap();
+			assert!(response.status().is_success());
+		});
+	}
+	// await all
+	futures.join_all().await;
+}
+
 
 // #[test]
 // fn send_chunked_request() {
