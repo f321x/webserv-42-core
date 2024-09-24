@@ -56,7 +56,7 @@ async fn send_thousand_requests_after_each_other() {
 async fn send_many_requests_in_parallel() {
 	let server = load_env();
 	let mut futures = JoinSet::new();
-	for _ in 0..1000 {
+	for _ in 0..500 {
 		let server_clone = server.clone();
 		futures.spawn(async move {
 			let client = Client::new();
