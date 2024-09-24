@@ -33,7 +33,6 @@ std::unique_ptr<ResponsePacket> dummy_response()
     response_packet->set_status_code(200);
     response_packet->set_status_message("OK");
     response_packet->set_header("Content-Type", "text/html");
-    response_packet->set_header("Content-Length", "38");
     response_packet->set_content("<html><body><h1>Hello, Browser!</h1></body></html>");
     return response_packet;
 }
@@ -45,7 +44,6 @@ std::unique_ptr<ResponsePacket> not_found(const std::string &error_page)
     response_packet->set_status_message("Not found");
     response_packet->set_content(error_page);
     response_packet->set_header("Content-Type", "text/html");
-    response_packet->set_header("Content-Length", std::to_string(error_page.size()));
     response_packet->set_final_response();
     return response_packet;
 }
@@ -55,7 +53,6 @@ std::unique_ptr<ResponsePacket> ok_with_content(File &file, std::unique_ptr<Resp
     response_packet->set_status_code(200);
     response_packet->set_status_message("OK");
     response_packet->set_header("Content-Type", get_content_type(file.file_ending));
-    response_packet->set_header("Content-Length", std::to_string(file.content.size()));
     response_packet->set_content(file.content);
     return response_packet;
 }
@@ -75,7 +72,6 @@ std::unique_ptr<ResponsePacket> autoindex_response(std::string &index, std::uniq
     response_packet->set_status_code(200);
     response_packet->set_status_message("OK");
     response_packet->set_header("Content-Type", "text/html");
-    response_packet->set_header("Content-Length", std::to_string(index.size()));
     response_packet->set_content(index);
     return response_packet;
 }
