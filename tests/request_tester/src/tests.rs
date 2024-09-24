@@ -20,9 +20,9 @@ fn test_request_index() {
 fn test_request_not_found() {
 	let server = load_env();
 	let client = Client::new();
-	let response = client.get(format!("{}/not-found-1234", server)).send().unwrap();
+	let response = client.get(format!("{}/not-found-1234.html", server)).send().unwrap();
 	dbg!(&response);
-	assert!(response.status().is_client_error());
+	assert!(response.status() == 404);
 }
 
 #[test]
@@ -38,11 +38,11 @@ fn send_two_requests_at_once() {
 }
 
 #[test]
-fn send_hundred_requests_at_once() {
+fn send_thousand_requests_at_once() {
 	let server = load_env();
 	let client = Client::new();
 	let mut responses = Vec::new();
-	for _ in 0..100 {
+	for _ in 0..1000 {
 		let response = client.get(&server).send().unwrap();
 		responses.push(response);
 	}

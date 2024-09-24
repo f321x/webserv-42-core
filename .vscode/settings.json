@@ -78,10 +78,8 @@
 		"PATH": "/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 		"RUSTUP_TOOLCHAIN": "stable-x86_64-unknown-linux-gnu"
       },
-      "rust-analyzer.checkOnSave.extraEnv": {
-        "RUSTUP_HOME": "/root/.rustup",
-        "CARGO_HOME": "/root/.cargo",
-        "CARGO_TARGET_DIR": "/workspace/rust_target",
-		"PATH": "/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-      }
+	"rust-analyzer.runnables.extraEnv": null,
+	"rust-analyzer.linkedProjects": [
+		"/workspace/tests/request_tester/Cargo.toml",
+	],
 }
