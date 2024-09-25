@@ -51,6 +51,7 @@ WebServerConfig::WebServerConfig(const std::string &config_file_path)
 				else if (context_stack.top() == "location")
 				{
 					INFO("Adding route: " + current_route.first);
+					current_route.second.setRoute(current_route.first);
 					current_server.addRoute(current_route.first, current_route.second);
 					current_route.first.clear();
 					current_route.second = RouteConfig();
@@ -122,7 +123,7 @@ void WebServerConfig::printConfig() const
 			std::cout << "Redirection: " << config.getRedirection() << ", ";
 			std::cout << "Autoindex: " << config.isAutoindex() << ", ";
 			std::cout << "Default file: " << config.getDefaultFile() << ", ";
-			// std::cout << "Directory listing: " << (config.isDirectoryListing() ? "true" : "false") << ", ";
+			std::cout << "cgi: " << (config.isCgi() ? "true" : "false") << ", ";
 			std::cout << "Upload directory: " << config.getUploadDirectory() << std::endl;
 		}
 	}
