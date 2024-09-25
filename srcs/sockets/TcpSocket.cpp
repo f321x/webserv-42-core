@@ -176,10 +176,49 @@ std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t 
 	return result;
 }
 
-std::string TcpSocket::read_request_body_chunked(int max_body_size)
+std::string TcpSocket::read_request_body_chunked(int max_body_size, std::string &existing_data)
 {
-	(void)max_body_size;
-	throw std::runtime_error("TcpSocket: Chunked encoding not implemented");
+	std::string chunked_data;
+	char buffer[1024];
+	ssize_t bytes_read;
+
+	chunked_data = existing_data;
+	while (true)
+	{
+		// read into buffer
+		memset(buffer, 0, sizeof(buffer));
+		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
+
+		chunked_data.append(buffer, bytes_read);
+	}
+	// return result;
+}
+
+std::string unchunk_data(const std::string &chunked_data)
+{
+	// std::string result;
+	// std::istringstream iss(chunked_data);
+	// std::string line;
+	// size_t chunk_size;
+
+	// while (std::getline(iss, line))
+	// {
+	// 	if (line.empty())
+	// 		continue;
+
+	// 	// get chunk size
+	// 	std::istringstream size_stream(line);
+	// 	size_stream >> std::hex >> chunk_size;
+
+	// 	// read chunk data
+	// 	std::string chunk_data;
+	// 	std::getline(iss, chunk_data, '\n');
+	// 	result.append(chunk_data, 0, chunk_size);
+
+	// 	// skip the CRLF at the end of the chunk
+	// 	std::getline(iss, line);
+	// }
+	return result;
 }
 
 void TcpSocket::write_data(const std::string &data)
