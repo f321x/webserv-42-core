@@ -1,6 +1,6 @@
 use reqwest::Client;
 use dotenvy::dotenv;
-use tokio::task::JoinSet;
+use tokio::{stream, task::JoinSet};
 use std::env;
 
 fn load_env() -> String {
@@ -67,6 +67,25 @@ async fn send_many_requests_in_parallel() {
 	// await all
 	futures.join_all().await;
 }
+
+// #[tokio::test]
+// async fn send_chunked_http_request() {
+// 	let server = load_env();
+// 	let client = Client::new();
+//         let url = "http://example.com/api/chunked-upload";
+
+//         let chunked_body = stream::iter(vec![
+//             Ok::<_, reqwest::Error>("chunked data".into())
+//         ]);
+
+//         let response = client.post(url)
+//             .body(reqwest::Body::wrap_stream(chunked_body))
+//             .send()
+//             .await;
+// 	let response = client.get(server).send().await.unwrap();
+// 	dbg!(&response);
+// 	assert!(response.status().is_success());
+// }
 
 
 // #[test]

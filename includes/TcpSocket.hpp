@@ -27,14 +27,14 @@ public:
 
 	void bind_to_address(const sockaddr_in &address); // bind the socket to the address
 	void listen_on_socket();
-	int fd() const;																				   // get the file descriptor
-	pollfd new_pfd() const;																		   // get a new pollfd struct for the socket
-	std::unique_ptr<TcpSocket> accept_connection();												   // accept a new connection and return the newly created socket
-	std::string read_request_header();															   // Read the header of the request
-	std::string read_request_body_unchunked(size_t max_body_size, size_t promised_content_length); // Read the body of the request
-	std::string read_request_body_chunked(int max_body_size);									   // Read the body of the request with chunked encoding
-	void write_data(const std::string &data);													   // write data to the socket
-	bool is_bind_socket() const;																   // check if the socket belongs to the main listening sockets
+	int fd() const;																					 // get the file descriptor
+	pollfd new_pfd() const;																			 // get a new pollfd struct for the socket
+	std::unique_ptr<TcpSocket> accept_connection();													 // accept a new connection and return the newly created socket
+	std::string read_request_header();																 // Read the header of the request
+	std::string read_request_body_unchunked(size_t max_body_size, size_t promised_content_length);	 // Read the body of the request
+	std::string TcpSocket::read_request_body_chunked(int max_body_size, std::string &existing_data); // Read the body of the chunked request
+	void write_data(const std::string &data);														 // write data to the socket
+	bool is_bind_socket() const;																	 // check if the socket belongs to the main listening sockets
 
 private:
 	sockaddr_in _address;
