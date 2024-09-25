@@ -29,6 +29,8 @@ std::string RouteConfig::getDefaultFile() const { return _default_file; }
 
 std::string RouteConfig::getUploadDirectory() const { return _upload_directory; }
 
+bool RouteConfig::isCgi() const { return _cgi; }
+
 // SETTERS
 void RouteConfig::setRedirectionUrl(const std::string &url) { _redirection_url = url; }
 
@@ -53,6 +55,8 @@ void RouteConfig::setAcceptedMethods(const std::vector<std::string> &methods)
 		_accepted_methods.push_back(method);
 	}
 }
+
+void RouteConfig::setCgi(bool cgi) { _cgi = cgi; }
 
 void RouteConfig::checkRouteConfig() const
 {
