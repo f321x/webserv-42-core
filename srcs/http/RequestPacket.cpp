@@ -170,3 +170,13 @@ size_t RequestPacket::get_content_size() const
 {
 	return _content.length();
 }
+
+void RequestPacket::replace_content(const std::string &new_content)
+{
+	_content = new_content;
+}
+
+void RequestPacket::add_to_content(const std::string &new_content)
+{
+	_content += new_content;
+}

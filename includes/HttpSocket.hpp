@@ -32,6 +32,8 @@ private:
     std::unique_ptr<TcpSocket> _socket;
     std::shared_ptr<std::vector<ServerConfig>> _available_configs;
     std::chrono::steady_clock::time_point _last_activity;
+    bool _ongoing_chunked_request = false;
+    std::string _chunked_packet_buffer;
 
     // private functions
     sockaddr_in _compose_sockaddr(const std::string &addr, int port);

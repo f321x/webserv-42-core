@@ -18,6 +18,8 @@ public:
 	int get_content_length_header() const;
 	bool is_chunked() const;
 	size_t get_content_size() const;
+	void replace_content(const std::string &new_content);
+	void add_to_content(const std::string &new_content);
 
 	class InvalidPacketException : public std::exception
 	{

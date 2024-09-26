@@ -81,19 +81,50 @@ void HttpSocket::handle_client_data()
     std::string client_data;
     try
     {
-        std::string partial_packet = _socket->read_request_header();
-        client_data += partial_packet;
-        std::unique_ptr<RequestPacket> header_only_packet = std::make_unique<RequestPacket>(partial_packet);
+        if (!_ongoing_chunked_request)
+        {
+            std::string partial_packet = _socket->read_request_header();
+            client_data += partial_packet;
+            std::unique_ptr<RequestPacket> header_only_packet = std::make_unique<RequestPacket>(partial_packet);
 
-        // deduct the bytes we already read in excess (bytes after the header) from the promised content length
-        int remaining_bytes = header_only_packet->get_content_length_header() - header_only_packet->get_content_size();
+            // deduct the bytes we already read in excess (bytes after the header) from the promised content length
+            int remaining_bytes = header_only_packet->get_content_length_header() - header_only_packet->get_content_size();
 
-        if (header_only_packet->get_content_length_header() > _smallest_max_body_size())
-            return _write_client_response(payload_too_large());
-        else if (header_only_packet->is_chunked())
-            client_data += _socket->read_request_body_chunked(_smallest_max_body_size());
-        else
-            client_data += _socket->read_request_body_unchunked(_smallest_max_body_size(), remaining_bytes);
+            if (header_only_packet->get_content_length_header() > _smallest_max_body_size())
+                return _write_client_response(payload_too_large());
+            else if (header_only_packet->is_chunked())
+            {
+                remove_content_from_packet(client_data, header_only_packet->get_content());
+                auto [unchunked_content, finished] = _socket->read_request_body_chunked(_smallest_max_body_size(), header_only_packet->get_content());
+                if (finished)
+                    client_data += unchunked_content;
+                else
+                {
+                    _chunked_packet_buffer += client_data;
+                    _chunked_packet_buffer += unchunked_content;
+                    _ongoing_chunked_request = true;
+                    return;
+                }
+            }
+            else
+                client_data += _socket->read_request_body_unchunked(_smallest_max_body_size(), remaining_bytes);
+        }
+        else // directly read chunked data because the header and existing content is already in the buffer
+        {
+            auto [unchunked_content, finished] = _socket->read_request_body_chunked(_smallest_max_body_size(), "");
+            if (finished)
+            {
+                client_data += _chunked_packet_buffer;
+                client_data += unchunked_content;
+                _chunked_packet_buffer.clear();
+                _ongoing_chunked_request = false;
+            }
+            else
+            {
+                _chunked_packet_buffer += unchunked_content;
+                return;
+            }
+        }
     }
     catch (const std::exception &e)
     {
