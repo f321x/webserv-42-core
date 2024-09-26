@@ -7,6 +7,7 @@
 
 std::vector<std::string> split(const std::string &str, const char delim);
 std::string trim(const std::string &str);
+void remove_content_from_packet(std::string &packet, const std::string &content);
 
 struct HostPortPair
 {

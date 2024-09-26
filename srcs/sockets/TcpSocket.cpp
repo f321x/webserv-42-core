@@ -176,13 +176,16 @@ std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t 
 	return result;
 }
 
-std::string TcpSocket::read_request_body_chunked(int max_body_size, std::string &existing_data)
+std::pair<std::string, bool> TcpSocket::read_request_body_chunked(int max_body_size, std::string existing_chunked_data)
 {
 	std::string chunked_data;
+	std::string result; // result has to be clean, unchunked content
 	char buffer[1024];
 	ssize_t bytes_read;
+	bool finished = false;
 
-	chunked_data = existing_data;
+	chunked_data = existing_chunked_data;
+	chunked_data.append(_buffer);
 	while (true)
 	{
 		// read into buffer
@@ -190,35 +193,25 @@ std::string TcpSocket::read_request_body_chunked(int max_body_size, std::string 
 		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
 
 		chunked_data.append(buffer, bytes_read);
+		auto [unchunked_data, complete] = unchunk_data(chunked_data);
+		result.append(unchunked_data);
+
+		if (result.size() > max_body_size)
+			throw std::runtime_error("TcpSocket: Request body too large");
+		if (bytes_read <= 0)
+			break;
 	}
-	// return result;
+	return std::make_pair(result, finished);
 }
 
-std::string unchunk_data(const std::string &chunked_data)
+// removes all complete chunks from the chunked_data string and returns the unchunked data
+// chunked_data will be trimmed to the last incomplete chunk
+std::pair<std::string, bool> unchunk_data(std::string &chunked_data)
 {
-	// std::string result;
-	// std::istringstream iss(chunked_data);
-	// std::string line;
-	// size_t chunk_size;
+	std::string result;
+	bool complete = false;
 
-	// while (std::getline(iss, line))
-	// {
-	// 	if (line.empty())
-	// 		continue;
-
-	// 	// get chunk size
-	// 	std::istringstream size_stream(line);
-	// 	size_stream >> std::hex >> chunk_size;
-
-	// 	// read chunk data
-	// 	std::string chunk_data;
-	// 	std::getline(iss, chunk_data, '\n');
-	// 	result.append(chunk_data, 0, chunk_size);
-
-	// 	// skip the CRLF at the end of the chunk
-	// 	std::getline(iss, line);
-	// }
-	return result;
+	return std::make_pair(result, complete);
 }
 
 void TcpSocket::write_data(const std::string &data)
