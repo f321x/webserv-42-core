@@ -137,6 +137,7 @@ std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t 
 	ssize_t bytes_read;
 
 	result = _buffer;
+	_buffer.clear();
 	while (true)
 	{
 		memset(buffer, 0, sizeof(buffer));
@@ -176,40 +177,71 @@ std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t 
 	return result;
 }
 
-std::pair<std::string, bool> TcpSocket::read_request_body_chunked(int max_body_size, std::string existing_chunked_data)
+std::pair<std::string, bool> TcpSocket::read_request_body_chunked(size_t max_body_size, std::string existing_chunked_data)
 {
 	std::string chunked_data;
 	std::string result; // result has to be clean, unchunked content
 	char buffer[1024];
 	ssize_t bytes_read;
-	bool finished = false;
 
 	chunked_data = existing_chunked_data;
 	chunked_data.append(_buffer);
+	_buffer.clear();
 	while (true)
 	{
 		// read into buffer
 		memset(buffer, 0, sizeof(buffer));
 		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
+		if (bytes_read <= 0)
+			break;
 
 		chunked_data.append(buffer, bytes_read);
-		auto [unchunked_data, complete] = unchunk_data(chunked_data);
+		auto [unchunked_data, complete] = _unchunk_data(chunked_data);
 		result.append(unchunked_data);
 
 		if (result.size() > max_body_size)
 			throw std::runtime_error("TcpSocket: Request body too large");
-		if (bytes_read <= 0)
-			break;
+		else if (complete)
+			return std::make_pair(result, true);
 	}
-	return std::make_pair(result, finished);
+	_buffer = chunked_data;
+	return std::make_pair(result, false);
 }
 
 // removes all complete chunks from the chunked_data string and returns the unchunked data
 // chunked_data will be trimmed to the last incomplete chunk
-std::pair<std::string, bool> unchunk_data(std::string &chunked_data)
+// ignores prefix extensions
+std::pair<std::string, bool> TcpSocket::_unchunk_data(std::string &chunked_data)
 {
 	std::string result;
 	bool complete = false;
+
+	while (true)
+	{
+		// find the end of the chunk size prefix
+		size_t chunk_size_end = chunked_data.find("\r\n");
+		if (chunk_size_end == std::string::npos)
+			break;
+
+		// get the chunk size
+		std::string chunk_size_str = chunked_data.substr(0, chunk_size_end);
+		size_t chunk_size = std::stoul(chunk_size_str, nullptr, 16);
+		if (chunk_size == 0)
+		{
+			// end of chunked data
+			complete = true;
+			break;
+		}
+
+		// find the end of the chunk data
+		size_t chunk_end = chunked_data.find("\r\n", chunk_size_end + 2);
+		if (chunk_end == std::string::npos)
+			break;
+
+		// append the chunk data to the result
+		result.append(chunked_data, chunk_size_end + 2, chunk_size);
+		chunked_data = chunked_data.substr(chunk_end + 2);
+	}
 
 	return std::make_pair(result, complete);
 }
