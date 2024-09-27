@@ -69,6 +69,17 @@ async fn send_many_requests_in_parallel() {
 	futures.join_all().await;
 }
 
+#[tokio::test]
+async fn send_chunked_request() {
+        let chunked_body = vec!["Hello", ", ", "worl", "d", "!"];
+    let stream = stream::iter(chunked_body.into_iter().map(Result::<_, Infallible>::Ok));
+    let body = Body::wrap_stream(stream);
+        let server = load_env();
+        let client = Client::new();
+        let response = client.post(server).body(body).send().await.unwrap();
+        dbg!(&response);
+        assert!(response.status().is_success());
+}
 
 // #[test]
 // fn send_chunked_request() {
