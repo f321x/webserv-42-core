@@ -1,8 +1,8 @@
-use futures::{Stream, StreamExt};
-use reqwest::Client;
+use futures::{stream, Stream, StreamExt};
+use reqwest::{Body, Client};
 use dotenvy::dotenv;
-use tokio::{stream, task::JoinSet};
-use std::{env, time::Duration};
+use tokio::{task::JoinSet};
+use std::{convert::Infallible, env, time::Duration};
 
 fn load_env() -> String {
 	dotenv().ok();

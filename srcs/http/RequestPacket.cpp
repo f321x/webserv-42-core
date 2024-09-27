@@ -160,6 +160,10 @@ bool RequestPacket::is_chunked() const
 	std::string transferEncoding = get_header("Transfer-Encoding");
 	if (transferEncoding == "")
 	{
+		transferEncoding = get_header("transfer-encoding");
+	}
+	if (transferEncoding == "")
+	{
 		return false;
 	}
 
