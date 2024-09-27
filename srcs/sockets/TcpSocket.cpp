@@ -184,6 +184,7 @@ std::pair<std::string, bool> TcpSocket::read_request_body_chunked(size_t max_bod
 	char buffer[1024];
 	ssize_t bytes_read;
 
+	TRACE("Reading chunked data from client socket");
 	chunked_data = existing_chunked_data;
 	chunked_data.append(_buffer);
 	_buffer.clear();
