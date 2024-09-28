@@ -1,8 +1,9 @@
 use futures::stream;
+use rand::Rng;
 use reqwest::{Body, Client};
 use dotenvy::dotenv;
 use tokio::task::JoinSet;
-use std::{convert::Infallible, env};
+use std::{convert::Infallible, env, vec};
 
 fn load_env() -> String {
 	dotenv().ok();
@@ -81,11 +82,25 @@ async fn send_chunked_request() {
         assert!(response.status().is_success());
 }
 
-// #[test]
-// fn send_chunked_request() {
-
-// }
-
+#[tokio::test]
+async fn send_large_chunked_request_of_random_data() {
+	// let mut rng = rand::thread_rng();
+	// let chunked_body: Vec<Vec<u8>> = (0..1024)
+    // .map(|_| {
+    //     let mut buf = vec![0u8; 1024];
+    //     rng.fill(&mut buf[..]);
+    //     buf
+    // })
+    // .collect();
+	let chunked_body = vec![vec![b'A'; 2048], vec![b'B'; 1024], vec![b'C'; 2048], vec![b'D'; 1024], vec![b'E'; 4096], vec![b'F'; 1024], vec![b'G'; 1024], vec![b'H'; 1024], vec![b'I'; 1024], vec![b'J'; 1024], vec![b'K'; 1024], vec![b'L'; 1024], vec![b'M'; 1024], vec![b'N'; 1024], vec![b'O'; 1024], vec![b'P'; 1024], vec![b'Q'; 1024], vec![b'R'; 1024], vec![b'S'; 1024], vec![b'T'; 1024], vec![b'U'; 1024], vec![b'V'; 1024], vec![b'W'; 1024], vec![b'X'; 1024], vec![b'Y'; 1024], vec![b'Z'; 1024]];
+	let stream = stream::iter(chunked_body.into_iter().map(Result::<_, Infallible>::Ok));
+	let body = Body::wrap_stream(stream);
+	let server = load_env();
+	let client = Client::new();
+	let response = client.post(server).body(body).send().await.unwrap();
+	dbg!(&response);
+	assert!(response.status().is_success());
+}
 
 // #[test]
 // fn test_post_index() {
