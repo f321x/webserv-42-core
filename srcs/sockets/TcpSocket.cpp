@@ -109,7 +109,7 @@ std::string TcpSocket::read_request_header()
 		memset(buffer, 0, sizeof(buffer));
 		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
 
-		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
+		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket:\n" + std::string(buffer));
 		if (bytes_read > 0)
 		{
 			// Data received, append to result
@@ -184,8 +184,8 @@ std::pair<std::string, bool> TcpSocket::read_request_body_chunked(size_t max_bod
 	char buffer[1024];
 	ssize_t bytes_read;
 
-	TRACE("Reading chunked data from client socket");
-	chunked_data = existing_chunked_data;
+	TRACE("Reading chunked data from client socket, existing data: " + existing_chunked_data);
+	chunked_data = existing_chunked_data; // existing data will only contain something in the first call (leftover from header reading)
 	chunked_data.append(_buffer);
 	_buffer.clear();
 	while (true)
@@ -193,10 +193,9 @@ std::pair<std::string, bool> TcpSocket::read_request_body_chunked(size_t max_bod
 		// read into buffer
 		memset(buffer, 0, sizeof(buffer));
 		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
-		if (bytes_read <= 0)
-			break;
 
-		chunked_data.append(buffer, bytes_read);
+		if (bytes_read > 0)
+			chunked_data.append(buffer, bytes_read);
 		auto [unchunked_data, complete] = _unchunk_data(chunked_data);
 		result.append(unchunked_data);
 
@@ -204,6 +203,8 @@ std::pair<std::string, bool> TcpSocket::read_request_body_chunked(size_t max_bod
 			throw std::runtime_error("TcpSocket: Request body too large");
 		else if (complete)
 			return std::make_pair(result, true);
+		else if (bytes_read <= 0)
+			break;
 	}
 	_buffer = chunked_data;
 	return std::make_pair(result, false);

@@ -84,8 +84,8 @@ void HttpSocket::handle_client_data()
         if (!_ongoing_chunked_request)
         {
             std::string partial_packet = _socket->read_request_header();
-            client_data += partial_packet;
             std::unique_ptr<RequestPacket> header_only_packet = std::make_unique<RequestPacket>(partial_packet);
+            client_data += partial_packet;
 
             // deduct the bytes we already read in excess (bytes after the header) from the promised content length
             int remaining_bytes = header_only_packet->get_content_length_header() - header_only_packet->get_content_size();
@@ -94,6 +94,7 @@ void HttpSocket::handle_client_data()
                 return _write_client_response(payload_too_large());
             else if (header_only_packet->is_chunked())
             {
+                DEBUG("PARTIAL PACKET CONTENT: " + header_only_packet->get_content());
                 remove_content_from_packet(client_data, header_only_packet->get_content());
                 auto [unchunked_content, finished] = _socket->read_request_body_chunked(_smallest_max_body_size(), header_only_packet->get_content());
                 if (finished)

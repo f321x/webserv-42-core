@@ -21,4 +21,5 @@ public:
 protected:
 	std::map<std::string, std::string> _headers;
 	std::string _content;
+	size_t _content_length_header = 0;
 };
