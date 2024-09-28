@@ -101,12 +101,6 @@ void RequestPacket::parseRawPacket()
 		set_header(trim(key), trim(value));
 	}
 
-	std::string contentLengthString = get_header("Content-Length");
-	if (contentLengthString == "")
-	{
-		return;
-	}
-
 	// Body
 	size_t bodyStart = _raw_packet.find("\n\n");
 	unsigned int iOffset = 2;
@@ -116,43 +110,37 @@ void RequestPacket::parseRawPacket()
 		iOffset = 4;
 	}
 	if (bodyStart == std::string::npos)
-	{
 		return;
+
+	// headers can be upper and lowercase
+	std::string contentLengthString = get_header("Content-Length");
+	if (contentLengthString == "")
+		contentLengthString = get_header("content-length");
+	// removed return because there are also packets without content-length header
+
+	if (contentLengthString != "")
+	{
+		try
+		{
+			_content_length_header = std::stoul(contentLengthString);
+		}
+		catch (const std::exception &e)
+		{
+			throw InvalidPacketException();
+		}
 	}
 
-	size_t contentLength;
-	try
-	{
-		contentLength = std::stoul(contentLengthString);
-	}
-	catch (const std::exception &e)
-	{
-		throw InvalidPacketException();
-	}
-
-	if (bodyStart + iOffset + contentLength > _raw_packet.length())
-	{
-		throw InvalidPacketException();
-	}
+	// // this does not work if there is no content length header
+	// if (bodyStart + iOffset + _content_length_header > _raw_packet.length())
+	// {
+	// 	throw InvalidPacketException();
+	// }
 	set_content(_raw_packet.substr(bodyStart + iOffset));
 }
 
 int RequestPacket::get_content_length_header() const
 {
-	std::string contentLengthString = get_header("Content-Length");
-	if (contentLengthString == "")
-	{
-		return 0;
-	}
-
-	try
-	{
-		return std::stoi(contentLengthString);
-	}
-	catch (const std::exception &e)
-	{
-		return 0;
-	}
+	return _content_length_header;
 }
 
 bool RequestPacket::is_chunked() const
