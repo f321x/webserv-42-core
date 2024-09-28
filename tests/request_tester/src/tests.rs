@@ -1,4 +1,5 @@
 use futures::stream;
+#[allow(unused)]
 use rand::Rng;
 use reqwest::{Body, Client};
 use dotenvy::dotenv;
