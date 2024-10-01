@@ -3,3 +3,5 @@ webserv
 test
 /rust_target
 /tests/request_tester/target
+/tests/webserv_tester_fredrikalindh/venv
+/tests/webserv_tester_fredrikalindh/__pycache__
