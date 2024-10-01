@@ -13,6 +13,29 @@ bool check_keep_alive(RequestPacket &packet)
     return true;
 }
 
+// // this doesn't seem to work
+// std::string find_longest_matching_route(const std::string &uri, const std::map<std::string, RouteConfig> &routes)
+// {
+//     std::string longest_matching_route;
+//     for (const auto &route : routes)
+//     {
+//         // Check if the URI starts with the current route path
+//         if (uri.compare(0, route.first.length(), route.first) == 0)
+//         {
+//             // Ensure that it's either an exact match or the next character is a boundary (like '/')
+//             if (uri.length() == route.first.length() || uri[route.first.length()] == '/')
+//             {
+//                 // Update if this route is the longest match found so far
+//                 if (route.first.length() > longest_matching_route.length())
+//                 {
+//                     longest_matching_route = route.first;
+//                 }
+//             }
+//         }
+//     }
+//     return longest_matching_route;
+// }
+
 std::string find_longest_matching_route(const std::string &uri, const std::map<std::string, RouteConfig> &routes)
 {
     std::string longest_matching_route;

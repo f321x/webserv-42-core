@@ -45,3 +45,4 @@ void parseAutoindex(RouteConfig &route, std::istringstream &stream);
 void parseDefaultFile(RouteConfig &route, std::istringstream &stream);
 void parseDirectoryListing(RouteConfig &route, std::istringstream &stream);
 void parseUploadDirectory(RouteConfig &route, std::istringstream &stream);
+void parseCgi(RouteConfig &route, std::istringstream &stream);

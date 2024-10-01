@@ -206,3 +206,23 @@ void parseUploadDirectory(RouteConfig &route, std::istringstream &stream)
 	ensureNoTrailingTokens(stream);
 	INFO("ADDED Upload directory: " + route.getUploadDirectory());
 }
+
+void parseCgi(RouteConfig &route, std::istringstream &stream)
+{
+	std::string value;
+	stream >> value;
+
+	if (value.back() == ';')
+		value.pop_back(); // Remove trailing semicolon
+	else
+		throw std::runtime_error("Expected ';' at the end of the cgi directive");
+
+	if (value == "on")
+		route.setCgi(true);
+	else if (value == "off")
+		route.setCgi(false);
+	else
+		throw std::runtime_error("Invalid cgi value: " + value);
+	ensureNoTrailingTokens(stream);
+	INFO("ADDED CGI: " + value);
+}
