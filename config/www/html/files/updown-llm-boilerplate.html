@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload and Download Test</title>
+</head>
+<body>
+    <h1>File Upload and Download Test</h1>
+    
+    <h2>Upload File</h2>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="fileToUpload" id="fileToUpload">
+        <input type="submit" value="Upload File" name="submit">
+    </form>
+
+    <h2>Download File</h2>
+    <p>Click the link below to download the last uploaded file:</p>
+    <a href="/download" download>Download File</a>
+
+    <script>
+        // This script will update the download link with a timestamp to prevent caching
+        document.querySelector('a[download]').addEventListener('click', function(e) {
+            this.href = '/download?' + new Date().getTime();
+        });
+    </script>
+</body>
+</html>
