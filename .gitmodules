@@ -1,0 +1,3 @@
+[submodule "tests/webserv_tester_fredrikalindh"]
+	path = tests/webserv_tester_fredrikalindh
+	url = https://github.com/fredrikalindh/webserv_tester
