@@ -2,6 +2,9 @@
 
 #include <string>
 #include <utility>
+#include <unistd.h>
+#include <vector>
+#include <sys/wait.h>
 #include "RequestPacket.hpp"
 #include "ResponsePacket.hpp"
 #include "ServerConfig.hpp"
@@ -10,13 +13,11 @@
 class Cgi
 {
 private:
-	std::string _script_name;
+	std::vector<std::string> _env;
 	std::string _path_info;
-	std::string _query_string;
 	int _fds[2];
-	int _pid;
 
 public:
 	Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
-	// execute();
+	void execute();
 };
