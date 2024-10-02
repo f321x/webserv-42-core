@@ -5,7 +5,7 @@ bool check_keep_alive(RequestPacket &packet)
 {
     if (packet.get_header("Connection") == "keep-alive")
         return true;
-    if (packet.get_http_version() == "HTTP/1.0")
+    if (packet.getHttpVersion() == "HTTP/1.0")
         return false;
     if (packet.get_header("Connection") == "close")
         return false;

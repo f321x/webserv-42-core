@@ -30,17 +30,17 @@ RequestPacket &RequestPacket::operator=(const RequestPacket &other)
 
 RequestPacket::~RequestPacket() {}
 
-std::string RequestPacket::get_http_version() const
+std::string RequestPacket::getHttpVersion() const
 {
 	return _http_version;
 }
 
-std::string RequestPacket::get_uri() const
+std::string RequestPacket::getUri() const
 {
 	return _uri;
 }
 
-Method RequestPacket::get_method() const
+Method RequestPacket::getMethod() const
 {
 	return _method;
 }
@@ -138,12 +138,12 @@ void RequestPacket::parseRawPacket()
 	set_content(_raw_packet.substr(bodyStart + iOffset));
 }
 
-int RequestPacket::get_content_length_header() const
+int RequestPacket::getContentLengthHeader() const
 {
 	return _content_length_header;
 }
 
-bool RequestPacket::is_chunked() const
+bool RequestPacket::isChunked() const
 {
 	std::string transferEncoding = get_header("Transfer-Encoding");
 	if (transferEncoding == "")
@@ -158,17 +158,27 @@ bool RequestPacket::is_chunked() const
 	return transferEncoding == "chunked";
 }
 
-size_t RequestPacket::get_content_size() const
+size_t RequestPacket::getContentSize() const
 {
 	return _content.length();
 }
 
-void RequestPacket::replace_content(const std::string &new_content)
+std::string RequestPacket::getQueryString() const
+{
+	std::string uri = getUri();
+	size_t qPos = uri.find('?');
+
+	if (qPos == std::string::npos)
+		return "";
+	return uri.substr(qPos + 1);
+}
+
+void RequestPacket::replaceContent(const std::string &new_content)
 {
 	_content = new_content;
 }
 
-void RequestPacket::add_to_content(const std::string &new_content)
+void RequestPacket::addToContent(const std::string &new_content)
 {
 	_content += new_content;
 }

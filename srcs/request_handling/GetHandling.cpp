@@ -2,7 +2,7 @@
 
 std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 {
-    UriInfo uri_info = get_uri_info(request_packet.get_uri(), config_pair.second);
+    UriInfo uri_info = getUri_info(request_packet.getUri(), config_pair.second);
     switch (uri_info.type)
     {
     case UriType::FILE_REQUEST:
@@ -23,7 +23,7 @@ std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, 
     }
     case UriType::AUTOINDEX:
     {
-        std::string index = get_autoindex(uri_info.path, request_packet.get_uri());
+        std::string index = get_autoindex(uri_info.path, request_packet.getUri());
         if (index.empty())
             return not_found(load_error_page(404, config_pair.first));
         return autoindex_response(index, std::move(response_packet));
@@ -159,7 +159,7 @@ std::optional<File> load_file_with_cache(const std::string &filepath)
     return file;
 }
 
-UriInfo get_uri_info(const std::string &uri, const RouteConfig &route_config)
+UriInfo getUri_info(const std::string &uri, const RouteConfig &route_config)
 {
     UriInfo uri_info;
     if (!route_config.getRedirection().empty())

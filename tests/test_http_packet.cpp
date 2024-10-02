@@ -11,25 +11,25 @@
 // 		std::string request = "GET /index.html HTTP/1.1\r\nHost: localhost:4242\r\n\r\n";
 // 		RequestPacket packet(request);
 
-// 		REQUIRE(packet.get_method() == GET);
-// 		REQUIRE(packet.get_uri() == "/index.html");
-// 		REQUIRE(packet.get_http_version() == "HTTP/1.1");
+// 		REQUIRE(packet.getMethod() == GET);
+// 		REQUIRE(packet.getUri() == "/index.html");
+// 		REQUIRE(packet.getHttpVersion() == "HTTP/1.1");
 // 		REQUIRE(packet.get_req_header("Host") == "localhost:4242");
 
 // 		// Test parsing no headers
 // 		request = "GET / HTTP/1.1\r\n\r\n";
 // 		packet = RequestPacket(request);
-// 		REQUIRE(packet.get_method() == GET);
-// 		REQUIRE(packet.get_uri() == "/");
-// 		REQUIRE(packet.get_http_version() == "HTTP/1.1");
+// 		REQUIRE(packet.getMethod() == GET);
+// 		REQUIRE(packet.getUri() == "/");
+// 		REQUIRE(packet.getHttpVersion() == "HTTP/1.1");
 // 		REQUIRE(packet.get_req_headers().size() == 0);
 
 // 		// Test parsing multiple headers
 // 		request = "POST / HTTP/1.1\r\nHost: localhost:4242\r\nUser-Agent: Mozilla/5.0\r\n\r\n";
 // 		packet = RequestPacket(request);
-// 		REQUIRE(packet.get_method() == POST);
-// 		REQUIRE(packet.get_uri() == "/");
-// 		REQUIRE(packet.get_http_version() == "HTTP/1.1");
+// 		REQUIRE(packet.getMethod() == POST);
+// 		REQUIRE(packet.getUri() == "/");
+// 		REQUIRE(packet.getHttpVersion() == "HTTP/1.1");
 // 		REQUIRE(packet.get_req_header("Host") == "localhost:4242");
 // 		REQUIRE(packet.get_req_header("User-Agent") == "Mozilla/5.0");
 

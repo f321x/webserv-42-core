@@ -26,7 +26,7 @@ std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const
     // Handle the request according to the requested method
     try
     {
-        switch (request_packet->get_method())
+        switch (request_packet->getMethod())
         {
         case Method::GET:
             response_packet = handle_get(*request_packet, std::move(response_packet), valid_config.value());
@@ -67,8 +67,8 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
 
         // check packet against available routes
         std::map<std::string, RouteConfig> routes = it->getRoutes();
-        std::string matching_route = find_longest_matching_route(packet.get_uri(), routes);
-        if (matching_route.empty() || packet.get_uri().length() < matching_route.length())
+        std::string matching_route = find_longest_matching_route(packet.getUri(), routes);
+        if (matching_route.empty() || packet.getUri().length() < matching_route.length())
         {
             it = configs.erase(it);
             continue;
@@ -76,7 +76,7 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
 
         // validate method
         auto accepted_methods = routes.at(matching_route).getAcceptedMethods();
-        if (std::find(accepted_methods.begin(), accepted_methods.end(), packet.get_method()) == accepted_methods.end())
+        if (std::find(accepted_methods.begin(), accepted_methods.end(), packet.getMethod()) == accepted_methods.end())
         {
             it = configs.erase(it);
             continue;
@@ -90,7 +90,7 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
     else if (configs.size() == 1)
     {
         valid_config.first = configs[0];
-        valid_config.second = configs[0].getRoutes().at(find_longest_matching_route(packet.get_uri(), configs[0].getRoutes()));
+        valid_config.second = configs[0].getRoutes().at(find_longest_matching_route(packet.getUri(), configs[0].getRoutes()));
         return valid_config;
     }
     else
