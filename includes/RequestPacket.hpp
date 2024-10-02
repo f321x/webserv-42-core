@@ -42,6 +42,6 @@ private:
 	Method _method;
 	std::string _uri;
 	std::string _http_version;
-
+	std::string _boundary;
 	void parseRawPacket();
 };

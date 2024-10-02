@@ -11,15 +11,16 @@ public:
 	BasePacket &operator=(const BasePacket &other);
 	virtual ~BasePacket();
 
-	std::string get_header(const std::string &key) const;
-	std::map<std::string, std::string> get_headers();
-	std::string get_content() const;
+	std::string getHeader(const std::string &key) const;
+	std::map<std::string, std::string> getHeaders();
+	std::string getContent() const;
 
-	void set_header(const std::string key, const std::string value);
-	void set_content(const std::string content);
+	void setHeader(const std::string key, const std::string value);
+	void setContent(const std::string content);
 
 protected:
 	std::map<std::string, std::string> _headers;
+	std::string _boundary;
 	std::string _content;
 	size_t _content_length_header = 0;
 };

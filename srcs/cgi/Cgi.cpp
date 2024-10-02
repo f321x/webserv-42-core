@@ -3,6 +3,7 @@
 
 Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 {
+	DEBUG("Trying out RequestPacket getters:\ngetHttpVersion: " + request_packet.getHttpVersion() + "\ngetUri: " + request_packet.getUri() + "\ngetMethod: " + std::to_string(request_packet.getMethod()) + "\ngetContentLengthHeader: " + std::to_string(request_packet.getContentLengthHeader()) + "\nisChunked: " + std::string(1, request_packet.isChunked() ? '1' : '0') + "\ngetContentSize: " + std::to_string(request_packet.getContentSize()) + "\ngetQueryString: " + request_packet.getQueryString());
 	std::string script_path = config_pair.second.getRoot() + request_packet.getUri();
 	DEBUG("Script path: " + script_path);
 	if (access(script_path.c_str(), X_OK) == -1)
@@ -14,9 +15,16 @@ Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, c
 	_env.push_back("REQUEST_METHOD=" + methods[request_packet.getMethod()]);
 	_env.push_back("QUERY_STRING=" + request_packet.getQueryString()); // TODO: create get_query_string
 	_env.push_back("CONTENT_LENGTH=" + std::to_string(request_packet.getContentSize()));
-	_env.push_back("CONTENT_TYPE=" + request_packet.getContentType());
+	std::string content_type = request_packet.getHeader("Content-Type");
+	if (content_type.empty())
+		content_type = "";
+	_env.push_back("CONTENT_TYPE=" + content_type);
 	_env.push_back("SERVER_PROTOCOL=" + request_packet.getHttpVersion());
-	_env.push_back("SERVER_NAME=" + config_pair.first.getServerName());
+	std::vector<std::string> server_names = config_pair.first.getServerNames();
+	if (!server_names.empty())
+		_env.push_back("SERVER_NAME=" + server_names[0]);
+	else
+		_env.push_back("SERVER_NAME=localhost"); // Default to "localhost" if no server name is defined
 	_env.push_back("SERVER_PORT=" + std::to_string(config_pair.first.getPort()));
 	_env.push_back("GATEWAY_INTERFACE=CGI/1.1");
 
@@ -25,23 +33,36 @@ Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, c
 		ERROR("Pipe failed");
 		return;
 	}
-	if (write(_fds[1], request_packet.get_content().c_str(), request_packet.getContentSize()) == -1)
+	if (write(_fds[1], request_packet.getContent().c_str(), request_packet.getContentSize()) == -1)
 	{
 		ERROR("Write failed");
 		return;
 	}
+	(void)response_packet;
+	execute();
 }
 
 void Cgi::execute()
 {
 	pid_t pid = fork();
+	int out_fds[2];
+
+	if (pipe(out_fds) == -1)
+	{
+		ERROR("Pipe failed");
+		return;
+	}
 
 	if (pid == 0)
 	{
-		// child process
+		// input
 		close(_fds[1]);
 		dup2(_fds[0], STDIN_FILENO);
 		close(_fds[0]);
+		// output
+		close(out_fds[0]);
+		dup2(out_fds[1], STDOUT_FILENO);
+		close(out_fds[1]);
 
 		// make null terminated env
 		std::vector<char *> env;
@@ -57,8 +78,19 @@ void Cgi::execute()
 	else if (pid > 0)
 	{
 		// parent process
+		int output_file = open("cgi_output.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644);
+		// Read from the pipe and write to the file
+		char buffer[1024];
+		ssize_t bytes_read;
+		while ((bytes_read = read(out_fds[0], buffer, sizeof(buffer))) > 0)
+		{
+			write(output_file, buffer, bytes_read);
+		}
+
 		close(_fds[0]);
 		close(_fds[1]);
+		close(out_fds[1]);
+		close(out_fds[0]);
 		int status;
 		waitpid(pid, &status, 0);
 	}

@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <vector>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include "RequestPacket.hpp"
 #include "ResponsePacket.hpp"
 #include "ServerConfig.hpp"

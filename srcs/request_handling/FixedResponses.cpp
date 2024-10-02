@@ -32,8 +32,8 @@ std::unique_ptr<ResponsePacket> dummy_response()
     std::unique_ptr<ResponsePacket> response_packet = std::make_unique<ResponsePacket>();
     response_packet->set_status_code(200);
     response_packet->set_status_message("OK");
-    response_packet->set_header("Content-Type", "text/html");
-    response_packet->set_content("<html><body><h1>Hello, Browser!</h1></body></html>");
+    response_packet->setHeader("Content-Type", "text/html");
+    response_packet->setContent("<html><body><h1>Hello, Browser!</h1></body></html>");
     return response_packet;
 }
 
@@ -42,8 +42,8 @@ std::unique_ptr<ResponsePacket> not_found(const std::string &error_page)
     auto response_packet = std::make_unique<ResponsePacket>();
     response_packet->set_status_code(404);
     response_packet->set_status_message("Not found");
-    response_packet->set_content(error_page);
-    response_packet->set_header("Content-Type", "text/html");
+    response_packet->setContent(error_page);
+    response_packet->setHeader("Content-Type", "text/html");
     response_packet->set_final_response();
     return response_packet;
 }
@@ -52,8 +52,8 @@ std::unique_ptr<ResponsePacket> ok_with_content(File &file, std::unique_ptr<Resp
 {
     response_packet->set_status_code(200);
     response_packet->set_status_message("OK");
-    response_packet->set_header("Content-Type", get_content_type(file.file_ending));
-    response_packet->set_content(file.content);
+    response_packet->setHeader("Content-Type", getContent_type(file.file_ending));
+    response_packet->setContent(file.content);
     return response_packet;
 }
 
@@ -62,7 +62,7 @@ std::unique_ptr<ResponsePacket> redirect(const std::string &location)
     auto response_packet = std::make_unique<ResponsePacket>();
     response_packet->set_status_code(301);
     response_packet->set_status_message("Moved Permanently");
-    response_packet->set_header("Location", location);
+    response_packet->setHeader("Location", location);
     response_packet->set_final_response();
     return response_packet;
 }
@@ -71,7 +71,7 @@ std::unique_ptr<ResponsePacket> autoindex_response(std::string &index, std::uniq
 {
     response_packet->set_status_code(200);
     response_packet->set_status_message("OK");
-    response_packet->set_header("Content-Type", "text/html");
-    response_packet->set_content(index);
+    response_packet->setHeader("Content-Type", "text/html");
+    response_packet->setContent(index);
     return response_packet;
 }

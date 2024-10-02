@@ -3,11 +3,11 @@
 // https://datatracker.ietf.org/doc/html/rfc9112#section-9.3
 bool check_keep_alive(RequestPacket &packet)
 {
-    if (packet.get_header("Connection") == "keep-alive")
+    if (packet.getHeader("Connection") == "keep-alive")
         return true;
     if (packet.getHttpVersion() == "HTTP/1.0")
         return false;
-    if (packet.get_header("Connection") == "close")
+    if (packet.getHeader("Connection") == "close")
         return false;
 
     return true;
@@ -59,7 +59,7 @@ bool has_file_ending(const std::string &uri)
     return true;
 }
 
-std::string get_content_type(const std::string &file_ending)
+std::string getContent_type(const std::string &file_ending)
 {
     if (file_ending == "html" || file_ending == "htm")
         return "text/html";
@@ -171,10 +171,10 @@ std::string get_content_type(const std::string &file_ending)
 std::string get_pure_hostname(RequestPacket &packet)
 {
     std::string host;
-    host = packet.get_header("Host");
+    host = packet.getHeader("Host");
     if (host.empty())
     {
-        host = packet.get_header("host");
+        host = packet.getHeader("host");
     }
     size_t colonPos = host.find(':');
     if (colonPos != std::string::npos)
