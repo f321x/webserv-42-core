@@ -49,7 +49,7 @@
 // 		packet.set_status_code(200);
 // 		packet.set_status_message("OK");
 // 		packet.set_res_header("Content-Type", "text/html");
-// 		packet.set_content("<html><body><h1>Hello, World!</h1></body></html>");
+// 		packet.setContent("<html><body><h1>Hello, World!</h1></body></html>");
 
 // 		std::string response = packet.serialize();
 // 		std::string expected = "HTTP/1.1 200 OK\nContent-Length: 48\nContent-Type: text/html\n\n<html><body><h1>Hello, World!</h1></body></html>";
@@ -59,7 +59,7 @@
 // 		packet = ResponsePacket();
 // 		packet.set_status_code(404);
 // 		packet.set_status_message("Not Found");
-// 		packet.set_content("404 Not Found");
+// 		packet.setContent("404 Not Found");
 
 // 		response = packet.serialize();
 // 		expected = "HTTP/1.1 404 Not Found\n\n404 Not Found";
@@ -71,7 +71,7 @@
 // 		packet.set_status_message("Internal Server Error");
 // 		packet.set_res_header("Content-Type", "text/plain");
 // 		packet.set_res_header("Server", "WebServer/1.0");
-// 		packet.set_content("500 Internal Server Error");
+// 		packet.setContent("500 Internal Server Error");
 
 // 		response = packet.serialize();
 // 		expected = "HTTP/1.1 500 Internal Server Error\nContent-Type: text/plain\nServer: WebServer/1.0\n\n500 Internal Server Error";

@@ -1,4 +1,5 @@
 #include "RequestPacket.hpp"
+#include "logging.hpp"
 
 RequestPacket::RequestPacket()
 {
@@ -98,9 +99,9 @@ void RequestPacket::parseRawPacket()
 		{
 			continue;
 		}
-		set_header(trim(key), trim(value));
+		setHeader(trim(key), trim(value));
 	}
-
+	DEBUG("BEFORE BODY START");
 	// Body
 	size_t bodyStart = _raw_packet.find("\n\n");
 	unsigned int iOffset = 2;
@@ -113,11 +114,11 @@ void RequestPacket::parseRawPacket()
 		return;
 
 	// headers can be upper and lowercase
-	std::string contentLengthString = get_header("Content-Length");
+	std::string contentLengthString = getHeader("Content-Length");
 	if (contentLengthString == "")
-		contentLengthString = get_header("content-length");
+		contentLengthString = getHeader("content-length");
 	// removed return because there are also packets without content-length header
-
+	DEBUG("AFTER GETTING CONTENT LENGTH");
 	if (contentLengthString != "")
 	{
 		try
@@ -135,7 +136,8 @@ void RequestPacket::parseRawPacket()
 	// {
 	// 	throw InvalidPacketException();
 	// }
-	set_content(_raw_packet.substr(bodyStart + iOffset));
+	setContent(_raw_packet.substr(bodyStart + iOffset));
+	DEBUG("END OF PARSE RAW PACKET");
 }
 
 int RequestPacket::getContentLengthHeader() const
@@ -145,10 +147,10 @@ int RequestPacket::getContentLengthHeader() const
 
 bool RequestPacket::isChunked() const
 {
-	std::string transferEncoding = get_header("Transfer-Encoding");
+	std::string transferEncoding = getHeader("Transfer-Encoding");
 	if (transferEncoding == "")
 	{
-		transferEncoding = get_header("transfer-encoding");
+		transferEncoding = getHeader("transfer-encoding");
 	}
 	if (transferEncoding == "")
 	{

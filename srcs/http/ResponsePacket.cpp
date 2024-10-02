@@ -44,7 +44,7 @@ bool ResponsePacket::is_final_response() const
 
 std::string ResponsePacket::serialize()
 {
-	set_header("Content-Length", std::to_string(_content.size()));
+	setHeader("Content-Length", std::to_string(_content.size()));
 
 	std::string response = "HTTP/1.1 " + std::to_string(_status_code) + " " + _status_message + "\n";
 
