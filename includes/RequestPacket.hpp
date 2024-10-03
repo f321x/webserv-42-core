@@ -41,7 +41,8 @@ private:
 	std::string _raw_packet;
 	Method _method;
 	std::string _uri;
+	std::string _query_string;
 	std::string _http_version;
-	std::string _boundary;
 	void parseRawPacket();
+	std::string parseUri(const std::string &uri);
 };

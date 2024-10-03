@@ -46,6 +46,22 @@ Method RequestPacket::getMethod() const
 	return _method;
 }
 
+std::string RequestPacket::parseUri(const std::string &uri)
+{
+	// DEBUG("parseUri: " + uri);
+	size_t qPos = uri.find('?');
+	if (qPos == std::string::npos)
+	{
+		_query_string = "";
+		return uri;
+	}
+	// DEBUG("? postion: " + std::to_string(qPos));
+	_query_string = uri.substr(qPos + 1);
+	// DEBUG("query string: " + _query_string);
+	// DEBUG("uri: " + uri.substr(0, qPos));
+	return uri.substr(0, qPos);
+}
+
 void RequestPacket::parseRawPacket()
 {
 	std::vector<std::string> lines = split(_raw_packet, '\n');
@@ -78,6 +94,7 @@ void RequestPacket::parseRawPacket()
 				throw UnknownMethodException();
 			}
 
+			// _uri = parseUri(tokens[1]);
 			_uri = tokens[1];
 			_http_version = trim(tokens[2]);
 			continue;
@@ -167,12 +184,13 @@ size_t RequestPacket::getContentSize() const
 
 std::string RequestPacket::getQueryString() const
 {
-	std::string uri = getUri();
-	size_t qPos = uri.find('?');
+	// std::string uri = getUri();
+	// size_t qPos = uri.find('?');
 
-	if (qPos == std::string::npos)
-		return "";
-	return uri.substr(qPos + 1);
+	// if (qPos == std::string::npos)
+	// 	return "";
+	// return uri.substr(qPos + 1);
+	return _query_string;
 }
 
 void RequestPacket::replaceContent(const std::string &new_content)
