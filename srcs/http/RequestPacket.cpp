@@ -48,17 +48,17 @@ Method RequestPacket::getMethod() const
 
 std::string RequestPacket::parseUri(const std::string &uri)
 {
-	// DEBUG("parseUri: " + uri);
+	DEBUG("parseUri: " + uri);
 	size_t qPos = uri.find('?');
 	if (qPos == std::string::npos)
 	{
 		_query_string = "";
 		return uri;
 	}
-	// DEBUG("? postion: " + std::to_string(qPos));
+	DEBUG("? postion: " + std::to_string(qPos));
 	_query_string = uri.substr(qPos + 1);
-	// DEBUG("query string: " + _query_string);
-	// DEBUG("uri: " + uri.substr(0, qPos));
+	DEBUG("query string: " + _query_string);
+	DEBUG("uri: " + uri.substr(0, qPos));
 	return uri.substr(0, qPos);
 }
 
@@ -94,8 +94,8 @@ void RequestPacket::parseRawPacket()
 				throw UnknownMethodException();
 			}
 
-			// _uri = parseUri(tokens[1]);
-			_uri = tokens[1];
+			_uri = parseUri(tokens[1]);
+			// _query_string = "";
 			_http_version = trim(tokens[2]);
 			continue;
 		}
