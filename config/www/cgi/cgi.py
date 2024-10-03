@@ -3,8 +3,10 @@
 import os
 import sys
 
+print("IN THE CGI SCRIPT")
+
 # Set the output file
-output_file = "cgi_output.txt"
+output_file = "tmp/cgi_output.txt"
 
 # Open the file in write mode
 with open(output_file, "w") as f:

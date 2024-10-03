@@ -21,4 +21,5 @@ private:
 public:
 	Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
 	void execute();
+	void writeToPipe(const std::string &content, int fd);
 };
