@@ -41,6 +41,8 @@ private:
 	Method _method;
 	std::string _uri;
 	std::string _http_version;
+	std::unordered_map<std::string, std::string> _query_tokens;
 
 	void parseRawPacket();
+	std::pair<std::string, std::unordered_map<std::string, std::string>> _parse_request_uri(const std::string &uri);
 };

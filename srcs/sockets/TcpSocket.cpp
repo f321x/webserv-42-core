@@ -9,10 +9,6 @@ TcpSocket::TcpSocket(int existing_fd) : _socket_fd(existing_fd)
 	// set nonblocking flag
 	int flags = fcntl(_socket_fd, F_GETFL, 0);
 	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
-
-	// Set the SO_REUSEADDR option to make the server restart faster
-	int optval = 1;
-	setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 }
 
 // constructor for bind socket
@@ -27,6 +23,10 @@ TcpSocket::TcpSocket()
 	{
 		throw std::runtime_error("TcpSocket: failed");
 	}
+
+	// Set the SO_REUSEADDR option to make the server restart faster
+	int optval = 1;
+	setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
 	// set nonblocking flag
 	int flags = fcntl(_socket_fd, F_GETFL, 0);
