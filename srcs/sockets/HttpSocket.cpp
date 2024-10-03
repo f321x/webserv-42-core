@@ -94,7 +94,7 @@ void HttpSocket::handle_client_data()
                 return _write_client_response(payload_too_large());
             else if (header_only_packet->is_chunked())
             {
-                DEBUG("PARTIAL PACKET CONTENT: " + header_only_packet->get_content());
+                TRACE("PARTIAL PACKET CONTENT: " + header_only_packet->get_content());
                 remove_content_from_packet(client_data, header_only_packet->get_content());
                 auto [unchunked_content, finished] = _socket->read_request_body_chunked(_smallest_max_body_size(), header_only_packet->get_content());
                 if (finished)
@@ -143,7 +143,7 @@ void HttpSocket::_write_client_response(std::unique_ptr<ResponsePacket> response
     // write response to client
     try
     {
-        DEBUG("Sending response to client: " + response->serialize());
+        TRACE("Sending response to client: " + response->serialize());
         _socket->write_data(response->serialize());
         if (response->is_final_response())
         {
