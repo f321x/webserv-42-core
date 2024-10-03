@@ -1,12 +1,13 @@
 #include "Cgi.hpp"
 #include "logging.hpp"
+#include <poll.h>
 
 Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 {
 	DEBUG("Trying out RequestPacket getters:\ngetHttpVersion: " + request_packet.getHttpVersion() + "\ngetUri: " + request_packet.getUri() + "\ngetMethod: " + std::to_string(request_packet.getMethod()) + "\ngetContentLengthHeader: " + std::to_string(request_packet.getContentLengthHeader()) + "\nisChunked: " + std::string(1, request_packet.isChunked() ? '1' : '0') + "\ngetContentSize: " + std::to_string(request_packet.getContentSize()) + "\ngetQueryString: " + request_packet.getQueryString());
-	std::string script_path = config_pair.second.getRoot() + request_packet.getUri();
-	DEBUG("Script path: " + script_path);
-	if (access(script_path.c_str(), X_OK) == -1)
+	_path_info = config_pair.second.getRoot() + request_packet.getUri();
+	DEBUG("Script path: " + _path_info);
+	if (access(_path_info.c_str(), X_OK) == -1)
 	{
 		ERROR("Cgi script not found");
 		return;
@@ -16,10 +17,7 @@ Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, c
 	_env.push_back("REQUEST_METHOD=" + methods[request_packet.getMethod()]);
 	_env.push_back("QUERY_STRING=" + request_packet.getQueryString()); // TODO: create get_query_string
 	_env.push_back("CONTENT_LENGTH=" + std::to_string(request_packet.getContentSize()));
-	std::string content_type = request_packet.getHeader("Content-Type");
-	if (content_type.empty())
-		content_type = "";
-	_env.push_back("CONTENT_TYPE=" + content_type);
+	_env.push_back("CONTENT_TYPE=" + request_packet.getHeader("Content-Type"));
 	_env.push_back("SERVER_PROTOCOL=" + request_packet.getHttpVersion());
 	std::vector<std::string> server_names = config_pair.first.getServerNames();
 	if (!server_names.empty())
@@ -28,7 +26,6 @@ Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, c
 		_env.push_back("SERVER_NAME=localhost"); // Default to "localhost" if no server name is defined
 	_env.push_back("SERVER_PORT=" + std::to_string(config_pair.first.getPort()));
 	_env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-	DEBUG("ENV:");
 	for (auto &e : _env)
 		DEBUG(e);
 	if (pipe(_fds) == -1)
@@ -36,13 +33,38 @@ Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, c
 		ERROR("Pipe failed");
 		return;
 	}
-	if (write(_fds[1], request_packet.getContent().c_str(), request_packet.getContentSize()) == -1)
-	{
-		ERROR("Write failed");
-		return;
-	}
 	(void)response_packet;
+	writeToPipe(request_packet.getContent(), _fds[1]);
 	execute();
+}
+
+void Cgi::writeToPipe(const std::string &content, int fd)
+{
+	// Poll setup for writing POST data to CGI process
+	struct pollfd pollfds[2];
+	pollfds[0].fd = fd; // Monitor CGI input pipe for writing
+	pollfds[0].events = POLLOUT;
+
+	size_t written = 0;
+
+	while (written < content.size())
+	{
+		int ret = poll(pollfds, 1, 2000); // Poll for the input pipe being ready
+
+		if (ret < 0)
+			throw std::runtime_error("Poll failed on CGI input pipe");
+		else if (ret == 0)
+			continue; // Timeout, no data to write
+
+		if (pollfds[0].revents & POLLOUT) // Ready to write
+		{
+			ssize_t bytes_written = write(fd, content.c_str() + written, content.size() - written);
+			if (bytes_written < 0)
+				throw std::runtime_error("Failed to write to CGI input pipe");
+
+			written += bytes_written; // Update bytes written
+		}
+	}
 }
 
 void Cgi::execute()
@@ -76,7 +98,9 @@ void Cgi::execute()
 		DEBUG("Execve in child process");
 		// execute the cgi script
 		char *const argv[] = {const_cast<char *>(_path_info.c_str()), nullptr};
+		DEBUG("Path info: " + _path_info);
 		execve(_path_info.c_str(), argv, env.data());
+		ERROR("Execve failed");
 		exit(1); // if execve fails
 	}
 	else if (pid > 0)
