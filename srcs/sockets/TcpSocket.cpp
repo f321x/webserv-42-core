@@ -154,9 +154,9 @@ std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t 
 			result.append(buffer, bytes_read);
 
 			// Check if we have received the full body
-			if (result.size() == promised_content_length && promised_content_length >= 0)
+			if (result.size() == promised_content_length && promised_content_length > 0)
 				break;
-			else if (result.size() > promised_content_length && promised_content_length >= 0)
+			else if (result.size() > promised_content_length && promised_content_length > 0)
 			{
 				_buffer = result.substr(promised_content_length);
 				return result.substr(0, promised_content_length);
