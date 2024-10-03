@@ -80,7 +80,7 @@ void WebServer::serve()
                     }
                     catch (WritingFailedErr &e)
                     {
-                        DEBUG("Writing failed: " + std::string(e.what()));
+                        DEBUG(std::string(e.what()));
                         _remove_socket(_pollfds[i].fd);
                     }
                     catch (IsFinalResponse) // may not the most elegant solution

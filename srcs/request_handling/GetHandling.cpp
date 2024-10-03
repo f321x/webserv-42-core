@@ -129,7 +129,7 @@ std::string get_autoindex(std::string path, const std::string &uri)
 std::optional<File> load_file_with_cache(const std::string &filepath)
 {
     // we have lots of memory, lets use it
-    static std::map<std::string, File> cache;
+    static std::unordered_map<std::string, File> cache;
     if (cache.find(filepath) != cache.end())
         return cache[filepath];
 
@@ -154,7 +154,8 @@ std::optional<File> load_file_with_cache(const std::string &filepath)
     file.file_ending = filepath.substr(filepath.find_last_of('.') + 1);
 
     // Cache the file contents
-    cache[filepath] = file;
+    if (file.content.size() < 1000000) // 1MB
+        cache[filepath] = file;
 
     return file;
 }
