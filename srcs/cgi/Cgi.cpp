@@ -14,12 +14,15 @@ Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, c
 	}
 	DEBUG("Cgi script found");
 	std::vector<std::string> methods = {"GET", "POST", "DELETE", "PUT"};
+	_env.push_back("CONTENT_TYPE=" + request_packet.getHeader("Content-Type"));
+	_env.push_back("CONTENT_LENGTH=" + std::to_string(request_packet.getContentSize()));
+	_env.push_back("HTTP_COOKIE=" + request_packet.getHeader("Cookie"));
 	_env.push_back("REQUEST_METHOD=" + methods[request_packet.getMethod()]);
 	_env.push_back("QUERY_STRING=" + request_packet.getQueryString()); // TODO: create get_query_string
-	_env.push_back("CONTENT_LENGTH=" + std::to_string(request_packet.getContentSize()));
-	_env.push_back("CONTENT_TYPE=" + request_packet.getHeader("Content-Type"));
 	_env.push_back("SERVER_PROTOCOL=" + request_packet.getHttpVersion());
-	std::vector<std::string> server_names = config_pair.first.getServerNames();
+	_env.push_back("REMOTE_ADDR=" + request_packet.getHeader("Host"));
+	std::vector<std::string>
+		server_names = config_pair.first.getServerNames();
 	if (!server_names.empty())
 		_env.push_back("SERVER_NAME=" + server_names[0]);
 	else
