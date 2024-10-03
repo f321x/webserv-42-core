@@ -7,19 +7,19 @@ std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, 
     {
     case UriType::FILE_REQUEST:
     {
-        if (config_pair.second.isCgi())
-        {
-            auto cgi = Cgi(request_packet, *response_packet, config_pair);
-            // cgi.execute();
-            // return
-        }
-        else
-        {
-            std::optional<File> file = load_file_with_cache(uri_info.path);
-            if (!file)
-                return not_found(load_error_page(404, config_pair.first));
-            return ok_with_content(file.value(), std::move(response_packet));
-        }
+        // if (config_pair.second.isCgi())
+        // {
+        //     auto cgi = Cgi(request_packet, *response_packet, config_pair);
+        //     // cgi.execute();
+        //     // return
+        // }
+        // else
+        // {
+        std::optional<File> file = load_file_with_cache(uri_info.path);
+        if (!file)
+            return not_found(load_error_page(404, config_pair.first));
+        return ok_with_content(file.value(), std::move(response_packet));
+        // }
     }
     case UriType::AUTOINDEX:
     {

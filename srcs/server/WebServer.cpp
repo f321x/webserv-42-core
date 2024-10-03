@@ -83,7 +83,7 @@ void WebServer::serve()
                         DEBUG(std::string(e.what()));
                         _remove_socket(_pollfds[i].fd);
                     }
-                    catch (IsFinalResponse) // may not the most elegant solution
+                    catch (const IsFinalResponse &) // may not the most elegant solution
                     {
                         _remove_socket(_pollfds[i].fd);
                     }

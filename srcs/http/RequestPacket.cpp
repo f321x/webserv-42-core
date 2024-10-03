@@ -77,7 +77,7 @@ void RequestPacket::parseRawPacket()
 				throw UnknownMethodException();
 			}
 
-			auto [_uri, _query_tokens] = _parse_request_uri(tokens[1]);
+			std::tie(_uri, _query_tokens) = _parse_request_uri(tokens[1]);
 			_http_version = trim(tokens[2]);
 			continue;
 		}

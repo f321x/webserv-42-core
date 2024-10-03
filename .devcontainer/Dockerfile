@@ -3,7 +3,7 @@ FROM debian:latest
 WORKDIR /install
 
 RUN apt-get update
-RUN apt install -y curl git clang make cmake python3 python3-venv python3-requests
+RUN apt install -y curl git clang make cmake python3 python3-venv python3-requests g++
 RUN apt install -y netcat-openbsd valgrind neovim pkg-config libssl-dev
 RUN apt install -y nginx
 
