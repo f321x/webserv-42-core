@@ -11,6 +11,7 @@ Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, c
 		ERROR("Cgi script not found");
 		return;
 	}
+	DEBUG("Cgi script found");
 	std::vector<std::string> methods = {"GET", "POST", "DELETE", "PUT"};
 	_env.push_back("REQUEST_METHOD=" + methods[request_packet.getMethod()]);
 	_env.push_back("QUERY_STRING=" + request_packet.getQueryString()); // TODO: create get_query_string
@@ -27,7 +28,9 @@ Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, c
 		_env.push_back("SERVER_NAME=localhost"); // Default to "localhost" if no server name is defined
 	_env.push_back("SERVER_PORT=" + std::to_string(config_pair.first.getPort()));
 	_env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-
+	DEBUG("ENV:");
+	for (auto &e : _env)
+		DEBUG(e);
 	if (pipe(_fds) == -1)
 	{
 		ERROR("Pipe failed");
@@ -45,31 +48,32 @@ Cgi::Cgi(const RequestPacket &request_packet, ResponsePacket &response_packet, c
 void Cgi::execute()
 {
 	pid_t pid = fork();
-	int out_fds[2];
+	// int out_fds[2];
 
-	if (pipe(out_fds) == -1)
-	{
-		ERROR("Pipe failed");
-		return;
-	}
+	// if (pipe(out_fds) == -1)
+	// {
+	// 	ERROR("Pipe failed");
+	// 	return;
+	// }
 
 	if (pid == 0)
 	{
+		DEBUG("Child process");
 		// input
 		close(_fds[1]);
 		dup2(_fds[0], STDIN_FILENO);
 		close(_fds[0]);
 		// output
-		close(out_fds[0]);
-		dup2(out_fds[1], STDOUT_FILENO);
-		close(out_fds[1]);
-
+		// close(out_fds[0]);
+		// dup2(out_fds[1], STDOUT_FILENO);
+		// close(out_fds[1]);
+		DEBUG("Redirected stdin and stdout of child process");
 		// make null terminated env
 		std::vector<char *> env;
 		for (auto &e : _env)
 			env.push_back(const_cast<char *>(e.c_str()));
 		env.push_back(nullptr);
-
+		DEBUG("Execve in child process");
 		// execute the cgi script
 		char *const argv[] = {const_cast<char *>(_path_info.c_str()), nullptr};
 		execve(_path_info.c_str(), argv, env.data());
@@ -77,20 +81,13 @@ void Cgi::execute()
 	}
 	else if (pid > 0)
 	{
+		DEBUG("Parent process");
 		// parent process
-		int output_file = open("cgi_output.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644);
-		// Read from the pipe and write to the file
-		char buffer[1024];
-		ssize_t bytes_read;
-		while ((bytes_read = read(out_fds[0], buffer, sizeof(buffer))) > 0)
-		{
-			write(output_file, buffer, bytes_read);
-		}
-
 		close(_fds[0]);
 		close(_fds[1]);
-		close(out_fds[1]);
-		close(out_fds[0]);
+		// close(out_fds[1]);
+		// close(out_fds[0]);
+		DEBUG("Waiting for child process to finish");
 		int status;
 		waitpid(pid, &status, 0);
 	}
