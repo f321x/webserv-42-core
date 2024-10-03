@@ -16,7 +16,7 @@ enum LogLevel
 };
 
 // set the log level for the webserver
-const LogLevel LOG_LEVEL = INFO;
+const LogLevel LOG_LEVEL = DEBUG;
 
 void log(const std::string &message, LogLevel level = INFO);
 
