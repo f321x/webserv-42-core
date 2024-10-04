@@ -1,11 +1,13 @@
 #pragma once
 
+#include <sstream>
 #include "BasePacket.hpp"
 
 class ResponsePacket : public BasePacket
 {
 public:
 	ResponsePacket();
+	ResponsePacket(const std::string &cgi_response);
 	ResponsePacket(const ResponsePacket &other);
 	ResponsePacket &operator=(const ResponsePacket &other);
 	~ResponsePacket();
