@@ -83,6 +83,7 @@ ResponsePacket::ResponsePacket(const ResponsePacket &other) : BasePacket(other)
 
 ResponsePacket &ResponsePacket::operator=(const ResponsePacket &other)
 {
+	BasePacket::operator=(other);
 	_status_code = other._status_code;
 	_status_message = other._status_message;
 	_final_response = other._final_response;
