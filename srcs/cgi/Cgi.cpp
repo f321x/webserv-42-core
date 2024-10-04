@@ -70,16 +70,52 @@ void Cgi::writeToPipe(const std::string &content, int fd)
 	}
 }
 
+std::string Cgi::readFromPipe(int fd)
+{
+	std::string output;
+	char buffer[1024];
+	ssize_t bytes_read;
+
+	// Poll setup for reading CGI output
+	struct pollfd pollfds[1];
+	pollfds[0].fd = fd; // Monitor CGI output pipe for reading
+	pollfds[0].events = POLLIN;
+
+	while (true)
+	{
+		int ret = poll(pollfds, 1, -1); // Poll indefinitely until there's data or EOF
+
+		if (ret < 0)
+			throw std::runtime_error("Poll failed on CGI output pipe");
+
+		if (pollfds[0].revents & POLLIN) // Ready to read
+		{
+			bytes_read = read(fd, buffer, sizeof(buffer));
+			if (bytes_read < 0)
+				throw std::runtime_error("Failed to read from CGI output pipe");
+			else if (bytes_read == 0)
+				break; // End of file (EOF), child process is done writing
+
+			output.append(buffer, bytes_read); // Append the chunk to the output string
+		}
+		if (pollfds[0].revents & POLLHUP) // Writing end of the pipe closed
+			break;						  // Child process has closed its side of the pipe
+	}
+	DEBUG("Output from CGI: " + output);
+
+	return output; // Return the full output of the CGI process
+}
+
 void Cgi::execute()
 {
 	pid_t pid = fork();
-	// int out_fds[2];
+	int out_fds[2];
 
-	// if (pipe(out_fds) == -1)
-	// {
-	// 	ERROR("Pipe failed");
-	// 	return;
-	// }
+	if (pipe(out_fds) == -1)
+	{
+		ERROR("Pipe failed");
+		return;
+	}
 
 	if (pid == 0)
 	{
@@ -89,19 +125,19 @@ void Cgi::execute()
 		dup2(_fds[0], STDIN_FILENO);
 		close(_fds[0]);
 		// output
-		// close(out_fds[0]);
-		// dup2(out_fds[1], STDOUT_FILENO);
-		// close(out_fds[1]);
-		DEBUG("Redirected stdin and stdout of child process");
+		close(out_fds[0]);
+		dup2(out_fds[1], STDOUT_FILENO);
+		close(out_fds[1]);
+		// DEBUG("Redirected stdin and stdout of child process");
 		// make null terminated env
 		std::vector<char *> env;
 		for (auto &e : _env)
 			env.push_back(const_cast<char *>(e.c_str()));
 		env.push_back(nullptr);
-		DEBUG("Execve in child process");
+		// DEBUG("Execve in child process");
 		// execute the cgi script
 		char *const argv[] = {const_cast<char *>(_path_info.c_str()), nullptr};
-		DEBUG("Path info: " + _path_info);
+		// DEBUG("Path info: " + _path_info);
 		execve(_path_info.c_str(), argv, env.data());
 		ERROR("Execve failed");
 		exit(1); // if execve fails
@@ -109,15 +145,47 @@ void Cgi::execute()
 	else if (pid > 0)
 	{
 		DEBUG("Parent process");
-		// parent process
+		DEBUG("Waiting for child process to finish");
+
+		int status;
+		int wait_result;
+		int timeout = 5; // seconds
+		int elapsed_time = 0;
+
 		close(_fds[0]);
 		close(_fds[1]);
-		// close(out_fds[1]);
-		// close(out_fds[0]);
-		DEBUG("Waiting for child process to finish");
-		int status;
-		waitpid(pid, &status, 0);
+		close(out_fds[1]);
+
+		// Wait in intervals of 1 second to allow for a timeout
+		while ((wait_result = waitpid(pid, &status, WNOHANG)) == 0 && elapsed_time < timeout)
+		{
+			sleep(1); // sleep for 1 second
+			elapsed_time++;
+		}
+
+		if (wait_result == 0) // Timeout occurred
+		{
+			ERROR("Child process timed out");
+			kill(pid, SIGKILL);		  // Force kill the child process
+			waitpid(pid, &status, 0); // Ensure the child process is cleaned up
+		}
+		else if (wait_result > 0) // Child process exited
+		{
+			_cgi_response = readFromPipe(out_fds[0]);
+			DEBUG("Child process finished");
+		}
+		else // Error occurred
+		{
+			ERROR("Error in waitpid");
+		}
+		close(out_fds[0]);
 	}
 	else
 		ERROR("Fork failed");
+	DEBUG("execution done");
+}
+
+std::string Cgi::getResponse() const
+{
+	return _cgi_response;
 }
