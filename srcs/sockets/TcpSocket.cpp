@@ -7,12 +7,12 @@ TcpSocket::TcpSocket(int existing_fd) : _socket_fd(existing_fd)
 	memset(&_address, 0, sizeof(_address));
 
 	// set nonblocking flag
-	int flags = fcntl(_socket_fd, F_GETFL, 0);
-	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+	// int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, O_NONBLOCK);
 
 	// Set the SO_REUSEADDR option to make the server restart faster
 	int optval = 1;
-	setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+	setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval));
 }
 
 // constructor for bind socket
@@ -29,8 +29,8 @@ TcpSocket::TcpSocket()
 	}
 
 	// set nonblocking flag
-	int flags = fcntl(_socket_fd, F_GETFL, 0);
-	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+	// int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, O_NONBLOCK);
 }
 
 void TcpSocket::bind_to_address(const sockaddr_in &address)
