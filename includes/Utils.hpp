@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include <cstdint>
 
 std::vector<std::string> split(const std::string &str, const char delim);
 std::string trim(const std::string &str);
