@@ -89,14 +89,9 @@ void WebServer::serve()
                     }
                 }
             }
-            else if (_pollfds[i].revents & POLLHUP)
+            else if (_pollfds[i].revents & POLLERR || _pollfds[i].revents & POLLHUP || _pollfds[i].revents & POLLNVAL || _pollfds[i].revents & POLLPRI)
             {
-                WARN("POLLHUP detected on socket " + std::to_string(_pollfds[i].fd));
-                _remove_socket(_pollfds[i].fd);
-            }
-            else if (_pollfds[i].revents & POLLERR)
-            {
-                WARN("POLLERR detected on socket " + std::to_string(_pollfds[i].fd));
+                WARN("Wrong revent detected on socket " + std::to_string(_pollfds[i].fd));
                 _remove_socket(_pollfds[i].fd);
             }
         }
