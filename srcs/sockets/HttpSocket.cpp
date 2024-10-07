@@ -133,9 +133,7 @@ void HttpSocket::handle_client_data()
     }
 
     DEBUG("Received data from client: " + client_data);
-    response = handle_request(client_data, _available_configs);
-
-    return write_client_response(std::move(response));
+    _response = handle_request(client_data, _available_configs);
 }
 
 void HttpSocket::write_client_response(std::unique_ptr<ResponsePacket> response)
@@ -155,6 +153,44 @@ void HttpSocket::write_client_response(std::unique_ptr<ResponsePacket> response)
     {
         throw WritingFailedErr(e.what());
     }
+}
+
+// removes all complete chunks from the chunked_data string and returns the unchunked data
+// chunked_data will be trimmed to the last incomplete chunk
+// ignores prefix extensions
+std::pair<std::string, bool> HttpSocket::_unchunk_data(std::string &chunked_data)
+{
+    std::string result;
+    bool complete = false;
+
+    while (true)
+    {
+        // find the end of the chunk size prefix
+        size_t chunk_size_end = chunked_data.find("\r\n");
+        if (chunk_size_end == std::string::npos)
+            break;
+
+        // get the chunk size
+        std::string chunk_size_str = chunked_data.substr(0, chunk_size_end);
+        size_t chunk_size = std::stoul(chunk_size_str, nullptr, 16);
+        if (chunk_size == 0)
+        {
+            // end of chunked data
+            complete = true;
+            break;
+        }
+
+        // find the end of the chunk data
+        size_t chunk_end = chunked_data.find("\r\n", chunk_size_end + 2);
+        if (chunk_end == std::string::npos)
+            break;
+
+        // append the chunk data to the result
+        result.append(chunked_data, chunk_size_end + 2, chunk_size);
+        chunked_data = chunked_data.substr(chunk_end + 2);
+    }
+
+    return std::make_pair(result, complete);
 }
 
 std::unique_ptr<TcpSocket> HttpSocket::_create_bind_socket(const sockaddr_in &address)
@@ -186,12 +222,12 @@ std::chrono::steady_clock::time_point HttpSocket::last_activity() const
 
 bool HttpSocket::response_available() const
 {
-    return _has_response.has_value();
+    return _response.has_value();
 }
 
 std::unique_ptr<ResponsePacket> HttpSocket::get_response()
 {
-    auto response = std::move(_has_response.value());
-    _has_response.reset();
+    auto response = std::move(_response.value());
+    _response.reset();
     return response;
 }

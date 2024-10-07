@@ -37,9 +37,11 @@ private:
     std::chrono::steady_clock::time_point _last_activity;
     bool _ongoing_chunked_request = false;
     std::string _chunked_packet_buffer;
-    std::optional<std::unique_ptr<ResponsePacket>> _has_response;
+    std::string _request_buffer;
+    std::optional<std::unique_ptr<ResponsePacket>> _response;
 
     // private functions
+    std::pair<std::string, bool> _unchunk_data(std::string &chunked_data);
     sockaddr_in _compose_sockaddr(const std::string &addr, int port);
     std::unique_ptr<TcpSocket> _create_bind_socket(const sockaddr_in &address);
     int _smallest_max_body_size() const;
