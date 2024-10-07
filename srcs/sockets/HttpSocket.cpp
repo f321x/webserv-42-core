@@ -91,7 +91,7 @@ void HttpSocket::handle_client_data()
             int remaining_bytes = header_only_packet->get_content_length_header() - header_only_packet->get_content_size();
 
             if (header_only_packet->get_content_length_header() > _smallest_max_body_size())
-                return _write_client_response(payload_too_large());
+                return write_client_response(payload_too_large());
             else if (header_only_packet->is_chunked())
             {
                 TRACE("PARTIAL PACKET CONTENT: " + header_only_packet->get_content());
@@ -135,16 +135,17 @@ void HttpSocket::handle_client_data()
     DEBUG("Received data from client: " + client_data);
     response = handle_request(client_data, _available_configs);
 
-    return _write_client_response(std::move(response));
+    return write_client_response(std::move(response));
 }
 
-void HttpSocket::_write_client_response(std::unique_ptr<ResponsePacket> response)
+void HttpSocket::write_client_response(std::unique_ptr<ResponsePacket> response)
 {
     // write response to client
     try
     {
         TRACE("Sending response to client: " + response->serialize());
         _socket->write_data(response->serialize());
+
         if (response->is_final_response())
         {
             throw IsFinalResponse("HttpSocket: Final response sent");
@@ -181,4 +182,16 @@ sockaddr_in HttpSocket::_compose_sockaddr(const std::string &addr, int port)
 std::chrono::steady_clock::time_point HttpSocket::last_activity() const
 {
     return _last_activity;
+}
+
+bool HttpSocket::response_available() const
+{
+    return _has_response.has_value();
+}
+
+std::unique_ptr<ResponsePacket> HttpSocket::get_response()
+{
+    auto response = std::move(_has_response.value());
+    _has_response.reset();
+    return response;
 }

@@ -80,7 +80,7 @@ void WebServer::serve()
                     }
                     catch (WritingFailedErr &e)
                     {
-                        DEBUG(std::string(e.what()));
+                        DEBUG("Writing failed: " + std::string(e.what()));
                         _remove_socket(_pollfds[i].fd);
                     }
                     catch (const IsFinalResponse &) // may not the most elegant solution
@@ -89,7 +89,11 @@ void WebServer::serve()
                     }
                 }
             }
-            else if (_pollfds[i].revents & POLLERR || _pollfds[i].revents & POLLHUP || _pollfds[i].revents & POLLNVAL || _pollfds[i].revents & POLLPRI)
+            else if (_pollfds[i].revents & POLLOUT && _sockets[i]->response_available()) // POLLOUT is set if the socket is ready to write
+            {
+                _sockets[i]->write_client_response(_sockets[i]->get_response());
+            }
+            else if (!_pollfds[i].revents & POLLIN && !_pollfds[i].revents & POLLOUT && !_pollfds[i].revents == 0)
             {
                 WARN("Wrong revent detected on socket " + std::to_string(_pollfds[i].fd));
                 _remove_socket(_pollfds[i].fd);

@@ -26,6 +26,9 @@ public:
     pollfd new_pfd() const;
     void handle_client_data();
     std::chrono::steady_clock::time_point last_activity() const;
+    bool response_available() const;
+    void write_client_response(std::unique_ptr<ResponsePacket> response);
+    std::unique_ptr<ResponsePacket> get_response();
 
 private:
     // private variables
@@ -34,12 +37,12 @@ private:
     std::chrono::steady_clock::time_point _last_activity;
     bool _ongoing_chunked_request = false;
     std::string _chunked_packet_buffer;
+    std::optional<std::unique_ptr<ResponsePacket>> _has_response;
 
     // private functions
     sockaddr_in _compose_sockaddr(const std::string &addr, int port);
     std::unique_ptr<TcpSocket> _create_bind_socket(const sockaddr_in &address);
     int _smallest_max_body_size() const;
-    void _write_client_response(std::unique_ptr<ResponsePacket> response);
 };
 
 class HttpSocketError : public std::exception
