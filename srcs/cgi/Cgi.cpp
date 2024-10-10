@@ -108,7 +108,6 @@ std::string Cgi::readFromPipe(int fd)
 
 void Cgi::execute()
 {
-	pid_t pid = fork();
 	int out_fds[2];
 
 	if (pipe(out_fds) == -1)
@@ -117,16 +116,25 @@ void Cgi::execute()
 		return;
 	}
 
+	pid_t pid = fork();
 	if (pid == 0)
 	{
 		DEBUG("Child process");
 		// input
 		close(_fds[1]);
-		dup2(_fds[0], STDIN_FILENO);
+		if (dup2(_fds[0], STDIN_FILENO) == -1)
+		{
+			ERROR("Dup2 failed with stdin redirection in child process");
+			exit(1);
+		}
 		close(_fds[0]);
 		// output
 		close(out_fds[0]);
-		dup2(out_fds[1], STDOUT_FILENO);
+		if (dup2(out_fds[1], STDOUT_FILENO) == -1)
+		{
+			ERROR("Dup2 failed with stdout redirection in child process");
+			exit(1);
+		}
 		close(out_fds[1]);
 		// DEBUG("Redirected stdin and stdout of child process");
 		// make null terminated env
