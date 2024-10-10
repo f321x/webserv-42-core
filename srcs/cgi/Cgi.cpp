@@ -76,7 +76,7 @@ Cgi::~Cgi()
 	close(_output_pipe[1]);
 }
 
-void Cgi::execute(ResponsePacket &response_packet)
+void Cgi::execute(const RequestPacket &request_packet)
 {
 	DEBUG("Forking process for CGI execution");
 	_pid = fork();
@@ -154,7 +154,7 @@ void Cgi::execute(ResponsePacket &response_packet)
 		// Non-blocking write with timeout
 		try
 		{
-			writeToPipe(response_packet.getContent(), _input_pipe[1]);
+			writeToPipe(request_packet.getContent(), _input_pipe[1]);
 		}
 		catch (const std::exception &e)
 		{
