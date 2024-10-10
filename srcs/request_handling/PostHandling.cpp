@@ -9,7 +9,7 @@ void handle_post(const RequestPacket &request_packet, ResponsePacket &response_p
 	{
 		Cgi cgi(request_packet, config_pair);
 		DEBUG("before execute");
-		cgi.execute(response_packet);
+		cgi.execute(request_packet);
 		DEBUG("after execute");
 		std::string cgi_response = cgi.getResponse();
 		DEBUG("CGI response: " + cgi_response);

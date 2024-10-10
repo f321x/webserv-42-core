@@ -10,8 +10,11 @@ std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, 
         if (config_pair.second.isCgi())
         {
             auto cgi = Cgi(request_packet, config_pair);
-            cgi.execute(*response_packet);
-            // return
+            cgi.execute(request_packet);
+            auto cgi_response = cgi.getResponse();
+            auto tmp = std::make_unique<ResponsePacket>(cgi_response);
+            response_packet = std::move(tmp);
+            return response_packet;
         }
         else
         {
