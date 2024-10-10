@@ -9,8 +9,8 @@ std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, 
     {
         if (config_pair.second.isCgi())
         {
-            auto cgi = Cgi(request_packet, *response_packet, config_pair);
-            // cgi.execute();
+            auto cgi = Cgi(request_packet, config_pair);
+            cgi.execute(*response_packet);
             // return
         }
         else

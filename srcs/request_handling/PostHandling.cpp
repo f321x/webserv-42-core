@@ -7,8 +7,10 @@ void handle_post(const RequestPacket &request_packet, ResponsePacket &response_p
 	DEBUG("Route: " + config_pair.second.getRoute());
 	if (config_pair.second.isCgi())
 	{
-		Cgi cgi(request_packet, response_packet, config_pair);
-		cgi.execute();
+		Cgi cgi(request_packet, config_pair);
+		DEBUG("before execute");
+		cgi.execute(response_packet);
+		DEBUG("after execute");
 		std::string cgi_response = cgi.getResponse();
 		DEBUG("CGI response: " + cgi_response);
 		auto tmp = ResponsePacket(cgi_response);
@@ -18,7 +20,4 @@ void handle_post(const RequestPacket &request_packet, ResponsePacket &response_p
 	{
 		// handle_upload(request_packet, response_packet, config_pair);
 	}
-	// (void)request_packet;
-	// (void)response_packet;
-	// (void)config_pair;
 }
