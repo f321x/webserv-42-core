@@ -50,24 +50,18 @@ Cgi::Cgi(const RequestPacket &request_packet, const std::pair<ServerConfig, Rout
 
 	// Create input and output pipes BEFORE forking
 	if (pipe(_input_pipe) == -1)
-	{
-		ERROR("Failed to create input pipe");
-		return;
-	}
+		throw std::runtime_error("Failed to create input pipe");
 
 	if (pipe(_output_pipe) == -1)
 	{
-		ERROR("Failed to create output pipe");
-		// Close previously opened pipe
 		close(_input_pipe[0]);
 		close(_input_pipe[1]);
-		return;
+		throw std::runtime_error("Failed to create output pipe");
 	}
 }
 
 Cgi::~Cgi()
 {
-	// Ensure that all file descriptors are closed
 	close(_input_pipe[0]);
 	close(_input_pipe[1]);
 	close(_output_pipe[0]);
@@ -82,7 +76,6 @@ void Cgi::execute(const RequestPacket &request_packet)
 	if (_pid < 0)
 	{
 		ERROR("Fork failed");
-		// Close all pipes
 		close(_input_pipe[0]);
 		close(_input_pipe[1]);
 		close(_output_pipe[0]);
@@ -92,30 +85,17 @@ void Cgi::execute(const RequestPacket &request_packet)
 
 	if (_pid == 0)
 	{
-		// Child Process
-		DEBUG("Child process started");
-
-		// Redirect stdin to read from _input_pipe[0]
 		if (dup2(_input_pipe[0], STDIN_FILENO) == -1)
 		{
 			ERROR("dup2 failed for stdin in child process: " + std::string(strerror(errno)));
 			exit(1);
 		}
-
 		// Redirect stdout to write to _output_pipe[1]
 		if (dup2(_output_pipe[1], STDOUT_FILENO) == -1)
 		{
 			ERROR("dup2 failed for stdout in child process: " + std::string(strerror(errno)));
 			exit(1);
 		}
-
-		// Optional: Redirect stderr to stdout for debugging
-		// if (dup2(_output_pipe[1], STDERR_FILENO) == -1)
-		// {
-		// 	ERROR("dup2 failed for stderr in child process: " + std::string(strerror(errno)));
-		// 	exit(1);
-		// }
-
 		// Close unused file descriptors in the child
 		close(_input_pipe[0]);
 		close(_input_pipe[1]);
@@ -128,11 +108,8 @@ void Cgi::execute(const RequestPacket &request_packet)
 			env.push_back(const_cast<char *>(e.c_str()));
 		env.push_back(nullptr);
 
-		// Prepare arguments
+		// Prepare arguments & execute
 		char *const argv[] = {const_cast<char *>(_path_info.c_str()), nullptr};
-
-		// Execute the CGI script
-		// DEBUG("Executing CGI script: " + _path_info);
 		execve(_path_info.c_str(), argv, env.data());
 
 		// If execve returns, it failed
@@ -141,12 +118,8 @@ void Cgi::execute(const RequestPacket &request_packet)
 	}
 	else
 	{
-		// Parent Process
-		DEBUG("Parent process continues");
-
-		// Close unused ends of the pipes
-		close(_input_pipe[0]);	// Parent doesn't read from input pipe
-		close(_output_pipe[1]); // Parent doesn't write to output pipe
+		close(_input_pipe[0]);
+		close(_output_pipe[1]);
 
 		// Write the request body to the child's stdin
 		// Non-blocking write with timeout
@@ -164,29 +137,20 @@ void Cgi::execute(const RequestPacket &request_packet)
 			close(_output_pipe[0]);
 			return;
 		}
-
-		// Close the write end after writing to signal EOF to the child
 		close(_input_pipe[1]);
-
-		// Read the CGI script's output
 		try
 		{
 			_cgi_response = readFromPipe(_output_pipe[0]);
 		}
 		catch (const std::exception &e)
 		{
-			ERROR("Error reading from CGI output pipe: " + std::string(e.what()));
-			// Optionally, kill the child process
 			kill(_pid, SIGKILL);
 			waitpid(_pid, nullptr, 0);
 			close(_output_pipe[0]);
-			return;
+			throw std::runtime_error("Error reading from CGI output pipe: " + std::string(e.what()));
 		}
-
-		// Close the read end after reading
 		close(_output_pipe[0]);
 
-		// Wait for the child process to finish with a timeout
 		int status;
 		int wait_result;
 		int timeout = 5; // seconds
@@ -200,21 +164,14 @@ void Cgi::execute(const RequestPacket &request_packet)
 
 		if (wait_result == 0)
 		{
-			// Timeout occurred
 			ERROR("Child process timed out");
-			kill(_pid, SIGKILL);	   // Force kill the child process
-			waitpid(_pid, &status, 0); // Ensure the child process is cleaned up
+			kill(_pid, SIGKILL);
+			waitpid(_pid, &status, 0);
 		}
 		else if (wait_result > 0)
-		{
-			// Child process exited
 			DEBUG("Child process finished with status: " + std::to_string(status));
-		}
 		else
-		{
-			// Error occurred
 			ERROR("Error in waitpid: " + std::string(strerror(errno)));
-		}
 
 		DEBUG("CGI execution completed");
 	}
@@ -222,7 +179,6 @@ void Cgi::execute(const RequestPacket &request_packet)
 
 void Cgi::writeToPipe(const std::string &content, int fd)
 {
-	// Poll setup for writing POST data to CGI process
 	struct pollfd pollfds[1];
 	pollfds[0].fd = fd; // Monitor CGI input pipe for writing
 	pollfds[0].events = POLLOUT;
