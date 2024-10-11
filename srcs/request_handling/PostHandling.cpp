@@ -28,7 +28,7 @@ void handle_post(const RequestPacket &request_packet, ResponsePacket &response_p
 	else
 	{
 		// handle_upload(request_packet, response_packet, config_pair);
-		DEBUG("File request: " + uri_info.path);
+		// DEBUG("File request: " + uri_info.path);
 		// std::optional<File> file = load_file_with_cache(uri_info.path);
 		// if (!file)
 		// 	return not_found(load_error_page(404, config_pair.first));
