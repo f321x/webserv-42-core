@@ -143,7 +143,7 @@ void HttpSocket::_write_client_response(std::unique_ptr<ResponsePacket> response
     // write response to client
     try
     {
-        DEBUG("Sending response to client: " + response->serialize());
+        TRACE("Sending response to client: " + response->serialize());
         _socket->write_data(response->serialize());
         if (response->is_final_response())
         {

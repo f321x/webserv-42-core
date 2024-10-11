@@ -94,8 +94,8 @@ void RequestPacket::parseRawPacket()
 				throw UnknownMethodException();
 			}
 
-			_uri = parseUri(tokens[1]);
-			// _query_string = "";
+			// _uri = parseUri(tokens[1]);
+			std::tie(_uri, _query_tokens) = _parse_request_uri(tokens[1]);
 			_http_version = trim(tokens[2]);
 			continue;
 		}
@@ -154,7 +154,32 @@ void RequestPacket::parseRawPacket()
 	setContent(_raw_packet.substr(bodyStart + iOffset));
 }
 
-int RequestPacket::getContentLengthHeader() const
+// parse the uri in a pure uri path and a hashset of query tokens
+std::pair<std::string, std::unordered_map<std::string, std::string>> RequestPacket::_parse_request_uri(const std::string &uri)
+{
+	std::string path = uri;
+	std::unordered_map<std::string, std::string> query_tokens;
+
+	size_t question_mark_pos = uri.find('?');
+	if (question_mark_pos != std::string::npos)
+	{
+		path = uri.substr(0, question_mark_pos);
+		std::string query = uri.substr(question_mark_pos + 1);
+		std::vector<std::string> query_pairs = split(query, '&');
+		for (const std::string &query_pair : query_pairs)
+		{
+			std::vector<std::string> query_token = split(query_pair, '=');
+			if (query_token.size() == 2)
+			{
+				query_tokens[query_token[0]] = query_token[1];
+			}
+		}
+	}
+
+	return std::make_pair(path, query_tokens);
+}
+
+int RequestPacket::get_content_length_header() const
 {
 	return _content_length_header;
 }
@@ -181,12 +206,6 @@ size_t RequestPacket::getContentSize() const
 
 std::string RequestPacket::getQueryString() const
 {
-	// std::string uri = getUri();
-	// size_t qPos = uri.find('?');
-
-	// if (qPos == std::string::npos)
-	// 	return "";
-	// return uri.substr(qPos + 1);
 	return _query_string;
 }
 

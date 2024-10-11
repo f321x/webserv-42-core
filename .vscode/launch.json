@@ -21,15 +21,22 @@
 				}
 			]
 		},
-    {
-      "name": "webserv server debug",
-      "type": "cppdbg",
-      "program": "${workspaceFolder}/webserv",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "request": "launch",
-      "MIMode": "gdb",
-			"miDebuggerPath": "/usr/bin/gdb"
-    }
+	    {
+      		"name": "webserv server debug",
+      		"type": "cppdbg",
+      		"program": "${workspaceFolder}/webserv",
+      		"args": [],
+      		"cwd": "${workspaceFolder}",
+      		"request": "launch",
+      		"MIMode": "gdb",
+	  		"miDebuggerPath": "/usr/bin/gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			]
+    	}
 	]
 }
