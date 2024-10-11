@@ -30,3 +30,5 @@ public:
 	void execute(const RequestPacket &request_packet);
 	std::string getResponse() const;
 };
+
+bool validCgiFileEnding(const std::string &path);

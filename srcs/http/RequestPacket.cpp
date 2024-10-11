@@ -118,7 +118,6 @@ void RequestPacket::parseRawPacket()
 		}
 		setHeader(trim(key), trim(value));
 	}
-	DEBUG("BEFORE BODY START");
 	// Body
 	size_t bodyStart = _raw_packet.find("\n\n");
 	unsigned int iOffset = 2;
@@ -135,7 +134,6 @@ void RequestPacket::parseRawPacket()
 	if (contentLengthString == "")
 		contentLengthString = getHeader("content-length");
 	// removed return because there are also packets without content-length header
-	DEBUG("AFTER GETTING CONTENT LENGTH");
 	if (contentLengthString != "")
 	{
 		try
@@ -154,7 +152,6 @@ void RequestPacket::parseRawPacket()
 	// 	throw InvalidPacketException();
 	// }
 	setContent(_raw_packet.substr(bodyStart + iOffset));
-	DEBUG("END OF PARSE RAW PACKET");
 }
 
 int RequestPacket::getContentLengthHeader() const
