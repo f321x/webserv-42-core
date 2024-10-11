@@ -1,4 +1,5 @@
 #include "RequestPacket.hpp"
+#include "logging.hpp"
 
 RequestPacket::RequestPacket()
 {
@@ -30,19 +31,35 @@ RequestPacket &RequestPacket::operator=(const RequestPacket &other)
 
 RequestPacket::~RequestPacket() {}
 
-std::string RequestPacket::get_http_version() const
+std::string RequestPacket::getHttpVersion() const
 {
 	return _http_version;
 }
 
-std::string RequestPacket::get_uri() const
+std::string RequestPacket::getUri() const
 {
 	return _uri;
 }
 
-Method RequestPacket::get_method() const
+Method RequestPacket::getMethod() const
 {
 	return _method;
+}
+
+std::string RequestPacket::parseUri(const std::string &uri)
+{
+	DEBUG("parseUri: " + uri);
+	size_t qPos = uri.find('?');
+	if (qPos == std::string::npos)
+	{
+		_query_string = "";
+		return uri;
+	}
+	DEBUG("? postion: " + std::to_string(qPos));
+	_query_string = uri.substr(qPos + 1);
+	DEBUG("query string: " + _query_string);
+	DEBUG("uri: " + uri.substr(0, qPos));
+	return uri.substr(0, qPos);
 }
 
 void RequestPacket::parseRawPacket()
@@ -77,6 +94,7 @@ void RequestPacket::parseRawPacket()
 				throw UnknownMethodException();
 			}
 
+			// _uri = parseUri(tokens[1]);
 			std::tie(_uri, _query_tokens) = _parse_request_uri(tokens[1]);
 			_http_version = trim(tokens[2]);
 			continue;
@@ -98,9 +116,8 @@ void RequestPacket::parseRawPacket()
 		{
 			continue;
 		}
-		set_header(trim(key), trim(value));
+		setHeader(trim(key), trim(value));
 	}
-
 	// Body
 	size_t bodyStart = _raw_packet.find("\n\n");
 	unsigned int iOffset = 2;
@@ -113,11 +130,10 @@ void RequestPacket::parseRawPacket()
 		return;
 
 	// headers can be upper and lowercase
-	std::string contentLengthString = get_header("Content-Length");
+	std::string contentLengthString = getHeader("Content-Length");
 	if (contentLengthString == "")
-		contentLengthString = get_header("content-length");
+		contentLengthString = getHeader("content-length");
 	// removed return because there are also packets without content-length header
-
 	if (contentLengthString != "")
 	{
 		try
@@ -135,7 +151,7 @@ void RequestPacket::parseRawPacket()
 	// {
 	// 	throw InvalidPacketException();
 	// }
-	set_content(_raw_packet.substr(bodyStart + iOffset));
+	setContent(_raw_packet.substr(bodyStart + iOffset));
 }
 
 // parse the uri in a pure uri path and a hashset of query tokens
@@ -168,12 +184,12 @@ int RequestPacket::get_content_length_header() const
 	return _content_length_header;
 }
 
-bool RequestPacket::is_chunked() const
+bool RequestPacket::isChunked() const
 {
-	std::string transferEncoding = get_header("Transfer-Encoding");
+	std::string transferEncoding = getHeader("Transfer-Encoding");
 	if (transferEncoding == "")
 	{
-		transferEncoding = get_header("transfer-encoding");
+		transferEncoding = getHeader("transfer-encoding");
 	}
 	if (transferEncoding == "")
 	{
@@ -183,17 +199,22 @@ bool RequestPacket::is_chunked() const
 	return transferEncoding == "chunked";
 }
 
-size_t RequestPacket::get_content_size() const
+size_t RequestPacket::getContentSize() const
 {
 	return _content.length();
 }
 
-void RequestPacket::replace_content(const std::string &new_content)
+std::string RequestPacket::getQueryString() const
+{
+	return _query_string;
+}
+
+void RequestPacket::replaceContent(const std::string &new_content)
 {
 	_content = new_content;
 }
 
-void RequestPacket::add_to_content(const std::string &new_content)
+void RequestPacket::addToContent(const std::string &new_content)
 {
 	_content += new_content;
 }

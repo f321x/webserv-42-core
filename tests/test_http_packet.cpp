@@ -11,25 +11,25 @@
 // 		std::string request = "GET /index.html HTTP/1.1\r\nHost: localhost:4242\r\n\r\n";
 // 		RequestPacket packet(request);
 
-// 		REQUIRE(packet.get_method() == GET);
-// 		REQUIRE(packet.get_uri() == "/index.html");
-// 		REQUIRE(packet.get_http_version() == "HTTP/1.1");
+// 		REQUIRE(packet.getMethod() == GET);
+// 		REQUIRE(packet.getUri() == "/index.html");
+// 		REQUIRE(packet.getHttpVersion() == "HTTP/1.1");
 // 		REQUIRE(packet.get_req_header("Host") == "localhost:4242");
 
 // 		// Test parsing no headers
 // 		request = "GET / HTTP/1.1\r\n\r\n";
 // 		packet = RequestPacket(request);
-// 		REQUIRE(packet.get_method() == GET);
-// 		REQUIRE(packet.get_uri() == "/");
-// 		REQUIRE(packet.get_http_version() == "HTTP/1.1");
+// 		REQUIRE(packet.getMethod() == GET);
+// 		REQUIRE(packet.getUri() == "/");
+// 		REQUIRE(packet.getHttpVersion() == "HTTP/1.1");
 // 		REQUIRE(packet.get_req_headers().size() == 0);
 
 // 		// Test parsing multiple headers
 // 		request = "POST / HTTP/1.1\r\nHost: localhost:4242\r\nUser-Agent: Mozilla/5.0\r\n\r\n";
 // 		packet = RequestPacket(request);
-// 		REQUIRE(packet.get_method() == POST);
-// 		REQUIRE(packet.get_uri() == "/");
-// 		REQUIRE(packet.get_http_version() == "HTTP/1.1");
+// 		REQUIRE(packet.getMethod() == POST);
+// 		REQUIRE(packet.getUri() == "/");
+// 		REQUIRE(packet.getHttpVersion() == "HTTP/1.1");
 // 		REQUIRE(packet.get_req_header("Host") == "localhost:4242");
 // 		REQUIRE(packet.get_req_header("User-Agent") == "Mozilla/5.0");
 
@@ -49,7 +49,7 @@
 // 		packet.set_status_code(200);
 // 		packet.set_status_message("OK");
 // 		packet.set_res_header("Content-Type", "text/html");
-// 		packet.set_content("<html><body><h1>Hello, World!</h1></body></html>");
+// 		packet.setContent("<html><body><h1>Hello, World!</h1></body></html>");
 
 // 		std::string response = packet.serialize();
 // 		std::string expected = "HTTP/1.1 200 OK\nContent-Length: 48\nContent-Type: text/html\n\n<html><body><h1>Hello, World!</h1></body></html>";
@@ -59,7 +59,7 @@
 // 		packet = ResponsePacket();
 // 		packet.set_status_code(404);
 // 		packet.set_status_message("Not Found");
-// 		packet.set_content("404 Not Found");
+// 		packet.setContent("404 Not Found");
 
 // 		response = packet.serialize();
 // 		expected = "HTTP/1.1 404 Not Found\n\n404 Not Found";
@@ -71,7 +71,7 @@
 // 		packet.set_status_message("Internal Server Error");
 // 		packet.set_res_header("Content-Type", "text/plain");
 // 		packet.set_res_header("Server", "WebServer/1.0");
-// 		packet.set_content("500 Internal Server Error");
+// 		packet.setContent("500 Internal Server Error");
 
 // 		response = packet.serialize();
 // 		expected = "HTTP/1.1 500 Internal Server Error\nContent-Type: text/plain\nServer: WebServer/1.0\n\n500 Internal Server Error";

@@ -32,6 +32,6 @@ struct UriInfo
 
 bool check_keep_alive(RequestPacket &packet);
 std::string find_longest_matching_route(const std::string &uri, const std::map<std::string, RouteConfig> &routes);
-std::string get_content_type(const std::string &file_ending);
+std::string getContent_type(const std::string &file_ending);
 bool has_file_ending(const std::string &uri);
 std::string get_pure_hostname(RequestPacket &packet);
