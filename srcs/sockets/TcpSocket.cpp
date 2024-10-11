@@ -29,8 +29,8 @@ TcpSocket::TcpSocket()
 	setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
 	// set nonblocking flag
-	int flags = fcntl(_socket_fd, F_GETFL, 0);
-	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
+	// int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, O_NONBLOCK);
 }
 
 void TcpSocket::bind_to_address(const sockaddr_in &address)
