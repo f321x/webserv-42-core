@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <cstring>
+#include <sys/stat.h>
 
 Cgi::Cgi(const RequestPacket &request_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 	: _cgi_response(""), _pid(-1)
@@ -18,12 +19,9 @@ Cgi::Cgi(const RequestPacket &request_packet, const std::pair<ServerConfig, Rout
 	DEBUG("Script path: " + _path_info);
 
 	// Check if the script exists and is executable
-	if (access(_path_info.c_str(), X_OK) == -1)
-	{
-		ERROR("CGI script not found or not executable: " + _path_info);
-		// Here, you might want to set an appropriate HTTP error response
-		return;
-	}
+	struct stat path_stat;
+	if (access(_path_info.c_str(), F_OK | X_OK) != 0 || stat(_path_info.c_str(), &path_stat) != 0 || !S_ISREG(path_stat.st_mode))
+		throw std::runtime_error("Not a executable file!");
 	DEBUG("CGI script found and is executable");
 
 	// Set up environment variables
