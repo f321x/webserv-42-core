@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 import os
-import cgi
-import cgitb
+# import cgi
+# import cgitb
 
-cgitb.enable()  # Enable debugging
+# cgitb.enable()  # Enable debugging
 
 # Define the path to the count file
-count_file = "/tmp/count.txt"
+count_file = "./tmp/count.txt"
 
 def get_count():
     """Read the current count from the file."""
@@ -43,9 +43,9 @@ print("""
 <head>
     <title>Increment Counter</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        button { padding: 10px 20px; font-size: 16px; }
-        h1 { color: #333; }
+        body {{ font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }}
+        button {{ padding: 10px 20px; font-size: 16px; }}
+        h1 {{ color: #333; }}
     </style>
 </head>
 <body>
@@ -56,3 +56,4 @@ print("""
 </body>
 </html>
 """.format(count))
+
