@@ -7,12 +7,8 @@ TcpSocket::TcpSocket(int existing_fd) : _socket_fd(existing_fd)
 	memset(&_address, 0, sizeof(_address));
 
 	// set nonblocking flag
-	// int flags = fcntl(_socket_fd, F_GETFL, 0);
-	fcntl(_socket_fd, F_SETFL, O_NONBLOCK);
-
-	// Set the SO_REUSEADDR option to make the server restart faster
-	int optval = 1;
-	setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval));
+	int flags = fcntl(_socket_fd, F_GETFL, 0);
+	fcntl(_socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 // constructor for bind socket
@@ -27,6 +23,10 @@ TcpSocket::TcpSocket()
 	{
 		throw std::runtime_error("TcpSocket: failed");
 	}
+
+	// Set the SO_REUSEADDR option to make the server restart faster
+	int optval = 1;
+	setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
 	// set nonblocking flag
 	// int flags = fcntl(_socket_fd, F_GETFL, 0);
@@ -154,9 +154,9 @@ std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t 
 			result.append(buffer, bytes_read);
 
 			// Check if we have received the full body
-			if (result.size() == promised_content_length && promised_content_length >= 0)
+			if (result.size() == promised_content_length && promised_content_length > 0)
 				break;
-			else if (result.size() > promised_content_length && promised_content_length >= 0)
+			else if (result.size() > promised_content_length && promised_content_length > 0)
 			{
 				_buffer = result.substr(promised_content_length);
 				return result.substr(0, promised_content_length);

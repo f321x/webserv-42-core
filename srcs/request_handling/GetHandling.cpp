@@ -140,35 +140,36 @@ std::string get_autoindex(std::string path, const std::string &uri)
 
 std::optional<File> load_file_with_cache(const std::string &filepath)
 {
-	// we have lots of memory, lets use it
-	static std::map<std::string, File> cache;
-	if (cache.find(filepath) != cache.end())
-		return cache[filepath];
+    // we have lots of memory, lets use it
+    static std::unordered_map<std::string, File> cache;
+    if (cache.find(filepath) != cache.end())
+        return cache[filepath];
 
-	// Open the file
-	std::ifstream fs(filepath);
-	if (!fs.is_open())
-	{
-		WARN("Failed to open file: " + filepath);
-		return std::nullopt;
-	}
+    // Open the file
+    std::ifstream fs(filepath);
+    if (!fs.is_open())
+    {
+        WARN("Failed to open file: " + filepath);
+        return std::nullopt;
+    }
 
-	// Read the file contents into a string
-	std::stringstream buffer;
-	buffer << fs.rdbuf();
-	std::string file_contents = buffer.str();
+    // Read the file contents into a string
+    std::stringstream buffer;
+    buffer << fs.rdbuf();
+    std::string file_contents = buffer.str();
 
-	// Close the file
-	fs.close();
+    // Close the file
+    fs.close();
 
-	File file;
-	file.content = file_contents;
-	file.file_ending = filepath.substr(filepath.find_last_of('.') + 1);
+    File file;
+    file.content = file_contents;
+    file.file_ending = filepath.substr(filepath.find_last_of('.') + 1);
 
-	// Cache the file contents
-	cache[filepath] = file;
+    // Cache the file contents
+    if (file.content.size() < 1000000) // 1MB
+        cache[filepath] = file;
 
-	return file;
+    return file;
 }
 
 UriInfo getUri_info(const std::string &uri, const RouteConfig &route_config)
