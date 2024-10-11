@@ -1,6 +1,6 @@
 NAME := webserv
 
-CC := g++
+CC := c++
 CFLAGS := -std=c++17 -Wall -Wextra -Werror -g3  # -fsanitize=address
 INCLUDES := -I./includes -I/usr/local/include
 LIBS := -L/usr/local/lib -lCatch2

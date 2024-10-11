@@ -179,7 +179,7 @@ std::pair<std::string, std::unordered_map<std::string, std::string>> RequestPack
 	return std::make_pair(path, query_tokens);
 }
 
-int RequestPacket::get_content_length_header() const
+int RequestPacket::getContentLengthHeader() const
 {
 	return _content_length_header;
 }
