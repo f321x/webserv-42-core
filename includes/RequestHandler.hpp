@@ -28,7 +28,7 @@ void handle_post(const RequestPacket &request_packet, ResponsePacket &response_p
 
 // GET handling
 std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
-UriInfo get_uri_info(const std::string &uri, const RouteConfig &route_config);
+UriInfo getUri_info(const std::string &uri, const RouteConfig &route_config);
 std::optional<File> load_file_with_cache(const std::string &filepath);
 std::string load_error_page(int status_code, const ServerConfig &server);
 std::string get_autoindex(std::string path, const std::string &uri);
