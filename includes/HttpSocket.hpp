@@ -32,13 +32,12 @@ private:
     std::unique_ptr<TcpSocket> _socket;
     std::shared_ptr<std::vector<ServerConfig>> _available_configs;
     std::chrono::steady_clock::time_point _last_activity;
-    bool _ongoing_chunked_request = false;
-    std::string _chunked_packet_buffer;
+    std::unique_ptr<RequestPacket> _client_request;
 
     // private functions
     sockaddr_in _compose_sockaddr(const std::string &addr, int port);
     std::unique_ptr<TcpSocket> _create_bind_socket(const sockaddr_in &address);
-    int _smallest_max_body_size() const;
+    size_t _smallest_max_body_size() const;
     void _write_client_response(std::unique_ptr<ResponsePacket> response);
 };
 

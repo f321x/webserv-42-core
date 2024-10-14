@@ -15,11 +15,13 @@ public:
 	std::string get_http_version() const;
 	std::string get_uri() const;
 	Method get_method() const;
-	int get_content_length_header() const;
+	size_t get_content_length_header() const;
 	bool is_chunked() const;
 	size_t get_content_size() const;
 	void replace_content(const std::string &new_content);
 	void add_to_content(const std::string &new_content);
+
+	bool append_chunked_data(const std::string &chunked_data);
 
 	class InvalidPacketException : public std::exception
 	{

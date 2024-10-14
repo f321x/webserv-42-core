@@ -138,6 +138,36 @@ void RequestPacket::parseRawPacket()
 	set_content(_raw_packet.substr(bodyStart + iOffset));
 }
 
+bool RequestPacket::append_chunked_data(const std::string &chunked_data)
+{
+	// find the chunk size
+	size_t indChunkSize = chunked_data.find("\r\n");
+	if (indChunkSize == std::string::npos)
+		throw InvalidPacketException();
+
+	// parse the chunk size
+	std::string chunkSizeStr = chunked_data.substr(0, indChunkSize);
+	size_t chunkSize = std::stoul(chunkSizeStr, nullptr, 16);
+
+	if (chunkSize == std::string::npos)
+		throw InvalidPacketException();
+	if (chunkSize == 0)
+		return true;
+
+	// find the end of the chunk data
+	size_t indChunkEnd = chunked_data.find("\r\n", indChunkSize + 2);
+
+	if (indChunkEnd == std::string::npos)
+		throw InvalidPacketException();
+	if (indChunkEnd + 2 + chunkSize > chunked_data.length())
+		throw InvalidPacketException();
+
+	// append the chunk data to the result
+	add_to_content(chunked_data.substr(indChunkSize + 2, chunkSize));
+
+	return get_content_size() == get_content_length_header();
+}
+
 // parse the uri in a pure uri path and a hashset of query tokens
 std::pair<std::string, std::unordered_map<std::string, std::string>> RequestPacket::_parse_request_uri(const std::string &uri)
 {
@@ -163,7 +193,7 @@ std::pair<std::string, std::unordered_map<std::string, std::string>> RequestPack
 	return std::make_pair(path, query_tokens);
 }
 
-int RequestPacket::get_content_length_header() const
+size_t RequestPacket::get_content_length_header() const
 {
 	return _content_length_header;
 }
