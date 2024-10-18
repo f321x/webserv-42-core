@@ -37,12 +37,9 @@ std::unique_ptr<ResponsePacket> handle_post(const RequestPacket &request_packet,
 			ERROR("Location doesnt support uploads");
 			return forbidden();
 		}
-		handleUpload(request_packet, std::move(response_packet), config_pair);
-		// DEBUG("File request: " + uri_info.path);
-		// std::optional<File> file = load_file_with_cache(uri_info.path);
-		// if (!file)
-		// 	return not_found(load_error_page(404, config_pair.first));
-		// return ok_with_content(file.value(), std::move(response_packet));
+		if (handleUpload(request_packet, std::move(response_packet), config_pair))
+			return created("dummy location"); // TODO: set correct location (should be parsed from the request in the content disposition header)
+		return internal_server_error();
 	}
 	return response_packet;
 }

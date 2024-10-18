@@ -84,3 +84,13 @@ std::unique_ptr<ResponsePacket> forbidden()
 	response_packet->set_final_response();
 	return response_packet;
 }
+
+std::unique_ptr<ResponsePacket> created(const std::string &location)
+{
+	auto response_packet = std::make_unique<ResponsePacket>();
+	response_packet->set_status_code(201);
+	response_packet->set_status_message("Created");
+	response_packet->setHeader("Location", location);
+	response_packet->set_final_response();
+	return response_packet;
+}
