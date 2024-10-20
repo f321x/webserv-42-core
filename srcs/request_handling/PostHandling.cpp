@@ -48,15 +48,47 @@ std::unique_ptr<ResponsePacket> handle_post(const RequestPacket &request_packet,
 // TODO: check if the file already exists and return 409 conflict if it does
 
 // TODO: parse the filename from the content-disposition header
-std::string getFileName(const std::string &content_disposition)
+std::string getFilename(const std::string &body)
 {
-	std::string filename;
-	size_t start = content_disposition.find("filename=\"") + 10;
-	size_t end = content_disposition.find("\"", start);
-	if (start != std::string::npos && end != std::string::npos)
-		filename = content_disposition.substr(start, end - start);
-	DEBUG("Filename: " + filename);
-	return filename;
+	// Find the "Content-Disposition" line in the body
+	size_t disposition_start = body.find("Content-Disposition:");
+	if (disposition_start == std::string::npos)
+	{
+		ERROR("Content-Disposition not found.");
+		return "";
+	}
+
+	// Find the end of the Content-Disposition line
+	size_t disposition_end = body.find("\r\n", disposition_start);
+	if (disposition_end == std::string::npos)
+	{
+		ERROR("End of Content-Disposition not found.");
+		return "";
+	}
+
+	// Extract the Content-Disposition line
+	std::string disposition_line = body.substr(disposition_start, disposition_end - disposition_start);
+
+	// Locate 'filename="' in the Content-Disposition line
+	std::string filename_token = "filename=\"";
+	size_t filename_start = disposition_line.find(filename_token);
+	if (filename_start == std::string::npos)
+	{
+		ERROR("Filename not found in Content-Disposition.");
+		return "";
+	}
+
+	// Extract the actual filename (after filename=")
+	filename_start += filename_token.length();
+	size_t filename_end = disposition_line.find("\"", filename_start);
+	if (filename_end == std::string::npos)
+	{
+		ERROR("End of filename not found.");
+		return "";
+	}
+
+	// Return the extracted filename
+	return disposition_line.substr(filename_start, filename_end - filename_start);
 }
 
 bool handleUpload(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
@@ -96,7 +128,7 @@ bool handleUpload(const RequestPacket &request_packet, std::unique_ptr<ResponseP
 	file_content = body.substr(headers_end, file_end - headers_end);
 
 	// For simplicity, we'll assume file_name is fixed for now
-	file_name = getFileName(request_packet.getHeader("Content-Disposition"));
+	file_name = getFilename(request_packet.getContent());
 
 	// Construct the full file path
 	std::string file_path = config_pair.second.getUploadDirectory() + "/" + file_name;

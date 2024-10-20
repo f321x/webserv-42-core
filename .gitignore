@@ -8,3 +8,4 @@ test
 /tmp
 .DS_Store
 *.txt
+/config/www/upload
