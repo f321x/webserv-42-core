@@ -63,3 +63,8 @@ void BasePacket::setContent(const std::string content)
 {
 	_content = content;
 }
+
+std::string BasePacket::getBoundary() const
+{
+	return _boundary;
+}
