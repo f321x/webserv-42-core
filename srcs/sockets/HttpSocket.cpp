@@ -22,7 +22,7 @@ HttpSocket::HttpSocket(std::unique_ptr<TcpSocket> socket, std::shared_ptr<std::v
     _socket = std::move(socket);
     _available_configs = available_configs;
     _last_activity = std::chrono::steady_clock::now();
-    request = std::make_unique<RequestPacket>();
+    request = std::make_unique<RequestPacket>(_smallest_max_body_size());
 }
 
 HttpSocket::~HttpSocket()
@@ -82,9 +82,7 @@ void HttpSocket::handle_client_data()
         // read the request from the client
         std::string client_data = _socket->read_once();
         TRACE("Received data from client: " + client_data);
-        if (client_data.empty()) // no data received even though the socket had POLLIN
-            return;
-        // handle the request
+        // append the data to the request class
         this->request->append(client_data);
     }
     catch (const std::exception &e)
@@ -94,8 +92,10 @@ void HttpSocket::handle_client_data()
 
     if (request->is_complete() || request->is_invalid())
     {
-        this->response.emplace(handle_request(*this->request, _available_configs));
-        this->request = std::make_unique<RequestPacket>();
+        this->response.emplace(handle_request(*this->request, _available_configs)); // placing the response in optional to signal we are ready to write
+        // reset this->request to a new RequestPacket for next request
+        // pass max_body_size to constructor so the parsing can check if the packet is bigger than allowed
+        this->request = std::make_unique<RequestPacket>(_smallest_max_body_size());
     }
 }
 
