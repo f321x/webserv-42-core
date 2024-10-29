@@ -99,157 +99,22 @@ pollfd TcpSocket::new_pfd() const
 	return pfd;
 }
 
-std::string TcpSocket::read_request_header()
+std::string TcpSocket::read_once()
 {
 	std::string result;
-	char buffer[1024];
+	char buffer[65536];
 	ssize_t bytes_read;
 
-	if (_bind_socket)
-		throw std::runtime_error("TcpSocket: Cannot read data from a bind socket");
+	memset(buffer, 0, sizeof(buffer));
+	bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
 
-	while (true)
+	TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
+	if (bytes_read > 0)
 	{
-		memset(buffer, 0, sizeof(buffer));
-		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
-
-		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket:\n" + std::string(buffer));
-		if (bytes_read > 0)
-		{
-			// Data received, append to result
-			result.append(buffer, bytes_read);
-
-			// Check if we have received the full header
-			if (result.find("\r\n\r\n") != std::string::npos)
-				return result;
-		}
-		else if (bytes_read <= 0)
-		{
-			// Connection closed by client
-			if (result.empty())
-				throw std::runtime_error("TcpSocket: Connection closed by client");
-			break;
-		}
-	}
-	throw std::runtime_error("TcpSocket: failed to read request header");
-}
-
-std::string TcpSocket::read_request_body_unchunked(size_t max_body_size, size_t promised_content_length)
-{
-	std::string result;
-	char buffer[1024];
-	ssize_t bytes_read;
-
-	result = _buffer;
-	_buffer.clear();
-	while (true)
-	{
-		memset(buffer, 0, sizeof(buffer));
-		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
-
-		TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
-		if (bytes_read > 0)
-		{
-			// Data received, append to result
-			result.append(buffer, bytes_read);
-
-			// Check if we have received the full body
-			if (result.size() == promised_content_length && promised_content_length > 0)
-				break;
-			else if (result.size() > promised_content_length && promised_content_length > 0)
-			{
-				_buffer = result.substr(promised_content_length);
-				return result.substr(0, promised_content_length);
-			}
-
-			if (result.size() > max_body_size)
-				throw std::runtime_error("TcpSocket: Request body too large");
-		}
-		else if (bytes_read <= 0)
-		{
-			// Connection closed by client
-			if (result.empty())
-				break;
-			else if (promised_content_length > 0 && result.size() < promised_content_length)
-			{
-				_buffer = result;
-				return "";
-			}
-			break;
-		}
+		// Data received, append to result
+		result.append(buffer, bytes_read);
 	}
 	return result;
-}
-
-std::pair<std::string, bool> TcpSocket::read_request_body_chunked(size_t max_body_size, std::string existing_chunked_data)
-{
-	std::string chunked_data;
-	std::string result; // result has to be clean, unchunked content
-	char buffer[1024];
-	ssize_t bytes_read;
-
-	TRACE("Reading chunked data from client socket, existing data: " + existing_chunked_data);
-	chunked_data = existing_chunked_data; // existing data will only contain something in the first call (leftover from header reading)
-	chunked_data.append(_buffer);
-	_buffer.clear();
-	while (true)
-	{
-		// read into buffer
-		memset(buffer, 0, sizeof(buffer));
-		bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
-
-		if (bytes_read > 0)
-			chunked_data.append(buffer, bytes_read);
-		auto [unchunked_data, complete] = _unchunk_data(chunked_data);
-		result.append(unchunked_data);
-
-		if (result.size() > max_body_size)
-			throw std::runtime_error("TcpSocket: Request body too large");
-		else if (complete)
-			return std::make_pair(result, true);
-		else if (bytes_read <= 0)
-			break;
-	}
-	_buffer = chunked_data;
-	return std::make_pair(result, false);
-}
-
-// removes all complete chunks from the chunked_data string and returns the unchunked data
-// chunked_data will be trimmed to the last incomplete chunk
-// ignores prefix extensions
-std::pair<std::string, bool> TcpSocket::_unchunk_data(std::string &chunked_data)
-{
-	std::string result;
-	bool complete = false;
-
-	while (true)
-	{
-		// find the end of the chunk size prefix
-		size_t chunk_size_end = chunked_data.find("\r\n");
-		if (chunk_size_end == std::string::npos)
-			break;
-
-		// get the chunk size
-		std::string chunk_size_str = chunked_data.substr(0, chunk_size_end);
-		size_t chunk_size = std::stoul(chunk_size_str, nullptr, 16);
-		if (chunk_size == 0)
-		{
-			// end of chunked data
-			complete = true;
-			break;
-		}
-
-		// find the end of the chunk data
-		size_t chunk_end = chunked_data.find("\r\n", chunk_size_end + 2);
-		if (chunk_end == std::string::npos)
-			break;
-
-		// append the chunk data to the result
-		result.append(chunked_data, chunk_size_end + 2, chunk_size);
-		chunked_data = chunked_data.substr(chunk_end + 2);
-	}
-
-	return std::make_pair(result, complete);
 }
 
 void TcpSocket::write_data(const std::string &data)
