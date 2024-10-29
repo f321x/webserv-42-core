@@ -76,6 +76,8 @@ void HttpSocket::handle_client_data()
     _last_activity = std::chrono::steady_clock::now();
     if (is_bind_socket)
         throw IsBindSocketErr("HttpSocket: Cannot handle client data on a bind socket");
+    if (this->response.has_value())
+        return;
 
     try
     {
@@ -105,10 +107,12 @@ bool HttpSocket::write_client_response()
     try
     {
         TRACE("Sending response to client: " + response.value()->serialize());
-        _socket->write_data(response.value()->serialize());
-        bool is_final_response = response.value()->is_final_response();
-        this->response.reset();
-        return is_final_response;
+        if (_socket->write_data(response.value()->serialize()))
+        {
+            bool is_final_response = response.value()->is_final_response();
+            this->response.reset();
+            return is_final_response;
+        }
     }
     catch (const std::exception &e)
     {

@@ -117,16 +117,30 @@ std::string TcpSocket::read_once()
 	return result;
 }
 
-void TcpSocket::write_data(const std::string &data)
+// returnes true if finished writing
+bool TcpSocket::write_data(const std::string &data)
 {
 	if (_bind_socket)
 		throw std::runtime_error("TcpSocket: Cannot write data to a bind socket");
 
-	ssize_t bytes_written = send(_socket_fd, data.c_str(), data.size(), 0);
-	if (bytes_written < 0)
+	std::string data_to_write;
+	if (written_bytes > 0)
+		data_to_write = data.substr(written_bytes);
+	else
+		data_to_write = data;
+
+	int send_res = send(_socket_fd, data_to_write.c_str(), data_to_write.size(), 0);
+	written_bytes += send_res;
+	if (written_bytes == data.size())
+	{
+		written_bytes = 0;
+		return true; // wrote all data
+	}
+	else if (send_res <= 0)
 	{
 		throw std::runtime_error("TcpSocket: failed to write data");
 	}
+	return false; // not finished writing
 }
 
 TcpSocket::~TcpSocket()

@@ -31,11 +31,12 @@ public:
 	pollfd new_pfd() const;							// get a new pollfd struct for the socket
 	std::unique_ptr<TcpSocket> accept_connection(); // accept a new connection and return the newly created socket
 	std::string read_once();						// Read the body of the request
-	void write_data(const std::string &data);		// write data to the socket
+	bool write_data(const std::string &data);		// write data to the socket
 	bool is_bind_socket() const;					// check if the socket belongs to the main listening sockets
 
 private:
 	sockaddr_in _address;
 	int _socket_fd;			   // the file descriptor of the socket
 	bool _bind_socket = false; // true if the socket is the main listening socket (not a client socket)
+	ssize_t written_bytes = 0;
 };
