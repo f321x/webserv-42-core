@@ -72,21 +72,27 @@ void WebServer::serve()
                     try
                     {
                         _sockets[i]->handle_client_data(); // handle the client data
+                        break;                             // we have to break to respect the subject (only read/write after poll)
                     }
-                    catch (ReadingFailedErr &e)
+                    catch (const std::exception &e)
                     {
                         DEBUG("Reading failed: " + std::string(e.what()));
                         _remove_socket(_pollfds[i].fd);
                     }
-                    catch (WritingFailedErr &e)
-                    {
-                        DEBUG(std::string(e.what()));
+                }
+            }
+            else if (_pollfds[i].revents & POLLOUT && _sockets[i]->response.has_value())
+            {
+                try
+                {
+                    if (_sockets[i]->write_client_response())
                         _remove_socket(_pollfds[i].fd);
-                    }
-                    catch (const IsFinalResponse &) // may not the most elegant solution
-                    {
-                        _remove_socket(_pollfds[i].fd);
-                    }
+                    break;
+                }
+                catch (WritingFailedErr &e)
+                {
+                    DEBUG(std::string(e.what()));
+                    _remove_socket(_pollfds[i].fd);
                 }
             }
             else if (_pollfds[i].revents & POLLERR || _pollfds[i].revents & POLLHUP || _pollfds[i].revents & POLLNVAL || _pollfds[i].revents & POLLPRI)

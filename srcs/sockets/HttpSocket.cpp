@@ -22,6 +22,7 @@ HttpSocket::HttpSocket(std::unique_ptr<TcpSocket> socket, std::shared_ptr<std::v
     _socket = std::move(socket);
     _available_configs = available_configs;
     _last_activity = std::chrono::steady_clock::now();
+    request = std::make_unique<RequestPacket>();
 }
 
 HttpSocket::~HttpSocket()
@@ -76,84 +77,44 @@ void HttpSocket::handle_client_data()
     if (is_bind_socket)
         throw IsBindSocketErr("HttpSocket: Cannot handle client data on a bind socket");
 
-    std::unique_ptr<ResponsePacket> response = nullptr;
-    // read data from client
-    std::string client_data;
     try
     {
-        if (!_ongoing_chunked_request)
-        {
-            std::string partial_packet = _socket->read_request_header();
-            std::unique_ptr<RequestPacket> header_only_packet = std::make_unique<RequestPacket>(partial_packet);
-            client_data += partial_packet;
-
-            // deduct the bytes we already read in excess (bytes after the header) from the promised content length
-            int remaining_bytes = header_only_packet->getContentLengthHeader() - header_only_packet->getContentSize();
-
-            if (header_only_packet->getContentLengthHeader() > _smallest_max_body_size())
-                return _write_client_response(payload_too_large());
-            else if (header_only_packet->isChunked())
-            {
-                DEBUG("PARTIAL PACKET CONTENT: " + header_only_packet->getContent());
-                remove_content_from_packet(client_data, header_only_packet->getContent());
-                auto [unchunked_content, finished] = _socket->read_request_body_chunked(_smallest_max_body_size(), header_only_packet->getContent());
-                if (finished)
-                    client_data += unchunked_content;
-                else
-                {
-                    _chunked_packet_buffer += client_data;
-                    _chunked_packet_buffer += unchunked_content;
-                    _ongoing_chunked_request = true;
-                    return;
-                }
-            }
-            else
-                client_data += _socket->read_request_body_unchunked(_smallest_max_body_size(), remaining_bytes);
-        }
-        else // directly read chunked data because the header and existing content is already in the buffer
-        {
-            auto [unchunked_content, finished] = _socket->read_request_body_chunked(_smallest_max_body_size(), "");
-            if (finished)
-            {
-                client_data += _chunked_packet_buffer;
-                client_data += unchunked_content;
-                _chunked_packet_buffer.clear();
-                _ongoing_chunked_request = false;
-            }
-            else
-            {
-                _chunked_packet_buffer += unchunked_content;
-                return;
-            }
-        }
+        // read the request from the client
+        std::string client_data = _socket->read_once();
+        TRACE("Received data from client: " + client_data);
+        if (client_data.empty()) // no data received even though the socket had POLLIN
+            return;
+        // handle the request
+        this->request->append(client_data);
     }
     catch (const std::exception &e)
     {
         throw ReadingFailedErr(e.what());
     }
 
-    DEBUG("Received data from client: " + client_data);
-    response = handle_request(client_data, _available_configs);
-
-    return _write_client_response(std::move(response));
+    if (request->is_complete() || request->is_invalid())
+    {
+        this->response.emplace(handle_request(*this->request, _available_configs));
+        this->request = std::make_unique<RequestPacket>();
+    }
 }
 
-void HttpSocket::_write_client_response(std::unique_ptr<ResponsePacket> response)
+bool HttpSocket::write_client_response()
 {
     // write response to client
     try
     {
-        TRACE("Sending response to client: " + response->serialize());
-        _socket->write_data(response->serialize());
-        if (response->is_final_response())
-        {
-            throw IsFinalResponse("HttpSocket: Final response sent");
-        }
+        TRACE("Sending response to client: " + response.value()->serialize());
+        _socket->write_data(response.value()->serialize());
+        bool is_final_response = response.value()->is_final_response();
+        this->response.reset();
+        return is_final_response;
     }
     catch (const std::exception &e)
     {
         throw WritingFailedErr(e.what());
     }
+    return false;
 }
 
 std::unique_ptr<TcpSocket> HttpSocket::_create_bind_socket(const sockaddr_in &address)
