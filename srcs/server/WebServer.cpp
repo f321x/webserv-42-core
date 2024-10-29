@@ -64,7 +64,7 @@ void WebServer::serve()
                     TRACE("Accepting new connection");
                     std::unique_ptr<HttpSocket> new_client_socket = _sockets[i]->accept_connection(); // accept the connection, return new socket
                     _store_socket(std::move(new_client_socket));                                      // store new socket in the list of sockets
-                    break;                                                                            // may uneccessary, investigate later
+                    break;
                 }
                 else
                 {
