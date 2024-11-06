@@ -135,14 +135,14 @@ void RequestPacket::parseRawPacket()
 						}
 						else if (cookie_parts.size() == 2)
 						{
-							key = trim(cookie_parts[0]);
-							value = trim(cookie_parts[1]);
-							cookie_handler.addCookie(key, value);
+							std::string c_key, c_value;
+							c_key = trim(cookie_parts[0]);
+							c_value = trim(cookie_parts[1]);
+							cookie_handler.addCookie(c_key, c_value);
 						}
 					}
 				}
-				else
-					setHeader(trim(key), trim(value));
+				setHeader(trim(key), trim(value));
 			}
 		}
 	}
