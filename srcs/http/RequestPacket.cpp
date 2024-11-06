@@ -148,6 +148,7 @@ void RequestPacket::parseRawPacket()
 			}
 		}
 	}
+	setSessionId("dummy");
 }
 
 // parse the uri in a pure uri path and a hashset of query tokens
@@ -213,4 +214,14 @@ void RequestPacket::replaceContent(const std::string &new_content)
 void RequestPacket::addToContent(const std::string &new_content)
 {
 	_content += new_content;
+}
+
+std::string RequestPacket::getSessionId() const
+{
+	return _session_id;
+}
+
+void RequestPacket::setSessionId(const std::string &session_id)
+{
+	_session_id = session_id;
 }

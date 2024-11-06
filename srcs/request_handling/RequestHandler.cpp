@@ -1,9 +1,11 @@
 #include "RequestHandler.hpp"
+#include "SessionManager.hpp"
 
 std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
 	std::unique_ptr<RequestPacket> request_packet;
 	std::unique_ptr<ResponsePacket> response_packet = std::make_unique<ResponsePacket>();
+	SessionManager &session_manager = SessionManager::getInstance();
 
 	// Parse the request
 	try
@@ -16,6 +18,12 @@ std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const
 		return bad_request();
 	}
 	DEBUG("Request parsed");
+
+	// compare tmp_cookie with session_manager and create a new session if needed
+	DEBUG("SessionID: " + request_packet->getSessionId());
+	if (!session_manager.isValidSession(request_packet->getSessionId()))
+		request_packet->setSessionId(session_manager.createSession());
+	DEBUG("valid SessionID: " + request_packet->getSessionId());
 	// Find the server config
 	auto valid_config = find_valid_configuration(*request_packet, *available_configs);
 	if (!valid_config.has_value())

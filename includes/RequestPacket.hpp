@@ -22,6 +22,9 @@ public:
 	void replaceContent(const std::string &new_content);
 	void addToContent(const std::string &new_content);
 
+	std::string getSessionId() const;
+	void setSessionId(const std::string &session_id);
+
 	class InvalidPacketException : public std::exception
 	{
 		const char *what() const noexcept override
@@ -45,7 +48,8 @@ private:
 	std::string _http_version;
 	std::string parseUri(const std::string &uri);
 	std::unordered_map<std::string, std::string> _query_tokens;
-  std::pair<std::string, std::unordered_map<std::string, std::string>> _parse_request_uri(const std::string &uri);
+	std::string _session_id;
+	std::pair<std::string, std::unordered_map<std::string, std::string>> _parse_request_uri(const std::string &uri);
 
 	void parseRawPacket();
 };
