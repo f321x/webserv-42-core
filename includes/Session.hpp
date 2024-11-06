@@ -4,15 +4,15 @@
 #include <string>
 #include <functional>
 
-class Cookie
+class Session
 {
 public:
-	Cookie(const std::string &type);
+	Session(const std::string &type);
 
 	time_t getExpires() const;
 	std::string getKey() const;
 	std::string getType() const;
-	std::string getSetCookieHeaderValue() const;
+	std::string getSetSessionHeaderValue() const;
 
 private:
 	time_t _expires;

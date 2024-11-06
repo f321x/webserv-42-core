@@ -1,4 +1,5 @@
 #include "RequestPacket.hpp"
+#include "CookieHandler.hpp"
 #include "logging.hpp"
 
 RequestPacket::RequestPacket()
@@ -120,24 +121,28 @@ void RequestPacket::parseRawPacket()
 			{
 				std::string key = line.substr(0, colon_pos);
 				std::string value = line.substr(colon_pos + 1);
-				DEBUG("Header:" + key + value);
 				if (key == "Cookie")
 				{
-					// parse cookies
+					CookieHandler &cookie_handler = CookieHandler::getInstance();
 					std::vector<std::string> cookies = split(value, ';');
 					for (const std::string &cookie : cookies)
 					{
 						std::vector<std::string> cookie_parts = split(cookie, '=');
-						if (cookie_parts.size() == 2)
+						if (cookie_parts.size() == 2 && trim(cookie_parts[0]) == "SessionID")
 						{
-							std::string cookie_key = trim(cookie_parts[0]);
-							std::string cookie_value = trim(cookie_parts[1]);
-							DEBUG("Cookie: " + cookie_key + "=" + cookie_value);
-							setCookie(cookie_key, cookie_value);
+							std::string session_id = trim(cookie_parts[1]);
+							setSessionId(session_id);
+						}
+						else if (cookie_parts.size() == 2)
+						{
+							key = trim(cookie_parts[0]);
+							value = trim(cookie_parts[1]);
+							cookie_handler.addCookie(key, value);
 						}
 					}
 				}
-				setHeader(trim(key), trim(value));
+				else
+					setHeader(trim(key), trim(value));
 			}
 		}
 	}
@@ -165,7 +170,6 @@ void RequestPacket::parseRawPacket()
 			}
 		}
 	}
-	setSessionId("dummy");
 }
 
 // parse the uri in a pure uri path and a hashset of query tokens

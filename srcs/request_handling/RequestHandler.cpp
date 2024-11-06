@@ -20,12 +20,12 @@ std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const
 	DEBUG("Request parsed");
 
 	// compare session_id from request with cookie_handler and create a new session if needed
-	DEBUG("SessionID: " + request_packet->getSessionId());
 	if (!cookie_handler.isValidSession(request_packet->getSessionId()))
+	{
+		DEBUG("Invalid SessionID");
 		request_packet->setSessionId(cookie_handler.createSession());
-	response_packet->setHeader("Set-Cookie", cookie_handler.getSessionCookie(request_packet->getSessionId()).getSetCookieHeaderValue());
-	DEBUG("valid SessionID: " + request_packet->getSessionId());
-	DEBUG("response packet header: " + response_packet->getHeader("Set-Cookie"));
+		response_packet->setHeader("Set-Cookie", cookie_handler.getSession(request_packet->getSessionId()).getSetSessionHeaderValue());
+	}
 	// Find the server config
 	auto valid_config = find_valid_configuration(*request_packet, *available_configs);
 	if (!valid_config.has_value())

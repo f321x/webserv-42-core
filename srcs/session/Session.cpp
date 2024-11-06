@@ -1,31 +1,31 @@
-#include "Cookie.hpp"
+#include "Session.hpp"
 #include <ctime>
 #include <iomanip>
 #include <sstream>
 
-std::string Cookie::generateUniqueKey() const
+std::string Session::generateUniqueKey() const
 {
 	return std::to_string(std::hash<std::string>{}(std::to_string(std::time(nullptr))));
 }
 
-Cookie::Cookie(const std::string &type)
+Session::Session(const std::string &type)
 {
 	_key = generateUniqueKey();
 	_type = type;
 	this->_expires = std::time(nullptr) + _expirationDuration;
 }
 
-time_t Cookie::getExpires() const
+time_t Session::getExpires() const
 {
 	return _expires;
 }
 
-std::string Cookie::getKey() const
+std::string Session::getKey() const
 {
 	return _key;
 }
 
-std::string Cookie::getType() const
+std::string Session::getType() const
 {
 	return _type;
 }
@@ -38,11 +38,11 @@ std::string Cookie::getType() const
 // 	return std::string(buffer);
 // }
 
-std::string Cookie::getSetCookieHeaderValue() const
+std::string Session::getSetSessionHeaderValue() const
 {
-	// Base structure for Set-Cookie header
+	// Base structure for Set-Session header
 	std::string header = _type + "=" + _key + "; Max-Age=" + std::to_string(_expirationDuration);
-	header += "; Path=/";	// Cookie is valid for the entire site
-	header += "; HttpOnly"; // Makes cookie inaccessible to JavaScript (useful for session cookies)
+	header += "; Path=/";	// Session is valid for the entire site
+	header += "; HttpOnly"; // Makes Session inaccessible to JavaScript (useful for session Sessions)
 	return header;
 }
