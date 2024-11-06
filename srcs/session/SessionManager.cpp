@@ -1,12 +1,12 @@
-#include "SessionManager.hpp"
+#include "CookieHandler.hpp"
 
-SessionManager &SessionManager::getInstance()
+CookieHandler &CookieHandler::getInstance()
 {
-	static SessionManager instance;
+	static CookieHandler instance;
 	return instance;
 }
 
-std::string SessionManager::createSession()
+std::string CookieHandler::createSession()
 {
 	Cookie new_cookie("session");
 	std::string key = new_cookie.getKey();
@@ -14,7 +14,7 @@ std::string SessionManager::createSession()
 	return key;
 }
 
-bool SessionManager::isValidSession(const std::string &key)
+bool CookieHandler::isValidSession(const std::string &key)
 {
 	// check if the cookies exists and if expired
 	auto it = _cookies.find(key);
@@ -26,4 +26,9 @@ bool SessionManager::isValidSession(const std::string &key)
 		return false;
 	}
 	return true;
+}
+
+Cookie CookieHandler::getSessionCookie(const std::string &key)
+{
+	return _cookies.at(key);
 }

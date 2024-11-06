@@ -62,6 +62,7 @@ std::string RequestPacket::parseUri(const std::string &uri)
 	return uri.substr(0, qPos);
 }
 
+// TODO cookie parsen aus request
 void RequestPacket::parseRawPacket()
 {
 	// Find the end of headers
@@ -119,7 +120,23 @@ void RequestPacket::parseRawPacket()
 			{
 				std::string key = line.substr(0, colon_pos);
 				std::string value = line.substr(colon_pos + 1);
-				DEBUG("Header:" + key + "=" + value);
+				DEBUG("Header:" + key + value);
+				if (key == "Cookie")
+				{
+					// parse cookies
+					std::vector<std::string> cookies = split(value, ';');
+					for (const std::string &cookie : cookies)
+					{
+						std::vector<std::string> cookie_parts = split(cookie, '=');
+						if (cookie_parts.size() == 2)
+						{
+							std::string cookie_key = trim(cookie_parts[0]);
+							std::string cookie_value = trim(cookie_parts[1]);
+							DEBUG("Cookie: " + cookie_key + "=" + cookie_value);
+							setCookie(cookie_key, cookie_value);
+						}
+					}
+				}
 				setHeader(trim(key), trim(value));
 			}
 		}

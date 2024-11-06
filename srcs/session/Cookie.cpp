@@ -1,4 +1,7 @@
 #include "Cookie.hpp"
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 std::string Cookie::generateUniqueKey() const
 {
@@ -27,7 +30,19 @@ std::string Cookie::getType() const
 	return _type;
 }
 
-std::string Cookie::getSetCookieHeader() const
+// static std::string formatExpirationTime(time_t expiresAt)
+// {
+// 	std::tm *gmt = std::gmtime(&expiresAt);
+// 	char buffer[30];
+// 	std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", gmt);
+// 	return std::string(buffer);
+// }
+
+std::string Cookie::getSetCookieHeaderValue() const
 {
-	return "Set-Cookie: " + _key + "=" + _type + "; Expires=" + std::to_string(_expires) + "\r\n";
+	// Base structure for Set-Cookie header
+	std::string header = _type + "=" + _key + "; Max-Age=" + std::to_string(_expirationDuration);
+	header += "; Path=/";	// Cookie is valid for the entire site
+	header += "; HttpOnly"; // Makes cookie inaccessible to JavaScript (useful for session cookies)
+	return header;
 }

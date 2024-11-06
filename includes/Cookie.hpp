@@ -12,7 +12,7 @@ public:
 	time_t getExpires() const;
 	std::string getKey() const;
 	std::string getType() const;
-	std::string getSetCookieHeader() const;
+	std::string getSetCookieHeaderValue() const;
 
 private:
 	time_t _expires;
@@ -20,5 +20,5 @@ private:
 	std::string _type;
 	std::string generateUniqueKey() const;
 
-	const size_t _expirationDuration = 3600; // 1 hour
+	const time_t _expirationDuration = 3600; // 1 hour
 };

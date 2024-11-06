@@ -6,21 +6,22 @@
 
 #include "Cookie.hpp"
 
-class SessionManager
+class CookieHandler
 {
 public:
 	// singleton
-	static SessionManager &getInstance();
-	SessionManager(const SessionManager &) = delete;
-	SessionManager &operator=(const SessionManager &) = delete;
+	static CookieHandler &getInstance();
+	CookieHandler(const CookieHandler &) = delete;
+	CookieHandler &operator=(const CookieHandler &) = delete;
 
 	std::string createSession();
 	// void delete_cookie(const std::string &key);
 	// std::string get_cookie(const std::string &key);
 
 	bool isValidSession(const std::string &key);
+	Cookie getSessionCookie(const std::string &key);
 
 private:
-	SessionManager() = default;
+	CookieHandler() = default;
 	std::unordered_map<std::string, Cookie> _cookies;
 };
