@@ -17,6 +17,7 @@ std::shared_ptr<ResponsePacket> handleCgiRequest(const RequestPacket &request_pa
 		DEBUG("CGI error: " + std::string(e.what()));
 		*response_packet = *internal_server_error();
 	}
+	response_packet->setResponseReady(true);
 	return response_packet;
 }
 

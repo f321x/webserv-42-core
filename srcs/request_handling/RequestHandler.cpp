@@ -29,21 +29,10 @@ std::shared_ptr<ResponsePacket> handle_request(const std::string &request, const
 		(request_packet->getMethod() == Method::POST || request_packet->getMethod() == Method::GET))
 	{
 		DEBUG("CGI happening");
+		// std::thread cgi_thread(handleCgiRequest, std::ref(*request_packet), response_packet, std::ref(valid_config));
+		// cgi_thread.detach();
 		return handleCgiRequest(*request_packet, response_packet, valid_config);
-		// try
-		// {
-		// 	// TODO: creation of threads to a function inside the cgi class
-		// 	auto cgi = Cgi(*request_packet, valid_config.value());
-		// 	cgi.execute(*request_packet);
-		// 	auto cgi_response = cgi.getResponse();
-		// 	response_packet = std::make_unique<ResponsePacket>(cgi_response);
-		// 	return response_packet;
-		// }
-		// catch (std::exception &e)
-		// {
-		// 	DEBUG("CGI error: " + std::string(e.what()));
-		// 	return internal_server_error();
-		// }
+		// return response_packet;
 	}
 
 	// Handle the request according to the requested method
