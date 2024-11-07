@@ -1,6 +1,6 @@
 #include "FixedResponses.hpp"
 
-std::unique_ptr<ResponsePacket> internal_server_error()
+std::shared_ptr<ResponsePacket> internal_server_error()
 {
 	auto response_packet = std::make_unique<ResponsePacket>();
 	response_packet->set_status_code(500);
@@ -9,7 +9,7 @@ std::unique_ptr<ResponsePacket> internal_server_error()
 	return response_packet;
 }
 
-std::unique_ptr<ResponsePacket> bad_request()
+std::shared_ptr<ResponsePacket> bad_request()
 {
 	auto response_packet = std::make_unique<ResponsePacket>();
 	response_packet->set_status_code(400);
@@ -18,7 +18,7 @@ std::unique_ptr<ResponsePacket> bad_request()
 	return response_packet;
 }
 
-std::unique_ptr<ResponsePacket> payload_too_large()
+std::shared_ptr<ResponsePacket> payload_too_large()
 {
 	auto response_packet = std::make_unique<ResponsePacket>();
 	response_packet->set_status_code(413);
@@ -27,9 +27,9 @@ std::unique_ptr<ResponsePacket> payload_too_large()
 	return response_packet;
 }
 
-std::unique_ptr<ResponsePacket> dummy_response()
+std::shared_ptr<ResponsePacket> dummy_response()
 {
-	std::unique_ptr<ResponsePacket> response_packet = std::make_unique<ResponsePacket>();
+	std::shared_ptr<ResponsePacket> response_packet = std::make_unique<ResponsePacket>();
 	response_packet->set_status_code(200);
 	response_packet->set_status_message("OK");
 	response_packet->setHeader("Content-Type", "text/html");
@@ -37,7 +37,7 @@ std::unique_ptr<ResponsePacket> dummy_response()
 	return response_packet;
 }
 
-std::unique_ptr<ResponsePacket> not_found(const std::string &error_page)
+std::shared_ptr<ResponsePacket> not_found(const std::string &error_page)
 {
 	auto response_packet = std::make_unique<ResponsePacket>();
 	response_packet->set_status_code(404);
@@ -48,7 +48,7 @@ std::unique_ptr<ResponsePacket> not_found(const std::string &error_page)
 	return response_packet;
 }
 
-std::unique_ptr<ResponsePacket> ok_with_content(File &file, std::unique_ptr<ResponsePacket> response_packet)
+std::shared_ptr<ResponsePacket> ok_with_content(File &file, std::shared_ptr<ResponsePacket> response_packet)
 {
 	response_packet->set_status_code(200);
 	response_packet->set_status_message("OK");
@@ -57,7 +57,7 @@ std::unique_ptr<ResponsePacket> ok_with_content(File &file, std::unique_ptr<Resp
 	return response_packet;
 }
 
-std::unique_ptr<ResponsePacket> redirect(const std::string &location)
+std::shared_ptr<ResponsePacket> redirect(const std::string &location)
 {
 	auto response_packet = std::make_unique<ResponsePacket>();
 	response_packet->set_status_code(301);
@@ -67,7 +67,7 @@ std::unique_ptr<ResponsePacket> redirect(const std::string &location)
 	return response_packet;
 }
 
-std::unique_ptr<ResponsePacket> autoindex_response(std::string &index, std::unique_ptr<ResponsePacket> response_packet)
+std::shared_ptr<ResponsePacket> autoindex_response(std::string &index, std::shared_ptr<ResponsePacket> response_packet)
 {
 	response_packet->set_status_code(200);
 	response_packet->set_status_message("OK");
@@ -76,7 +76,7 @@ std::unique_ptr<ResponsePacket> autoindex_response(std::string &index, std::uniq
 	return response_packet;
 }
 
-std::unique_ptr<ResponsePacket> forbidden()
+std::shared_ptr<ResponsePacket> forbidden()
 {
 	auto response_packet = std::make_unique<ResponsePacket>();
 	response_packet->set_status_code(403);
@@ -85,7 +85,7 @@ std::unique_ptr<ResponsePacket> forbidden()
 	return response_packet;
 }
 
-std::unique_ptr<ResponsePacket> created(const std::string &location)
+std::shared_ptr<ResponsePacket> created(const std::string &location)
 {
 	auto response_packet = std::make_unique<ResponsePacket>();
 	response_packet->set_status_code(201);

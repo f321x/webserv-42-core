@@ -1,10 +1,10 @@
 #include "RequestHandler.hpp"
 
 // TODO: shared pointer
-std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
+std::shared_ptr<ResponsePacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
 	std::unique_ptr<RequestPacket> request_packet;
-	std::unique_ptr<ResponsePacket> response_packet = std::make_unique<ResponsePacket>();
+	std::shared_ptr<ResponsePacket> response_packet = std::make_shared<ResponsePacket>();
 
 	// Parse the request
 	try
@@ -29,37 +29,21 @@ std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const
 		(request_packet->getMethod() == Method::POST || request_packet->getMethod() == Method::GET))
 	{
 		DEBUG("CGI happening");
-		try
-		{
-			// TODO: move all cgi stuff and the creation of threads to a function inside the cgi class
-			auto cgi = Cgi(*request_packet, valid_config.value());
-			cgi.execute(*request_packet);
-			auto cgi_response = cgi.getResponse();
-			response_packet = std::make_unique<ResponsePacket>(cgi_response);
-			return response_packet;
-		}
-		catch (std::exception &e)
-		{
-			DEBUG("CGI error: " + std::string(e.what()));
-			return internal_server_error();
-		}
-	}
-	{
-		DEBUG("CGI happening");
-		try
-		{
-			// TODO: move all cgi stuff and the creation of threads to a function inside the cgi class
-			auto cgi = Cgi(*request_packet, valid_config.value());
-			cgi.execute(*request_packet);
-			auto cgi_response = cgi.getResponse();
-			response_packet = std::make_unique<ResponsePacket>(cgi_response);
-			return response_packet;
-		}
-		catch (std::exception &e)
-		{
-			DEBUG("CGI error: " + std::string(e.what()));
-			return internal_server_error();
-		}
+		return handleCgiRequest(*request_packet, response_packet, valid_config);
+		// try
+		// {
+		// 	// TODO: creation of threads to a function inside the cgi class
+		// 	auto cgi = Cgi(*request_packet, valid_config.value());
+		// 	cgi.execute(*request_packet);
+		// 	auto cgi_response = cgi.getResponse();
+		// 	response_packet = std::make_unique<ResponsePacket>(cgi_response);
+		// 	return response_packet;
+		// }
+		// catch (std::exception &e)
+		// {
+		// 	DEBUG("CGI error: " + std::string(e.what()));
+		// 	return internal_server_error();
+		// }
 	}
 
 	// Handle the request according to the requested method
@@ -68,10 +52,10 @@ std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const
 		switch (request_packet->getMethod())
 		{
 		case Method::GET:
-			response_packet = handle_get(*request_packet, std::move(response_packet), valid_config.value());
+			response_packet = handle_get(*request_packet, response_packet, valid_config.value());
 			break;
 		case Method::POST:
-			response_packet = handle_post(*request_packet, std::move(response_packet), valid_config.value());
+			response_packet = handle_post(*request_packet, response_packet, valid_config.value());
 			break;
 		case Method::DELETE:
 			handle_delete(*request_packet, *response_packet, valid_config.value());
@@ -86,6 +70,7 @@ std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const
 		return internal_server_error();
 	}
 	DEBUG("Request handled");
+	response_packet->setResponseReady(true);
 	return response_packet;
 }
 

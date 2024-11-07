@@ -117,6 +117,11 @@ bool ResponsePacket::getResponseReady() const
 	return _response_ready.load();
 }
 
+void ResponsePacket::setResponseReady(bool flag)
+{
+	_response_ready = flag;
+}
+
 std::string ResponsePacket::serialize()
 {
 	setHeader("Content-Length", std::to_string(_content.size()));

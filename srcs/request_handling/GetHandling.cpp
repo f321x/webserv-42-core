@@ -1,6 +1,6 @@
 #include "RequestHandler.hpp"
 
-std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
+std::shared_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, std::shared_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 {
 	UriInfo uri_info = getUri_info(request_packet.getUri(), config_pair.second);
 	switch (uri_info.type)
@@ -11,14 +11,14 @@ std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, 
 		std::optional<File> file = load_file_with_cache(uri_info.path);
 		if (!file)
 			return not_found(load_error_page(404, config_pair.first));
-		return ok_with_content(file.value(), std::move(response_packet));
+		return ok_with_content(file.value(), response_packet);
 	}
 	case UriType::AUTOINDEX:
 	{
 		std::string index = get_autoindex(uri_info.path, request_packet.getUri());
 		if (index.empty())
 			return not_found(load_error_page(404, config_pair.first));
-		return autoindex_response(index, std::move(response_packet));
+		return autoindex_response(index, response_packet);
 	}
 	case UriType::REDIRECT:
 		return redirect(uri_info.path); // maybe wrong
