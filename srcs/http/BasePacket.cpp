@@ -1,4 +1,7 @@
 #include "BasePacket.hpp"
+
+#include <Utils.hpp>
+
 #include "logging.hpp"
 
 BasePacket::BasePacket()
@@ -21,8 +24,9 @@ BasePacket &BasePacket::operator=(const BasePacket &other)
 
 BasePacket::~BasePacket() = default;
 
-std::string BasePacket::getHeader(const std::string &key) const
+std::string BasePacket::getHeader(std::string key) const
 {
+	toLowerCase(key);
 	const auto it = _headers.find(key);
 	if (it == _headers.end())
 	{
@@ -41,10 +45,11 @@ std::string BasePacket::getContent() const
 	return _content;
 }
 
-void BasePacket::setHeader(const std::string& key, const std::string& value)
+void BasePacket::setHeader(std::string key, const std::string& value)
 {
 	std::string new_value = value;
-	if (key == "Content-Type")
+	toLowerCase(key);
+	if (key == "content-type")
 	{
 		const size_t boundary_pos = value.find("; boundary=");
 		if (boundary_pos != std::string::npos)
