@@ -11,7 +11,7 @@ void shutdownApplication(int signal)
 	}
 }
 
-int main(int argc, char **argv)
+int main(const int argc, char **argv)
 {
 	std::string config_path;
 	// check arg count ./webserv configfile_path

@@ -13,7 +13,7 @@ public:
 	~ResponsePacket();
 
 	void set_status_code(uint status_code);
-	void set_status_message(const std::string status_message);
+	void set_status_message(const std::string& status_message);
 	void set_final_response();
 	bool is_final_response() const;
 
