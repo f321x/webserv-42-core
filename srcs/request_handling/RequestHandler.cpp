@@ -1,5 +1,6 @@
 #include "RequestHandler.hpp"
 
+// TODO: shared pointer
 std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
 	std::unique_ptr<RequestPacket> request_packet;
@@ -23,6 +24,44 @@ std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const
 	if (!check_keep_alive(*request_packet))
 		response_packet->set_final_response();
 	DEBUG("Valid config found");
+	// TODO: move cgi here
+	if (valid_config.value().second.isCgi() &&
+		(request_packet->getMethod() == Method::POST || request_packet->getMethod() == Method::GET))
+	{
+		DEBUG("CGI happening");
+		try
+		{
+			// TODO: move all cgi stuff and the creation of threads to a function inside the cgi class
+			auto cgi = Cgi(*request_packet, valid_config.value());
+			cgi.execute(*request_packet);
+			auto cgi_response = cgi.getResponse();
+			response_packet = std::make_unique<ResponsePacket>(cgi_response);
+			return response_packet;
+		}
+		catch (std::exception &e)
+		{
+			DEBUG("CGI error: " + std::string(e.what()));
+			return internal_server_error();
+		}
+	}
+	{
+		DEBUG("CGI happening");
+		try
+		{
+			// TODO: move all cgi stuff and the creation of threads to a function inside the cgi class
+			auto cgi = Cgi(*request_packet, valid_config.value());
+			cgi.execute(*request_packet);
+			auto cgi_response = cgi.getResponse();
+			response_packet = std::make_unique<ResponsePacket>(cgi_response);
+			return response_packet;
+		}
+		catch (std::exception &e)
+		{
+			DEBUG("CGI error: " + std::string(e.what()));
+			return internal_server_error();
+		}
+	}
+
 	// Handle the request according to the requested method
 	try
 	{

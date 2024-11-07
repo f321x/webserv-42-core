@@ -112,6 +112,11 @@ bool ResponsePacket::is_final_response() const
 	return _final_response;
 }
 
+bool ResponsePacket::getResponseReady() const
+{
+	return _response_ready.load();
+}
+
 std::string ResponsePacket::serialize()
 {
 	setHeader("Content-Length", std::to_string(_content.size()));
