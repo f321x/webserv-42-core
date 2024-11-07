@@ -220,17 +220,7 @@ size_t RequestPacket::getContentLengthHeader() const
 
 bool RequestPacket::isChunked() const
 {
-	std::string transferEncoding = getHeader("Transfer-Encoding");
-	if (transferEncoding.empty())
-	{
-		transferEncoding = getHeader("transfer-encoding");
-	}
-	if (transferEncoding.empty())
-	{
-		return false;
-	}
-
-	return transferEncoding == "chunked";
+	return getHeader("Transfer-Encoding") == "chunked";
 }
 
 size_t RequestPacket::getContentSize() const
