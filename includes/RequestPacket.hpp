@@ -15,7 +15,7 @@ public:
 	std::string getHttpVersion() const;
 	std::string getUri() const;
 	Method getMethod() const;
-	int getContentLengthHeader() const;
+	size_t getContentLengthHeader() const;
 	bool isChunked() const;
 	size_t getContentSize() const;
 	std::string getQueryString() const;

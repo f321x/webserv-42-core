@@ -56,7 +56,7 @@ pollfd HttpSocket::new_pfd() const
     return _socket->new_pfd();
 }
 
-int HttpSocket::_smallest_max_body_size() const
+size_t HttpSocket::_smallest_max_body_size() const
 {
     size_t smallest = INT_MAX;
     for (const ServerConfig &config : *_available_configs)

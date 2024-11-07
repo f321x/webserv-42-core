@@ -180,8 +180,9 @@ bool RequestPacket::appendChunkedData(const std::string &chunked_data)
 
 	// append the chunk data to the result
 	this->addToContent(_buffer.substr(indChunkSize + 2, chunkSize));
+	_buffer = _buffer.substr(indChunkEnd + 2);
 
-	return getContentSize() == getContentLengthHeader();
+	return appendChunkedData("");
 }
 
 // parse the uri in a pure uri path and a hashset of query tokens
@@ -209,7 +210,7 @@ std::pair<std::string, std::unordered_map<std::string, std::string>> RequestPack
 	return std::make_pair(path, query_tokens);
 }
 
-int RequestPacket::getContentLengthHeader() const
+size_t RequestPacket::getContentLengthHeader() const
 {
 	return _content_length_header;
 }
