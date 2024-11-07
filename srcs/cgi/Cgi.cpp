@@ -1,13 +1,4 @@
-// Cgi.cpp
 #include "Cgi.hpp"
-#include "logging.hpp"
-#include <unistd.h>
-#include <sys/wait.h>
-#include <poll.h>
-#include <cstdlib>
-#include <stdexcept>
-#include <cstring>
-#include <sys/stat.h>
 
 Cgi::Cgi(const RequestPacket &request_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 	: _cgi_response(""), _pid(-1)

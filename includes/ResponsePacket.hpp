@@ -17,7 +17,9 @@ public:
 	void set_status_message(const std::string status_message);
 	void set_final_response();
 	bool is_final_response() const;
+
 	bool getResponseReady() const;
+	void setResponseReady(bool flag);
 
 	std::string serialize();
 

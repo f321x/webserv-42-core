@@ -1,12 +1,12 @@
 #include "RequestHandler.hpp"
 
-bool handleUpload(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
+bool handleUpload(const RequestPacket &request_packet, std::shared_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
 std::string getFilename(const std::string &headers);
 bool writeFile(const std::string &file_path, const std::string &file_content);
 
 // TODO: check if the old response_packet has final response set -> also set it for the new response_packet
 
-std::unique_ptr<ResponsePacket> handle_post(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
+std::shared_ptr<ResponsePacket> handle_post(const RequestPacket &request_packet, std::shared_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 {
 	DEBUG("Handling POST request");
 	DEBUG("Route: " + config_pair.second.getRoute());
@@ -15,14 +15,14 @@ std::unique_ptr<ResponsePacket> handle_post(const RequestPacket &request_packet,
 		ERROR("Location doesnt support uploads");
 		return forbidden();
 	}
-	if (handleUpload(request_packet, std::move(response_packet), config_pair))
+	if (handleUpload(request_packet, response_packet, config_pair))
 		return created(config_pair.second.getUploadDirectory());
 	return internal_server_error();
 	return response_packet;
 }
 
 // Corrected handleUpload function
-bool handleUpload(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
+bool handleUpload(const RequestPacket &request_packet, std::shared_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 {
 	std::string body = request_packet.getContent();
 	std::string boundary = request_packet.getBoundary();

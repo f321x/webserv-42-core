@@ -3,6 +3,23 @@
 #include <string>
 #include <set>
 
+std::shared_ptr<ResponsePacket> handleCgiRequest(const RequestPacket &request_packet, std::shared_ptr<ResponsePacket> response_packet, std::optional<std::pair<ServerConfig, RouteConfig>> &valid_config)
+{
+	try
+	{
+		auto cgi = Cgi(request_packet, valid_config.value());
+		cgi.execute(request_packet);
+		auto cgi_response = cgi.getResponse();
+		*response_packet = ResponsePacket(cgi_response);
+	}
+	catch (std::exception &e)
+	{
+		DEBUG("CGI error: " + std::string(e.what()));
+		*response_packet = *internal_server_error();
+	}
+	return response_packet;
+}
+
 bool validCgiFileEnding(const std::string &path)
 {
 	// List of allowed CGI file extensions

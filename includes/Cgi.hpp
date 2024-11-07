@@ -5,11 +5,21 @@
 #include <unistd.h>
 #include <vector>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <fcntl.h>
+#include <poll.h>
+#include <cstdlib>
+#include <stdexcept>
+#include <cstring>
+#include <optional> // For std::optional
+#include <memory>
+
 #include "RequestPacket.hpp"
 #include "ResponsePacket.hpp"
 #include "ServerConfig.hpp"
 #include "RouteConfig.hpp"
+#include "logging.hpp"
+#include "FixedResponses.hpp"
 
 class Cgi
 {
@@ -30,5 +40,7 @@ public:
 	void execute(const RequestPacket &request_packet);
 	std::string getResponse() const;
 };
+
+std::shared_ptr<ResponsePacket> handleCgiRequest(const RequestPacket &request_packet, std::shared_ptr<ResponsePacket> response_packet, std::optional<std::pair<ServerConfig, RouteConfig>> &valid_config);
 
 bool validCgiFileEnding(const std::string &path);
