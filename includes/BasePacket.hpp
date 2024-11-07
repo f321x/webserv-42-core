@@ -17,8 +17,8 @@ public:
 	std::string getContent() const;
 	std::string getBoundary() const;
 
-	void setHeader(const std::string key, const std::string value);
-	void setContent(const std::string content);
+	void setHeader(const std::string& key, const std::string& value);
+	void setContent(const std::string& content);
 
 protected:
 	std::map<std::string, std::string> _headers;

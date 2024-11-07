@@ -14,6 +14,9 @@ RequestPacket::RequestPacket(const std::string &raw_packet)
 {
 	_raw_packet = raw_packet;
 	_buffer = "";
+	_method = GET;
+	_uri = "";
+	_http_version = "";
 	parseRawPacket();
 }
 
@@ -31,7 +34,7 @@ RequestPacket &RequestPacket::operator=(const RequestPacket &other)
 	return *this;
 }
 
-RequestPacket::~RequestPacket() {}
+RequestPacket::~RequestPacket() = default;
 
 std::string RequestPacket::getHttpVersion() const
 {
@@ -157,13 +160,13 @@ bool RequestPacket::appendChunkedData(const std::string &chunked_data)
 	_buffer += chunked_data;
 
 	// find the chunk size
-	size_t indChunkSize = _buffer.find("\r\n");
+	const size_t indChunkSize = _buffer.find("\r\n");
 	if (indChunkSize == std::string::npos)
 		return false;
 
 	// parse the chunk size
-	std::string chunkSizeStr = _buffer.substr(0, indChunkSize);
-	size_t chunkSize = std::stoul(chunkSizeStr, nullptr, 16);
+	const std::string chunkSizeStr = _buffer.substr(0, indChunkSize);
+	const size_t chunkSize = std::stoul(chunkSizeStr, nullptr, 16);
 
 	if (chunkSize == std::string::npos)
 		throw InvalidPacketException();
@@ -171,7 +174,7 @@ bool RequestPacket::appendChunkedData(const std::string &chunked_data)
 		return true;
 
 	// find the end of the chunk data
-	size_t indChunkEnd = _buffer.find("\r\n", indChunkSize + 2);
+	const size_t indChunkEnd = _buffer.find("\r\n", indChunkSize + 2);
 
 	if (indChunkEnd == std::string::npos)
 		return false;
@@ -195,7 +198,7 @@ std::pair<std::string, std::unordered_map<std::string, std::string>> RequestPack
 	if (question_mark_pos != std::string::npos)
 	{
 		path = uri.substr(0, question_mark_pos);
-		std::string query = uri.substr(question_mark_pos + 1);
+		const std::string query = uri.substr(question_mark_pos + 1);
 		std::vector<std::string> query_pairs = split(query, '&');
 		for (const std::string &query_pair : query_pairs)
 		{
@@ -218,11 +221,11 @@ size_t RequestPacket::getContentLengthHeader() const
 bool RequestPacket::isChunked() const
 {
 	std::string transferEncoding = getHeader("Transfer-Encoding");
-	if (transferEncoding == "")
+	if (transferEncoding.empty())
 	{
 		transferEncoding = getHeader("transfer-encoding");
 	}
-	if (transferEncoding == "")
+	if (transferEncoding.empty())
 	{
 		return false;
 	}

@@ -83,21 +83,20 @@ ResponsePacket::ResponsePacket(const ResponsePacket &other) : BasePacket(other)
 
 ResponsePacket &ResponsePacket::operator=(const ResponsePacket &other)
 {
-	BasePacket::operator=(other);
 	_status_code = other._status_code;
 	_status_message = other._status_message;
 	_final_response = other._final_response;
 	return *this;
 }
 
-ResponsePacket::~ResponsePacket() {}
+ResponsePacket::~ResponsePacket() = default;
 
 void ResponsePacket::set_status_code(uint status_code)
 {
 	_status_code = status_code;
 }
 
-void ResponsePacket::set_status_message(const std::string status_message)
+void ResponsePacket::set_status_message(const std::string& status_message)
 {
 	_status_message = status_message;
 }
@@ -118,12 +117,9 @@ std::string ResponsePacket::serialize()
 
 	std::string response = "HTTP/1.1 " + std::to_string(_status_code) + " " + _status_message + "\n";
 
-	for (std::map<std::string,
-				  std::string>::iterator it = _headers.begin();
-		 it != _headers.end();
-		 it++)
+	for (auto & _header : _headers)
 	{
-		response += it->first + ": " + it->second + "\n";
+		response += _header.first + ": " + _header.second + "\n";
 	}
 	response += "\n";
 
