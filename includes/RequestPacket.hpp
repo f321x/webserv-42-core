@@ -22,6 +22,8 @@ public:
 	void replaceContent(const std::string &new_content);
 	void addToContent(const std::string &new_content);
 
+	bool appendChunkedData(const std::string &chunked_data);
+
 	class InvalidPacketException : public std::exception
 	{
 		const char *what() const noexcept override
@@ -39,13 +41,14 @@ public:
 
 private:
 	std::string _raw_packet;
+	std::string _buffer;
 	Method _method;
 	std::string _uri;
 	std::string _query_string;
 	std::string _http_version;
 	std::string parseUri(const std::string &uri);
 	std::unordered_map<std::string, std::string> _query_tokens;
-  std::pair<std::string, std::unordered_map<std::string, std::string>> _parse_request_uri(const std::string &uri);
+	std::pair<std::string, std::unordered_map<std::string, std::string>> _parse_request_uri(const std::string &uri);
 
 	void parseRawPacket();
 };

@@ -4,6 +4,7 @@
 RequestPacket::RequestPacket()
 {
 	_raw_packet = "";
+	_buffer = "";
 	_method = GET;
 	_uri = "";
 	_http_version = "";
@@ -12,6 +13,7 @@ RequestPacket::RequestPacket()
 RequestPacket::RequestPacket(const std::string &raw_packet)
 {
 	_raw_packet = raw_packet;
+	_buffer = "";
 	parseRawPacket();
 }
 
@@ -148,6 +150,38 @@ void RequestPacket::parseRawPacket()
 			}
 		}
 	}
+}
+
+bool RequestPacket::appendChunkedData(const std::string &chunked_data)
+{
+	_buffer += chunked_data;
+
+	// find the chunk size
+	size_t indChunkSize = _buffer.find("\r\n");
+	if (indChunkSize == std::string::npos)
+		return false;
+
+	// parse the chunk size
+	std::string chunkSizeStr = _buffer.substr(0, indChunkSize);
+	size_t chunkSize = std::stoul(chunkSizeStr, nullptr, 16);
+
+	if (chunkSize == std::string::npos)
+		throw InvalidPacketException();
+	if (chunkSize == 0)
+		return true;
+
+	// find the end of the chunk data
+	size_t indChunkEnd = _buffer.find("\r\n", indChunkSize + 2);
+
+	if (indChunkEnd == std::string::npos)
+		return false;
+	if (indChunkEnd + 2 + chunkSize > _buffer.length())
+		throw InvalidPacketException();
+
+	// append the chunk data to the result
+	this->addToContent(_buffer.substr(indChunkSize + 2, chunkSize));
+
+	return getContentSize() == getContentLengthHeader();
 }
 
 // parse the uri in a pure uri path and a hashset of query tokens
