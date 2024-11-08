@@ -26,7 +26,7 @@ BasePacket::~BasePacket() = default;
 
 std::string BasePacket::getHeader(std::string key) const
 {
-	toLowerCase(key);
+	toLowerCaseInPlace(key);
 	const auto it = _headers.find(key);
 	if (it == _headers.end())
 	{
@@ -45,10 +45,10 @@ std::string BasePacket::getContent() const
 	return _content;
 }
 
-void BasePacket::setHeader(std::string key, const std::string& value)
+void BasePacket::setHeader(std::string key, const std::string &value)
 {
 	std::string new_value = value;
-	toLowerCase(key);
+	toLowerCaseInPlace(key);
 	if (key == "content-type")
 	{
 		const size_t boundary_pos = value.find("; boundary=");
@@ -62,7 +62,7 @@ void BasePacket::setHeader(std::string key, const std::string& value)
 	_headers.insert(std::make_pair(key, new_value));
 }
 
-void BasePacket::setContent(const std::string& content)
+void BasePacket::setContent(const std::string &content)
 {
 	_content = content;
 }
