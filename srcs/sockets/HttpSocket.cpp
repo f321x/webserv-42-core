@@ -84,7 +84,7 @@ void HttpSocket::handle_client_data()
     {
         // read the request from the client
         std::string client_data = _socket->read_once();
-        TRACE("Received data from client: " + client_data);
+        // TRACE("Received data from client: " + client_data);
         // append the data to the request class
         complete_request = this->request->append(client_data);
     }

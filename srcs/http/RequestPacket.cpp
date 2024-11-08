@@ -176,7 +176,7 @@ bool RequestPacket::_validFirstLine(const std::string &line)
 
 bool RequestPacket::_appendContent()
 {
-	if (getContentLengthHeader() != _buffer.size())
+	if (!getHeader("Content-Length").empty() && getContentLengthHeader() != _buffer.size())
 		return false;
 
 	DEBUG("Body: " + _buffer);
