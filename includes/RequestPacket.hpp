@@ -7,7 +7,6 @@ class RequestPacket : public BasePacket
 {
 public:
 	RequestPacket();
-	RequestPacket(const std::string &raw_packet);
 	RequestPacket(const RequestPacket &other);
 	RequestPacket &operator=(const RequestPacket &other);
 	~RequestPacket();
@@ -22,7 +21,7 @@ public:
 	void replaceContent(const std::string &new_content);
 	void addToContent(const std::string &new_content);
 
-	bool appendChunkedData(const std::string &chunked_data);
+	bool append(const std::string &data);
 
 	class InvalidPacketException : public std::exception
 	{
@@ -40,8 +39,8 @@ public:
 	};
 
 private:
-	std::string _raw_packet;
 	std::string _buffer;
+	bool _parsed_header;
 	Method _method;
 	std::string _uri;
 	std::string _query_string;
@@ -50,5 +49,6 @@ private:
 	std::unordered_map<std::string, std::string> _query_tokens;
 	std::pair<std::string, std::unordered_map<std::string, std::string>> _parse_request_uri(const std::string &uri);
 
-	void parseRawPacket();
+	bool appendChunkedData();
+	bool appendHeader();
 };
