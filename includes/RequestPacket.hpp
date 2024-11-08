@@ -6,7 +6,7 @@
 class RequestPacket : public BasePacket
 {
 public:
-	RequestPacket();
+	RequestPacket(size_t max_body_size);
 	RequestPacket(const RequestPacket &other);
 	RequestPacket &operator=(const RequestPacket &other);
 	~RequestPacket();
@@ -39,12 +39,15 @@ public:
 	};
 
 private:
+	RequestPacket();
+
 	std::string _buffer;
 	bool _parsed_header;
 	Method _method;
 	std::string _uri;
 	std::string _query_string;
 	std::string _http_version;
+	const size_t _max_body_size;
 	std::string parseUri(const std::string &uri);
 	void parseContentLenght();
 	std::unordered_map<std::string, std::string> _query_tokens;

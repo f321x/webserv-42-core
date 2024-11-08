@@ -38,5 +38,5 @@ private:
 	sockaddr_in _address;
 	int _socket_fd;			   // the file descriptor of the socket
 	bool _bind_socket = false; // true if the socket is the main listening socket (not a client socket)
-	ssize_t written_bytes = 0;
+	size_t written_bytes = 0;
 };

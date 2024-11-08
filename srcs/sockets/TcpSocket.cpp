@@ -104,9 +104,8 @@ std::string TcpSocket::read_once()
 	std::string result;
 	char buffer[65536];
 	ssize_t bytes_read;
-
-	memset(buffer, 0, sizeof(buffer));
 	bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
+	buffer[bytes_read] = '\0';
 
 	TRACE("Read " + std::to_string(bytes_read) + " bytes from client socket");
 	if (bytes_read > 0)
