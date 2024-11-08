@@ -6,3 +6,6 @@ test
 /tests/webserv_tester_fredrikalindh/venv
 /tests/webserv_tester_fredrikalindh/__pycache__
 /tmp
+.DS_Store
+*.txt
+/config/www/upload
