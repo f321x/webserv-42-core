@@ -77,18 +77,14 @@ void HttpSocket::handle_client_data()
     if (is_bind_socket)
         throw IsBindSocketErr("HttpSocket: Cannot handle client data on a bind socket");
     if (this->response.has_value())
-    {
-        DEBUG("Response already exists, skipping handle_client_data");
-        return;
-    }
+        throw HttpSocketError("Response already exists, skipping handle_client_data");
 
     bool complete_request = false;
-
     try
     {
         // read the request from the client
         std::string client_data = _socket->read_once();
-        TRACE("Received data from client: " + client_data);
+        // TRACE("Received data from client: " + client_data);
         // append the data to the request class
         complete_request = this->request->append(client_data);
     }
@@ -116,7 +112,7 @@ bool HttpSocket::write_client_response()
     // write response to client
     try
     {
-        TRACE("Sending response to client: " + response.value()->serialize());
+        // TRACE("Sending response to client: " + response.value()->serialize());
         if (_socket->write_data(response.value()->serialize()))
         {
             bool is_final_response = response.value()->is_final_response();
