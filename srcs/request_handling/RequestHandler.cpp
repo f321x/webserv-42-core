@@ -1,34 +1,31 @@
 #include "RequestHandler.hpp"
 
-std::unique_ptr<ResponsePacket> handle_request(const RequestPacket &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
+std::unique_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
-	std::unique_ptr<RequestPacket> request_packet;
 	std::unique_ptr<ResponsePacket> response_packet = std::make_unique<ResponsePacket>();
 
-	if (request.is_invalid())
-		return bad_request();
 	// Parse the request
 	DEBUG("Request parsed");
 	// Find the server config
-	auto valid_config = find_valid_configuration(*request_packet, *available_configs);
+	auto valid_config = find_valid_configuration(request_packet, *available_configs);
 	if (!valid_config.has_value())
 		return bad_request(); // use correct error type | (niklas) did also return 400 when the method wasnt allowed -> 405?
-	if (!check_keep_alive(*request_packet))
+	if (!check_keep_alive(request_packet))
 		response_packet->set_final_response();
 	DEBUG("Valid config found");
 	// Handle the request according to the requested method
 	try
 	{
-		switch (request_packet->getMethod())
+		switch (request_packet.getMethod())
 		{
 		case Method::GET:
-			response_packet = handle_get(*request_packet, std::move(response_packet), valid_config.value());
+			response_packet = handle_get(request_packet, std::move(response_packet), valid_config.value());
 			break;
 		case Method::POST:
-			response_packet = handle_post(*request_packet, std::move(response_packet), valid_config.value());
+			response_packet = handle_post(request_packet, std::move(response_packet), valid_config.value());
 			break;
 		case Method::DELETE:
-			handle_delete(*request_packet, *response_packet, valid_config.value());
+			handle_delete(request_packet, *response_packet, valid_config.value());
 			break;
 		default:
 			return bad_request();

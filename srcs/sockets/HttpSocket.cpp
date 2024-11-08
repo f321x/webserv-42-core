@@ -79,22 +79,29 @@ void HttpSocket::handle_client_data()
     if (this->response.has_value())
         return;
 
+    bool complete_request = false;
+
     try
     {
         // read the request from the client
         std::string client_data = _socket->read_once();
         TRACE("Received data from client: " + client_data);
         // append the data to the request class
-        this->request->append(client_data);
+        complete_request = this->request->append(client_data);
+    }
+    catch (const RequestPacket::InvalidPacketException &e)
+    {
+        TRACE("Invalid packet received");
+        this->response.emplace(bad_request());
     }
     catch (const std::exception &e)
     {
         throw ReadingFailedErr(e.what());
     }
 
-    if (request->is_complete() || request->is_invalid())
+    if (complete_request)
     {
-        this->response.emplace(handle_request(*this->request, _available_configs)); // placing the response in optional to signal we are ready to write
+        this->response.emplace(handle_request(*request, _available_configs)); // placing the response in optional to signal we are ready to write
         // reset this->request to a new RequestPacket for next request
         // pass max_body_size to constructor so the parsing can check if the packet is bigger than allowed
         this->request = std::make_unique<RequestPacket>(_smallest_max_body_size());

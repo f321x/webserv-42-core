@@ -20,7 +20,7 @@
 #include <utility>
 #include <sys/stat.h>
 
-std::unique_ptr<ResponsePacket> handle_request(const RequestPacket &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
+std::unique_ptr<ResponsePacket> handle_request(RequestPacket &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
 std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(RequestPacket &packet, const std::vector<ServerConfig> &available_configs);
 
 // POST handling
