@@ -28,7 +28,7 @@ public:
 	void bind_to_address(const sockaddr_in &address); // bind the socket to the address
 	void listen_on_socket();
 	int fd() const;									// get the file descriptor
-	pollfd new_pfd() const;							// get a new pollfd struct for the socket
+	pollfd new_pfd(bool is_bind_socket) const;		// get a new pollfd struct for the socket
 	std::unique_ptr<TcpSocket> accept_connection(); // accept a new connection and return the newly created socket
 	std::string read_once();						// Read the body of the request
 	bool write_data(const std::string &data);		// write data to the socket
