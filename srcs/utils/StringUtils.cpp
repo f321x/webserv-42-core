@@ -19,11 +19,11 @@ void remove_content_from_packet(std::string &packet, const std::string &content)
 	packet.erase(content_start, content.size());
 }
 
-std::string &toLowerCase(std::string &str)
+std::string &toLowerCaseInPlace(std::string &str)
 {
 	const std::locale loc;
 
-	for(auto &elem : str)
+	for (auto &elem : str)
 		elem = std::tolower(elem);
 
 	return str;
