@@ -54,7 +54,7 @@ std::unique_ptr<HttpSocket> HttpSocket::accept_connection()
 
 pollfd HttpSocket::new_pfd() const
 {
-    return _socket->new_pfd();
+    return _socket->new_pfd(this->is_bind_socket);
 }
 
 size_t HttpSocket::_smallest_max_body_size() const
