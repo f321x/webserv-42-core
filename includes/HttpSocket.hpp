@@ -7,6 +7,7 @@
 
 #include <unordered_set>
 #include <limits.h>
+#include <optional>
 
 class HttpSocket
 {
@@ -26,20 +27,22 @@ public:
     pollfd new_pfd() const;
     void handle_client_data();
     std::chrono::steady_clock::time_point last_activity() const;
+    bool write_client_response();
+
+    std::optional<std::unique_ptr<ResponsePacket>> response;
 
 private:
     // private variables
-    std::unique_ptr<TcpSocket> _socket;
+    std::unique_ptr<TcpSocket>
+        _socket;
     std::shared_ptr<std::vector<ServerConfig>> _available_configs;
     std::chrono::steady_clock::time_point _last_activity;
-    bool _ongoing_chunked_request = false;
-    std::string _chunked_packet_buffer;
 
     // private functions
     sockaddr_in _compose_sockaddr(const std::string &addr, int port);
     std::unique_ptr<TcpSocket> _create_bind_socket(const sockaddr_in &address);
+    std::unique_ptr<RequestPacket> request;
     size_t _smallest_max_body_size() const;
-    void _write_client_response(std::unique_ptr<ResponsePacket> response);
 };
 
 class HttpSocketError : public std::exception
@@ -77,4 +80,10 @@ class IsFinalResponse : public HttpSocketError
 {
 public:
     explicit IsFinalResponse(const std::string &message) : HttpSocketError(message) {}
+};
+
+class EmptyReadErr : HttpSocketError
+{
+public:
+    explicit EmptyReadErr(const std::string &message) : HttpSocketError(message) {}
 };
