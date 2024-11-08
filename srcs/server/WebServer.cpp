@@ -68,7 +68,6 @@ void WebServer::serve()
                 }
                 else
                 {
-                    TRACE("Handling client data");
                     try
                     {
                         _sockets[i]->handle_client_data(); // handle the client data
