@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <sys/stat.h>
+#include <signal.h>
 
 Cgi::Cgi(const RequestPacket &request_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 	: _cgi_response(""), _pid(-1)

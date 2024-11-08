@@ -12,7 +12,7 @@ std::unique_ptr<ResponsePacket> handle_request(const RequestPacket &request, con
 	// Find the server config
 	auto valid_config = find_valid_configuration(*request_packet, *available_configs);
 	if (!valid_config.has_value())
-		return bad_request(); // use correct error type
+		return bad_request(); // use correct error type | (niklas) did also return 400 when the method wasnt allowed -> 405?
 	if (!check_keep_alive(*request_packet))
 		response_packet->set_final_response();
 	DEBUG("Valid config found");
@@ -25,7 +25,7 @@ std::unique_ptr<ResponsePacket> handle_request(const RequestPacket &request, con
 			response_packet = handle_get(*request_packet, std::move(response_packet), valid_config.value());
 			break;
 		case Method::POST:
-			handle_post(*request_packet, *response_packet, valid_config.value());
+			response_packet = handle_post(*request_packet, std::move(response_packet), valid_config.value());
 			break;
 		case Method::DELETE:
 			handle_delete(*request_packet, *response_packet, valid_config.value());
