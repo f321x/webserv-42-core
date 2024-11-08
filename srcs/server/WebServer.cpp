@@ -64,7 +64,7 @@ void WebServer::serve()
                     TRACE("Accepting new connection");
                     std::unique_ptr<HttpSocket> new_client_socket = _sockets[i]->accept_connection(); // accept the connection, return new socket
                     _store_socket(std::move(new_client_socket));                                      // store new socket in the list of sockets
-                    break;                                                                            // may uneccessary, investigate later
+                    break;
                 }
                 else
                 {
@@ -72,21 +72,27 @@ void WebServer::serve()
                     try
                     {
                         _sockets[i]->handle_client_data(); // handle the client data
+                        break;                             // we have to break to respect the subject (only read/write after poll)
                     }
-                    catch (ReadingFailedErr &e)
+                    catch (const std::exception &e)
                     {
                         DEBUG("Reading failed: " + std::string(e.what()));
                         _remove_socket(_pollfds[i].fd);
                     }
-                    catch (WritingFailedErr &e)
-                    {
-                        DEBUG(std::string(e.what()));
+                }
+            }
+            else if (_pollfds[i].revents & POLLOUT && _sockets[i]->response.has_value())
+            {
+                try
+                {
+                    if (_sockets[i]->write_client_response())
                         _remove_socket(_pollfds[i].fd);
-                    }
-                    catch (const IsFinalResponse &) // may not the most elegant solution
-                    {
-                        _remove_socket(_pollfds[i].fd);
-                    }
+                    break;
+                }
+                catch (WritingFailedErr &e)
+                {
+                    DEBUG(std::string(e.what()));
+                    _remove_socket(_pollfds[i].fd);
                 }
             }
             else if (_pollfds[i].revents & POLLERR || _pollfds[i].revents & POLLHUP || _pollfds[i].revents & POLLNVAL || _pollfds[i].revents & POLLPRI)

@@ -1,20 +1,13 @@
 #include "RequestHandler.hpp"
 
-std::unique_ptr<ResponsePacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
+std::unique_ptr<ResponsePacket> handle_request(const RequestPacket &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
 	std::unique_ptr<RequestPacket> request_packet;
 	std::unique_ptr<ResponsePacket> response_packet = std::make_unique<ResponsePacket>();
 
-	// Parse the request
-	try
-	{
-		request_packet = std::make_unique<RequestPacket>(request);
-	}
-	catch (...)
-	{
-		DEBUG("Failed to parse request");
+	if (request.is_invalid())
 		return bad_request();
-	}
+	// Parse the request
 	DEBUG("Request parsed");
 	// Find the server config
 	auto valid_config = find_valid_configuration(*request_packet, *available_configs);
