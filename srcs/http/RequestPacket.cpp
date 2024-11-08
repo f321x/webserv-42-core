@@ -1,7 +1,7 @@
 #include "RequestPacket.hpp"
 #include "logging.hpp"
 
-RequestPacket::RequestPacket()
+RequestPacket::RequestPacket() : _max_body_size(0)
 {
 	_buffer = "";
 	_parsed_header = false;
@@ -10,7 +10,16 @@ RequestPacket::RequestPacket()
 	_http_version = "";
 }
 
-RequestPacket::RequestPacket(const RequestPacket &other) : BasePacket(other)
+RequestPacket::RequestPacket(size_t max_body_size) : _max_body_size(max_body_size)
+{
+	_buffer = "";
+	_parsed_header = false;
+	_method = GET;
+	_uri = "";
+	_http_version = "";
+}
+
+RequestPacket::RequestPacket(const RequestPacket &other) : BasePacket(other), _max_body_size(other._max_body_size)
 {
 	*this = other;
 }
@@ -196,6 +205,9 @@ void RequestPacket::parseContentLenght()
 		{
 			throw InvalidPacketException();
 		}
+
+		if (_content_length_header > _max_body_size)
+			throw InvalidPacketException();
 	}
 }
 
@@ -253,5 +265,7 @@ void RequestPacket::replaceContent(const std::string &new_content)
 
 void RequestPacket::addToContent(const std::string &new_content)
 {
+	if (_content.size() + new_content.size() > _max_body_size)
+		throw InvalidPacketException();
 	_content += new_content;
 }
