@@ -3,21 +3,11 @@
 
 RequestPacket::RequestPacket()
 {
-	_raw_packet = "";
 	_buffer = "";
+	_parsed_header = false;
 	_method = GET;
 	_uri = "";
 	_http_version = "";
-}
-
-RequestPacket::RequestPacket(const std::string &raw_packet)
-{
-	_raw_packet = raw_packet;
-	_buffer = "";
-	_method = GET;
-	_uri = "";
-	_http_version = "";
-	parseRawPacket();
 }
 
 RequestPacket::RequestPacket(const RequestPacket &other) : BasePacket(other)
@@ -27,7 +17,8 @@ RequestPacket::RequestPacket(const RequestPacket &other) : BasePacket(other)
 
 RequestPacket &RequestPacket::operator=(const RequestPacket &other)
 {
-	_raw_packet = other._raw_packet;
+	_buffer = other._buffer;
+	_parsed_header = other._parsed_header;
 	_method = other._method;
 	_uri = other._uri;
 	_http_version = other._http_version;
@@ -67,17 +58,32 @@ std::string RequestPacket::parseUri(const std::string &uri)
 	return uri.substr(0, qPos);
 }
 
-void RequestPacket::parseRawPacket()
+bool RequestPacket::append(const std::string &data)
+{
+	_buffer += data;
+	if (!_parsed_header)
+	{
+		if (!appendHeader())
+			return false;
+		_parsed_header = true;
+	}
+	if (isChunked())
+	{
+		if (!appendChunkedData())
+			return false;
+	}
+	return true;
+}
+
+bool RequestPacket::appendHeader()
 {
 	// Find the end of headers
-	size_t headers_end = _raw_packet.find("\r\n\r\n");
+	size_t headers_end = _buffer.find("\r\n\r\n");
 	if (headers_end == std::string::npos)
-	{
-		throw InvalidPacketException();
-	}
+		return false;
 
 	// Extract headers
-	std::string headers_part = _raw_packet.substr(0, headers_end);
+	std::string headers_part = _buffer.substr(0, headers_end);
 	std::istringstream headers_stream(headers_part);
 
 	std::string line;
@@ -130,12 +136,14 @@ void RequestPacket::parseRawPacket()
 		}
 	}
 
+	_parsed_header = true;
+
 	// Body starts after the headers_end marker
 	size_t body_start = headers_end + 4; // Skip past "\r\n\r\n"
-	if (body_start < _raw_packet.size())
+	if (body_start < _buffer.size())
 	{
 		// Extract the body content
-		std::string body = _raw_packet.substr(body_start);
+		std::string body = _buffer.substr(body_start);
 		DEBUG("Body: " + body);
 		setContent(body);
 
@@ -155,10 +163,8 @@ void RequestPacket::parseRawPacket()
 	}
 }
 
-bool RequestPacket::appendChunkedData(const std::string &chunked_data)
+bool RequestPacket::appendChunkedData()
 {
-	_buffer += chunked_data;
-
 	// find the chunk size
 	const size_t indChunkSize = _buffer.find("\r\n");
 	if (indChunkSize == std::string::npos)
@@ -183,9 +189,9 @@ bool RequestPacket::appendChunkedData(const std::string &chunked_data)
 
 	// append the chunk data to the result
 	this->addToContent(_buffer.substr(indChunkSize + 2, chunkSize));
-	_buffer = _buffer.substr(indChunkEnd + 2);
+	_buffer.erase(0, indChunkEnd + 2);
 
-	return appendChunkedData("");
+	return _buffer.empty() ? true : appendChunkedData();
 }
 
 // parse the uri in a pure uri path and a hashset of query tokens
@@ -220,7 +226,9 @@ size_t RequestPacket::getContentLengthHeader() const
 
 bool RequestPacket::isChunked() const
 {
-	return getHeader("Transfer-Encoding") == "chunked";
+	std::string transfer_encoding = getHeader("Transfer-Encoding");
+
+	return toLowerCaseInPlace(transfer_encoding) == "chunked";
 }
 
 size_t RequestPacket::getContentSize() const
