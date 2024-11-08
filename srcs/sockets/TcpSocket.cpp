@@ -89,12 +89,12 @@ std::unique_ptr<TcpSocket> TcpSocket::accept_connection()
 	return client_socket;
 }
 
-pollfd TcpSocket::new_pfd(bool is_bind_socket) const
+pollfd TcpSocket::new_pfd() const
 {
 	pollfd pfd;
 	memset(&pfd, 0, sizeof(pfd));
 	pfd.fd = _socket_fd;
-	if (is_bind_socket)
+	if (this->_bind_socket)
 		pfd.events = POLLIN;
 	else
 		pfd.events = POLLIN | POLLOUT;
