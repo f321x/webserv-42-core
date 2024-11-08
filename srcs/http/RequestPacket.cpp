@@ -67,12 +67,11 @@ bool RequestPacket::append(const std::string &data)
 			return false;
 		_parsed_header = true;
 	}
+
 	if (isChunked())
-	{
-		if (!appendChunkedData())
-			return false;
-	}
-	return true;
+		return appendChunkedData();
+	else
+		return appendContent();
 }
 
 bool RequestPacket::appendHeader()
@@ -136,31 +135,21 @@ bool RequestPacket::appendHeader()
 		}
 	}
 
-	_parsed_header = true;
+	parseContentLenght();
 
-	// Body starts after the headers_end marker
-	size_t body_start = headers_end + 4; // Skip past "\r\n\r\n"
-	if (body_start < _buffer.size())
-	{
-		// Extract the body content
-		std::string body = _buffer.substr(body_start);
-		DEBUG("Body: " + body);
-		setContent(body);
+	_buffer.erase(0, headers_end + 4); // Skip past "\r\n\r\n"
+	return true;
+}
 
-		// Parse Content-Length if present
-		std::string content_length_str = getHeader("Content-Length");
-		if (!content_length_str.empty())
-		{
-			try
-			{
-				_content_length_header = std::stoul(content_length_str);
-			}
-			catch (const std::exception &e)
-			{
-				throw InvalidPacketException();
-			}
-		}
-	}
+bool RequestPacket::appendContent()
+{
+	if (getContentLengthHeader() != _buffer.size())
+		return false;
+
+	DEBUG("Body: " + _buffer);
+	setContent(_buffer);
+	_buffer.clear();
+	return true;
 }
 
 bool RequestPacket::appendChunkedData()
@@ -192,6 +181,22 @@ bool RequestPacket::appendChunkedData()
 	_buffer.erase(0, indChunkEnd + 2);
 
 	return _buffer.empty() ? true : appendChunkedData();
+}
+
+void RequestPacket::parseContentLenght()
+{
+	std::string content_length_str = getHeader("Content-Length");
+	if (!content_length_str.empty())
+	{
+		try
+		{
+			_content_length_header = std::stoul(content_length_str);
+		}
+		catch (const std::exception &e)
+		{
+			throw InvalidPacketException();
+		}
+	}
 }
 
 // parse the uri in a pure uri path and a hashset of query tokens
