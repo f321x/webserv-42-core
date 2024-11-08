@@ -48,12 +48,13 @@ private:
 	std::string _query_string;
 	std::string _http_version;
 	const size_t _max_body_size;
-	std::string parseUri(const std::string &uri);
-	void parseContentLenght();
+	std::string _parseUri(const std::string &uri);
+	void _parseContentLenght();
 	std::unordered_map<std::string, std::string> _query_tokens;
-	std::pair<std::string, std::unordered_map<std::string, std::string>> _parse_request_uri(const std::string &uri);
+	std::pair<std::string, std::unordered_map<std::string, std::string>> _parseRequestUri(const std::string &uri);
 
-	bool appendHeader();
-	bool appendContent();
-	bool appendChunkedData();
+	bool _appendHeader();
+	bool _validFirstLine(const std::string &line);
+	bool _appendContent();
+	bool _appendChunkedData();
 };

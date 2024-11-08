@@ -51,7 +51,7 @@ Method RequestPacket::getMethod() const
 	return _method;
 }
 
-std::string RequestPacket::parseUri(const std::string &uri)
+std::string RequestPacket::_parseUri(const std::string &uri)
 {
 	DEBUG("parseUri: " + uri);
 	size_t qPos = uri.find('?');
@@ -69,22 +69,31 @@ std::string RequestPacket::parseUri(const std::string &uri)
 
 bool RequestPacket::append(const std::string &data)
 {
+	if (data.empty())
+		throw InvalidPacketException();
+
 	_buffer += data;
 	if (!_parsed_header)
 	{
-		if (!appendHeader())
+		if (!_appendHeader())
 			return false;
 		_parsed_header = true;
 	}
 
 	if (isChunked())
-		return appendChunkedData();
+		return _appendChunkedData();
 	else
-		return appendContent();
+		return _appendContent();
 }
 
-bool RequestPacket::appendHeader()
+bool RequestPacket::_appendHeader()
 {
+	if (_buffer.size() >= 10)
+	{
+		if (!_validFirstLine(_buffer))
+			throw InvalidPacketException();
+	}
+
 	// Find the end of headers
 	size_t headers_end = _buffer.find("\r\n\r\n");
 	if (headers_end == std::string::npos)
@@ -120,7 +129,7 @@ bool RequestPacket::appendHeader()
 				throw UnknownMethodException();
 
 			// Parse URI
-			std::tie(_uri, _query_tokens) = _parse_request_uri(uri_str);
+			std::tie(_uri, _query_tokens) = _parseRequestUri(uri_str);
 			_http_version = version_str;
 
 			first_line = false;
@@ -144,13 +153,28 @@ bool RequestPacket::appendHeader()
 		}
 	}
 
-	parseContentLenght();
+	_parseContentLenght();
 
 	_buffer.erase(0, headers_end + 4); // Skip past "\r\n\r\n"
 	return true;
 }
 
-bool RequestPacket::appendContent()
+bool RequestPacket::_validFirstLine(const std::string &line)
+{
+	std::istringstream request_line_stream(line);
+	std::string method_str, uri_str, version_str;
+	request_line_stream >> method_str >> uri_str >> version_str;
+
+	if (method_str.empty() || uri_str.empty() || version_str.empty())
+		return false;
+
+	if (method_str != "GET" && method_str != "POST" && method_str != "DELETE")
+		return false;
+
+	return true;
+}
+
+bool RequestPacket::_appendContent()
 {
 	if (getContentLengthHeader() != _buffer.size())
 		return false;
@@ -161,7 +185,7 @@ bool RequestPacket::appendContent()
 	return true;
 }
 
-bool RequestPacket::appendChunkedData()
+bool RequestPacket::_appendChunkedData()
 {
 	// find the chunk size
 	const size_t indChunkSize = _buffer.find("\r\n");
@@ -189,10 +213,10 @@ bool RequestPacket::appendChunkedData()
 	this->addToContent(_buffer.substr(indChunkSize + 2, chunkSize));
 	_buffer.erase(0, indChunkEnd + 2);
 
-	return _buffer.empty() ? true : appendChunkedData();
+	return _buffer.empty() ? true : _appendChunkedData();
 }
 
-void RequestPacket::parseContentLenght()
+void RequestPacket::_parseContentLenght()
 {
 	std::string content_length_str = getHeader("Content-Length");
 	if (!content_length_str.empty())
@@ -212,7 +236,7 @@ void RequestPacket::parseContentLenght()
 }
 
 // parse the uri in a pure uri path and a hashset of query tokens
-std::pair<std::string, std::unordered_map<std::string, std::string>> RequestPacket::_parse_request_uri(const std::string &uri)
+std::pair<std::string, std::unordered_map<std::string, std::string>> RequestPacket::_parseRequestUri(const std::string &uri)
 {
 	std::string path = uri;
 	std::unordered_map<std::string, std::string> query_tokens;

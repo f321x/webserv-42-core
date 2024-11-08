@@ -96,7 +96,7 @@ void WebServer::serve()
             }
             else if (_pollfds[i].revents & POLLERR || _pollfds[i].revents & POLLHUP || _pollfds[i].revents & POLLNVAL || _pollfds[i].revents & POLLPRI)
             {
-                WARN("Wrong revent detected on socket " + std::to_string(_pollfds[i].fd));
+                WARN("Wrong event detected on socket " + std::to_string(_pollfds[i].fd));
                 _remove_socket(_pollfds[i].fd);
             }
         }
