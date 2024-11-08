@@ -77,7 +77,10 @@ void HttpSocket::handle_client_data()
     if (is_bind_socket)
         throw IsBindSocketErr("HttpSocket: Cannot handle client data on a bind socket");
     if (this->response.has_value())
+    {
+        DEBUG("Response already exists, skipping handle_client_data");
         return;
+    }
 
     bool complete_request = false;
 

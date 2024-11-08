@@ -94,7 +94,7 @@ pollfd TcpSocket::new_pfd() const
 	pollfd pfd;
 	memset(&pfd, 0, sizeof(pfd));
 	pfd.fd = _socket_fd;
-	pfd.events = POLLIN;
+	pfd.events = POLLIN | POLLOUT;
 	pfd.revents = 0;
 	return pfd;
 }
