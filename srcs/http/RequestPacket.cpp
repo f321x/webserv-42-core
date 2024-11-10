@@ -81,9 +81,12 @@ bool RequestPacket::append(const std::string &data)
 	}
 
 	if (isChunked())
+	{
+		DEBUG("Appending to chunked request");
 		return _appendChunkedData();
-	else
-		return _appendContent();
+	}
+
+	return _appendContent();
 }
 
 bool RequestPacket::_appendHeader()
