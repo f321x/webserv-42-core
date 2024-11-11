@@ -11,6 +11,7 @@ count_file = "./tmp/count.txt"
 
 def get_count():
     """Read the current count from the file."""
+    os.makedirs(os.path.dirname(count_file), exist_ok=True)
     if os.path.exists(count_file):
         with open(count_file, "r") as f:
             try:
