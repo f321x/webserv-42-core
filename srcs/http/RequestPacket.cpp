@@ -78,9 +78,3 @@ void RequestPacket::addToContent(const std::string &new_content)
 	_content += new_content;
 }
 
-bool RequestPacket::isChunked() const
-{
-	std::string transfer_encoding = getHeader("Transfer-Encoding");
-
-	return toLowerCaseInPlace(transfer_encoding) == "chunked";
-}

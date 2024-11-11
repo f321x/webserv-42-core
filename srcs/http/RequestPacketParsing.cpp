@@ -1,6 +1,13 @@
 #include "RequestPacket.hpp"
 #include "logging.hpp"
 
+bool RequestPacket::isChunked() const
+{
+	std::string transfer_encoding = getHeader("Transfer-Encoding");
+
+	return toLowerCaseInPlace(transfer_encoding) == "chunked";
+}
+
 std::string RequestPacket::_parseUri(const std::string &uri)
 {
 	DEBUG("parseUri: " + uri);
@@ -106,7 +113,7 @@ bool RequestPacket::_appendHeader()
 		}
 	}
 
-	_parseContentLenght();
+	_parseContentLength();
 
 	_buffer.erase(0, headers_end + 4); // Skip past "\r\n\r\n"
 	return true;
@@ -169,7 +176,7 @@ bool RequestPacket::_appendChunkedData()
 	return _buffer.empty() ? true : _appendChunkedData();
 }
 
-void RequestPacket::_parseContentLenght()
+void RequestPacket::_parseContentLength()
 {
 	std::string content_length_str = getHeader("Content-Length");
 	if (!content_length_str.empty())
