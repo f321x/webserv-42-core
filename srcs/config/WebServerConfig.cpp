@@ -123,7 +123,10 @@ void WebServerConfig::printConfig() const
 			std::cout << "Redirection: " << config.getRedirection() << ", ";
 			std::cout << "Autoindex: " << config.isAutoindex() << ", ";
 			std::cout << "Default file: " << config.getDefaultFile() << ", ";
-			std::cout << "cgi: " << (config.isCgi() ? "true" : "false") << ", ";
+			std::cout << "CGI: ";
+			for (const auto &[extension, path] : config.getCgi())
+				std::cout << extension << " -> " << path << " ";
+			std::cout << std::endl;
 			std::cout << "Upload directory: " << config.getUploadDirectory() << std::endl;
 		}
 	}

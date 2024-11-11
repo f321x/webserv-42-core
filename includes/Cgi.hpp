@@ -41,6 +41,4 @@ public:
 	std::string getResponse() const;
 };
 
-std::shared_ptr<ResponsePacket> handleCgiRequest(const RequestPacket &request_packet, std::shared_ptr<ResponsePacket> response_packet, std::optional<std::pair<ServerConfig, RouteConfig>> &valid_config);
-
-bool validCgiFileEnding(const std::string &path);
+std::shared_ptr<ResponsePacket> handleCgiRequest(const RequestPacket &request_packet, std::optional<std::pair<ServerConfig, RouteConfig>> &valid_config);

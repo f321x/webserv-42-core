@@ -96,7 +96,7 @@ void ResponsePacket::set_status_code(uint status_code)
 	_status_code = status_code;
 }
 
-void ResponsePacket::set_status_message(const std::string& status_message)
+void ResponsePacket::set_status_message(const std::string &status_message)
 {
 	_status_message = status_message;
 }
@@ -111,15 +111,15 @@ bool ResponsePacket::is_final_response() const
 	return _final_response;
 }
 
-bool ResponsePacket::getResponseReady() const
-{
-	return _response_ready.load();
-}
+// bool ResponsePacket::getResponseReady() const
+// {
+// 	return _response_ready.load();
+// }
 
-void ResponsePacket::setResponseReady(bool flag)
-{
-	_response_ready = flag;
-}
+// void ResponsePacket::setResponseReady(bool flag)
+// {
+// 	_response_ready = flag;
+// }
 
 std::string ResponsePacket::serialize()
 {
@@ -127,7 +127,7 @@ std::string ResponsePacket::serialize()
 
 	std::string response = "HTTP/1.1 " + std::to_string(_status_code) + " " + _status_message + "\n";
 
-	for (auto & _header : _headers)
+	for (auto &_header : _headers)
 	{
 		response += _header.first + ": " + _header.second + "\n";
 	}
