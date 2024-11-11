@@ -1,4 +1,6 @@
 #!/bin/bash
 
-init_pager.sh
-exec self_destruct.sh
+echo "Content-type: text/html"
+echo ""
+
+curl https://www.google.com

@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <unistd.h>
 
 static void ensureNoTrailingTokens(std::istringstream &stream)
 {
@@ -53,16 +54,23 @@ void parseListen(ServerConfig &server, std::istringstream &stream)
 void parseServerNames(ServerConfig &server, std::istringstream &stream)
 {
 	std::string server_name;
+	bool semicolon = false;
+
 	while (stream >> server_name)
 	{
 		if (server_name.back() == ';')
 		{
 			server_name.pop_back(); // Remove trailing semicolon
 			server.addServerName(server_name);
+			semicolon = true;
 			break; // End of directive
 		}
 		server.addServerName(server_name);
 	}
+	if (server_name.empty())
+		throw std::runtime_error("Expected server names after 'server_names' directive");
+	else if (!semicolon)
+		throw std::runtime_error("Expected ';' at the end of the server_names directive");
 	ensureNoTrailingTokens(stream);
 	INFO("ADDED Server names");
 }
@@ -74,7 +82,7 @@ void parseErrorPage(ServerConfig &server, std::istringstream &stream)
 
 	if (!(stream >> error_code))
 		throw std::runtime_error("Invalid error code");
-	if (!(stream >> error_page))
+	else if (!(stream >> error_page))
 		throw std::runtime_error("Invalid error page");
 
 	if (error_page.back() == ';')
@@ -122,6 +130,7 @@ void parseAcceptedMethods(RouteConfig &route, std::istringstream &stream)
 {
 	std::string method;
 	std::vector<std::string> methods;
+	bool semicolon = false;
 
 	while (stream >> method)
 	{
@@ -129,6 +138,7 @@ void parseAcceptedMethods(RouteConfig &route, std::istringstream &stream)
 		{
 			method.pop_back(); // Remove trailing semicolon
 			methods.push_back(method);
+			semicolon = true;
 			break; // End of directive
 		}
 		methods.push_back(method);
@@ -136,6 +146,8 @@ void parseAcceptedMethods(RouteConfig &route, std::istringstream &stream)
 
 	if (methods.empty())
 		throw std::runtime_error("Expected methods after 'methods' directive");
+	else if (!semicolon)
+		throw std::runtime_error("Expected ';' at the end of the methods directive");
 
 	route.setAcceptedMethods(methods);
 	ensureNoTrailingTokens(stream);
@@ -209,20 +221,21 @@ void parseUploadDirectory(RouteConfig &route, std::istringstream &stream)
 
 void parseCgi(RouteConfig &route, std::istringstream &stream)
 {
-	std::string value;
-	stream >> value;
+	std::string extension;
+	std::string path;
 
-	if (value.back() == ';')
-		value.pop_back(); // Remove trailing semicolon
+	if (!(stream >> extension))
+		throw std::runtime_error("Invalid cgi extension: " + stream.str());
+	if (!std::getline(stream >> std::ws, path) || path.empty()) // Read the rest of the line
+		throw std::runtime_error("Invalid cgi path: " + stream.str());
+	if (path.back() == ';')
+		path.pop_back(); // Remove trailing semicolon
 	else
 		throw std::runtime_error("Expected ';' at the end of the cgi directive");
 
-	if (value == "on")
-		route.setCgi(true);
-	else if (value == "off")
-		route.setCgi(false);
-	else
-		throw std::runtime_error("Invalid cgi value: " + value);
+	if (access(path.c_str(), X_OK) != 0)
+		throw std::runtime_error("Invalid cgi path: " + path);
+	route.addCgi(extension, path);
 	ensureNoTrailingTokens(stream);
-	INFO("ADDED CGI: " + value);
+	INFO("ADDED CGI: " + extension + " " + path);
 }

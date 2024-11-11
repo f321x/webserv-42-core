@@ -29,7 +29,19 @@ std::string RouteConfig::getDefaultFile() const { return _default_file; }
 
 std::string RouteConfig::getUploadDirectory() const { return _upload_directory; }
 
-bool RouteConfig::isCgi() const { return _cgi; }
+std::string RouteConfig::getCgi(std::string extension) const
+{
+	try
+	{
+		return _cgi.at(extension);
+	}
+	catch (const std::out_of_range &e)
+	{
+		return "";
+	}
+}
+
+std::unordered_map<std::string, std::string> RouteConfig::getCgi() const { return _cgi; }
 
 // SETTERS
 void RouteConfig::setRedirectionUrl(const std::string &url) { _redirection_url = url; }
@@ -56,7 +68,7 @@ void RouteConfig::setAcceptedMethods(const std::vector<std::string> &methods)
 	}
 }
 
-void RouteConfig::setCgi(bool cgi) { _cgi = cgi; }
+void RouteConfig::addCgi(std::string extension, std::string path) { _cgi.emplace(extension, path); }
 
 void RouteConfig::checkRouteConfig() const
 {
