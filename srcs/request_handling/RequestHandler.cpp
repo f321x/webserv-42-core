@@ -1,6 +1,6 @@
 #include "RequestHandler.hpp"
 
-// TODO: shared pointer
+// TODO: make something that works with multiple threads and with the ->has_value() check in the main loop
 
 std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
@@ -11,7 +11,7 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 		return bad_request(); // use correct error type | (niklas) did also return 400 when the method wasnt allowed -> 405?
 	DEBUG("Valid config found");
 	// TODO: check if the request is a valid cgi request (extension matches with a cgi path)
-	DEBUG("weirde cgi check:" + request_packet.getUri().find_last_of('.'));
+	DEBUG("weirde cgi check:" + std::to_string(request_packet.getUri().find_last_of('.')));
 	size_t pos = request_packet.getUri().find_last_of('.');
 	if (pos != std::string::npos && !valid_config->second.getCgi(request_packet.getUri().substr(pos)).empty() && (request_packet.getMethod() == Method::POST || request_packet.getMethod() == Method::GET))
 	{
