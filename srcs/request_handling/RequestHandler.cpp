@@ -6,8 +6,6 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 {
 	std::shared_ptr<ResponsePacket> response_packet = std::make_shared<ResponsePacket>();
 
-	// Parse the request
-	DEBUG("Request parsed");
 	// Find the server config
 	auto valid_config = find_valid_configuration(request_packet, *available_configs);
 	if (!valid_config.has_value())

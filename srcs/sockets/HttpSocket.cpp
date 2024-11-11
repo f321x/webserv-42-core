@@ -77,7 +77,7 @@ void HttpSocket::handle_client_data()
 	if (is_bind_socket)
 		throw IsBindSocketErr("HttpSocket: Cannot handle client data on a bind socket");
 	// TODO: check optional / shared pointer response
-	if (this->response.has_value())
+	if (this->_response.has_value())
 		throw HttpSocketError("Response already exists, skipping handle_client_data");
 
 	bool complete_request = false;
@@ -92,7 +92,7 @@ void HttpSocket::handle_client_data()
 	catch (const RequestPacket::InvalidPacketException &e)
 	{
 		TRACE("Invalid packet received");
-		this->response.emplace(bad_request());
+		this->_response.emplace(bad_request());
 	}
 	catch (const std::exception &e)
 	{
@@ -101,23 +101,23 @@ void HttpSocket::handle_client_data()
 
 	if (complete_request)
 	{
-		this->response.emplace(handle_request(*request, _available_configs)); // placing the response in optional to signal we are ready to write
+		this->_response.emplace(handle_request(*request, _available_configs)); // placing the response in optional to signal we are ready to write
 		// reset this->request to a new RequestPacket for next request
 		// pass max_body_size to constructor so the parsing can check if the packet is bigger than allowed
 		this->request = std::make_unique<RequestPacket>(_smallest_max_body_size());
 	}
 }
 
-bool HttpSocket::write_client_response()
+bool HttpSocket::_write_client_response()
 {
 	// write response to client
 	try
 	{
 		// TRACE("Sending response to client: " + response.value()->serialize());
-		if (_socket->write_data(response.value()->serialize()))
+		if (_socket->write_data(_response.value()->serialize()))
 		{
-			bool is_final_response = response.value()->is_final_response();
-			this->response.reset();
+			bool is_final_response = _response.value()->is_final_response();
+			this->_response.reset();
 			return is_final_response;
 		}
 	}
