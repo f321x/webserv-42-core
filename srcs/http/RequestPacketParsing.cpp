@@ -147,33 +147,38 @@ bool RequestPacket::_appendContent()
 
 bool RequestPacket::_appendChunkedData()
 {
-	// find the chunk size
-	const size_t indChunkSize = _buffer.find("\r\n");
-	if (indChunkSize == std::string::npos)
-		return false;
+	try
+	{
+		// find the chunk size
+		const size_t indChunkSize = _buffer.find("\r\n");
+		if (indChunkSize == std::string::npos)
+			return false;
 
-	// parse the chunk size
-	const std::string chunkSizeStr = _buffer.substr(0, indChunkSize);
-	const size_t chunkSize = std::stoul(chunkSizeStr, nullptr, 16);
+		// parse the chunk size
+		const std::string chunkSizeStr = _buffer.substr(0, indChunkSize);
+		const size_t chunkSize = std::stoul(chunkSizeStr, nullptr, 16);
 
-	if (chunkSize == std::string::npos)
+		if (chunkSize == 0)
+			return true;
+
+		// find the end of the chunk data
+		const size_t indChunkEnd = _buffer.find("\r\n", indChunkSize + 2);
+
+		if (indChunkEnd == std::string::npos)
+			return false;
+		if (indChunkEnd + 2 + chunkSize > _buffer.length())
+			throw InvalidPacketException();
+
+		// append the chunk data to the result
+		this->addToContent(_buffer.substr(indChunkSize + 2, chunkSize));
+		_buffer.erase(0, indChunkEnd + 2);
+
+		return _buffer.empty() ? true : _appendChunkedData();
+	}
+	catch (const std::exception &e)
+	{
 		throw InvalidPacketException();
-	if (chunkSize == 0)
-		return true;
-
-	// find the end of the chunk data
-	const size_t indChunkEnd = _buffer.find("\r\n", indChunkSize + 2);
-
-	if (indChunkEnd == std::string::npos)
-		return false;
-	if (indChunkEnd + 2 + chunkSize > _buffer.length())
-		throw InvalidPacketException();
-
-	// append the chunk data to the result
-	this->addToContent(_buffer.substr(indChunkSize + 2, chunkSize));
-	_buffer.erase(0, indChunkEnd + 2);
-
-	return _buffer.empty() ? true : _appendChunkedData();
+	}
 }
 
 void RequestPacket::_parseContentLength()
