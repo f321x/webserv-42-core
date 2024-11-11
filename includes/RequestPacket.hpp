@@ -6,8 +6,7 @@
 class RequestPacket : public BasePacket
 {
 public:
-	RequestPacket();
-	RequestPacket(const std::string &raw_packet);
+	RequestPacket(size_t max_body_size);
 	RequestPacket(const RequestPacket &other);
 	RequestPacket &operator=(const RequestPacket &other);
 	~RequestPacket();
@@ -15,12 +14,14 @@ public:
 	std::string getHttpVersion() const;
 	std::string getUri() const;
 	Method getMethod() const;
-	int getContentLengthHeader() const;
+	size_t getContentLengthHeader() const;
 	bool isChunked() const;
 	size_t getContentSize() const;
 	std::string getQueryString() const;
 	void replaceContent(const std::string &new_content);
 	void addToContent(const std::string &new_content);
+
+	bool append(const std::string &data);
 
 	class InvalidPacketException : public std::exception
 	{
@@ -38,14 +39,22 @@ public:
 	};
 
 private:
-	std::string _raw_packet;
+	RequestPacket();
+
+	std::string _buffer;
+	bool _parsed_header;
 	Method _method;
 	std::string _uri;
 	std::string _query_string;
 	std::string _http_version;
-	std::string parseUri(const std::string &uri);
+	const size_t _max_body_size;
+	std::string _parseUri(const std::string &uri);
+	void _parseContentLenght();
 	std::unordered_map<std::string, std::string> _query_tokens;
-  std::pair<std::string, std::unordered_map<std::string, std::string>> _parse_request_uri(const std::string &uri);
+	std::pair<std::string, std::unordered_map<std::string, std::string>> _parseRequestUri(const std::string &uri);
 
-	void parseRawPacket();
+	bool _appendHeader();
+	bool _validFirstLine(const std::string &line);
+	bool _appendContent();
+	bool _appendChunkedData();
 };
