@@ -41,7 +41,7 @@ if not session_token or session_token.value not in sessions:
     sessions[session_token_value] = ""  # Initialize with empty text
     save_sessions(sessions)
     # Set the cookie with the new session token
-    print(f"Set-Cookie: session_token={session_token_value}; Path=/; HttpOnly; SameSite=Lax")
+    print(f"Set-Cookie: session_token={session_token_value}")
 
 else:
     # Use the existing session token
