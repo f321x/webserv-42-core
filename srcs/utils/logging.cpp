@@ -1,5 +1,6 @@
 #include "logging.hpp"
 #include <iomanip>
+#include <sstream>
 
 std::string get_timestamp()
 {

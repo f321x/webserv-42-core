@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <thread>
 
-std::shared_ptr<ResponsePacket> handle_request(const std::string &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
+std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
 std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(RequestPacket &packet, const std::vector<ServerConfig> &available_configs);
 
 // POST handling
