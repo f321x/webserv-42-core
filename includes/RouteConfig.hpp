@@ -20,7 +20,7 @@ private:
 
 public:
 	// CONSTRUCTOR
-	RouteConfig() : _autoindex(false) {}
+	RouteConfig() : _autoindex(false), _cgi(false) {}
 
 	// GETTERS
 	std::string getRoot() const;

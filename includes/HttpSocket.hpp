@@ -27,11 +27,12 @@ public:
 	pollfd new_pfd() const;
 	void handle_client_data();
 	std::chrono::steady_clock::time_point last_activity() const;
+	std::optional<std::shared_ptr<ResponsePacket>> _response;
+	bool _write_client_response();
 
 private:
 	// private variables
-	std::unique_ptr<TcpSocket>
-		_socket;
+	std::unique_ptr<TcpSocket> _socket;
 	std::shared_ptr<std::vector<ServerConfig>> _available_configs;
 	std::chrono::steady_clock::time_point _last_activity;
 	std::unique_ptr<RequestPacket> request;
@@ -39,8 +40,7 @@ private:
 	// private functions
 	sockaddr_in _compose_sockaddr(const std::string &addr, int port);
 	std::unique_ptr<TcpSocket> _create_bind_socket(const sockaddr_in &address);
-	int _smallest_max_body_size() const;
-	void _write_client_response(std::unique_ptr<ResponsePacket> response);
+	size_t _smallest_max_body_size() const;
 };
 
 class HttpSocketError : public std::exception
