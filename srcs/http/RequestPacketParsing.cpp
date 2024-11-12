@@ -8,22 +8,6 @@ bool RequestPacket::isChunked() const
 	return toLowerCaseInPlace(transfer_encoding) == "chunked";
 }
 
-std::string RequestPacket::_parseUri(const std::string &uri)
-{
-	DEBUG("parseUri: " + uri);
-	size_t qPos = uri.find('?');
-	if (qPos == std::string::npos)
-	{
-		_query_string = "";
-		return uri;
-	}
-	DEBUG("? postion: " + std::to_string(qPos));
-	_query_string = uri.substr(qPos + 1);
-	DEBUG("query string: " + _query_string);
-	DEBUG("uri: " + uri.substr(0, qPos));
-	return uri.substr(0, qPos);
-}
-
 bool RequestPacket::append(const std::string &data)
 {
 	if (data.empty())
@@ -200,10 +184,35 @@ void RequestPacket::_parseContentLength()
 	}
 }
 
+std::string &RequestPacket::_decodeUrl(std::string &url)
+{
+	size_t pos = 0;
+	while ((pos = url.find('%', pos)) != std::string::npos)
+	{
+		if (pos + 2 >= url.size())
+			break;
+
+		try
+		{
+			const char c = static_cast<char>(std::stoi(url.substr(pos + 1, 2), nullptr, 16));
+			url.replace(pos, 3, 1, c);
+		}
+		catch (const std::exception &e)
+		{
+			throw InvalidPacketException();
+		}
+
+		pos += 1;
+	}
+	return url;
+}
+
 // parse the uri in a pure uri path and a hashset of query tokens
-std::pair<std::string, std::unordered_map<std::string, std::string>> RequestPacket::_parseRequestUri(const std::string &uri)
+std::pair<std::string, std::unordered_map<std::string, std::string>>
+RequestPacket::_parseRequestUri(const std::string &uri)
 {
 	std::string path = uri;
+	_decodeUrl(path);
 	std::unordered_map<std::string, std::string> query_tokens;
 
 	size_t question_mark_pos = uri.find('?');
