@@ -48,9 +48,9 @@ private:
 	std::string _query_string;
 	std::string _http_version;
 	const size_t _max_body_size;
-	std::string _parseUri(const std::string &uri);
 	void _parseContentLength();
 	std::unordered_map<std::string, std::string> _query_tokens;
+	std::string &_decodeUrl(std::string &url);
 	std::pair<std::string, std::unordered_map<std::string, std::string>> _parseRequestUri(const std::string &uri);
 
 	bool _appendHeader();
