@@ -49,7 +49,7 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
 	{
 		// check against server_name
 		auto server_names = it->getServerNames();
-		if (std::find(server_names.begin(), server_names.end(), get_pure_hostname(packet)) == server_names.end())
+		if (std::find(server_names.begin(), server_names.end(), getPureHostname(packet)) == server_names.end())
 		{
 			it = configs.erase(it);
 			continue;

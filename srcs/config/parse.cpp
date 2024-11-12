@@ -55,6 +55,8 @@ void parseServerNames(ServerConfig &server, std::istringstream &stream)
 	std::string server_name;
 	while (stream >> server_name)
 	{
+		toLowerCaseInPlace(server_name);
+
 		if (server_name.back() == ';')
 		{
 			server_name.pop_back(); // Remove trailing semicolon
