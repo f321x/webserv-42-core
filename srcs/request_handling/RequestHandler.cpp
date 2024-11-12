@@ -76,7 +76,11 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
 	}
 
 	if (configs.size() == 0)
-		return std::nullopt;
+	{
+		valid_config.first = available_configs[0];
+		valid_config.second = available_configs[0].getRoutes().at(find_longest_matching_route(packet.getUri(), available_configs[0].getRoutes()));
+		return valid_config;
+	}
 	else if (configs.size() == 1)
 	{
 		valid_config.first = configs[0];
