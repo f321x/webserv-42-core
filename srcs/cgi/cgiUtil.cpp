@@ -7,14 +7,14 @@ std::shared_ptr<ResponsePacket> handleCgiRequest(const RequestPacket &request_pa
 {
 	std::shared_ptr<ResponsePacket> response;
 
-	if (!check_keep_alive(request_packet))
-		response->set_final_response();
 	try
 	{
 		auto cgi = Cgi(request_packet, valid_config.value());
 		cgi.execute(request_packet);
 		auto cgi_response = cgi.getResponse();
 		response = std::make_shared<ResponsePacket>(cgi_response);
+		if (!check_keep_alive(request_packet))
+			response->set_final_response();
 	}
 	catch (std::exception &e)
 	{

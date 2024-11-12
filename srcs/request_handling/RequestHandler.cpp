@@ -4,7 +4,6 @@
 
 std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, const std::shared_ptr<std::vector<ServerConfig>> &available_configs)
 {
-
 	// Find the server config
 	auto valid_config = find_valid_configuration(request_packet, *available_configs);
 	if (!valid_config.has_value())
