@@ -10,12 +10,17 @@ bool RequestPacket::isChunked() const
 
 bool RequestPacket::append(const std::string &data)
 {
+	TRACE("Appending data to request");
 	if (data.empty())
+	{
+		TRACE("Empty data received");
 		throw InvalidPacketException();
+	}
 
 	_buffer += data;
 	if (!_parsed_header)
 	{
+		TRACE("Appending header");
 		if (!_appendHeader())
 			return false;
 		_parsed_header = true;
@@ -23,10 +28,11 @@ bool RequestPacket::append(const std::string &data)
 
 	if (isChunked())
 	{
-		DEBUG("Appending to chunked request");
+		TRACE("Appending to chunked request");
 		return _appendChunkedData();
 	}
 
+	TRACE("Appending content");
 	return _appendContent();
 }
 
@@ -35,7 +41,10 @@ bool RequestPacket::_appendHeader()
 	if (_buffer.size() >= 10)
 	{
 		if (!_validFirstLine(_buffer))
+		{
+			TRACE("Invalid first line");
 			throw InvalidPacketException();
+		}
 	}
 
 	// Find the end of headers
@@ -180,7 +189,7 @@ void RequestPacket::_parseContentLength()
 		}
 
 		if (_content_length_header > _max_body_size)
-			throw InvalidPacketException();
+			throw PayloadTooLargeException();
 	}
 }
 
