@@ -190,7 +190,7 @@ std::string &RequestPacket::_decodeUrl(std::string &url)
 	while ((pos = url.find('%', pos)) != std::string::npos)
 	{
 		if (pos + 2 >= url.size())
-			break;
+			throw InvalidPacketException();
 
 		try
 		{
