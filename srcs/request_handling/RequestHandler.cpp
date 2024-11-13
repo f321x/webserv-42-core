@@ -38,7 +38,7 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 			response = handle_post(request_packet, response, valid_config.value());
 			break;
 		case Method::DELETE:
-			response_packet = handle_delete(request_packet, std::move(response_packet), valid_config.value());
+			response = handle_delete(request_packet, valid_config.value());
 			break;
 		}
 	}
