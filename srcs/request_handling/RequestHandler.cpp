@@ -25,7 +25,7 @@ std::unique_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 			response_packet = handle_post(request_packet, std::move(response_packet), valid_config.value());
 			break;
 		case Method::DELETE:
-			handle_delete(request_packet, *response_packet, valid_config.value());
+			response_packet = handle_delete(request_packet, std::move(response_packet), valid_config.value());
 			break;
 		}
 	}
