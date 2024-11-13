@@ -34,4 +34,4 @@ bool check_keep_alive(const RequestPacket &packet);
 std::string find_longest_matching_route(const std::string &uri, const std::map<std::string, RouteConfig> &routes);
 std::string getContent_type(const std::string &file_ending);
 bool has_file_ending(const std::string &uri);
-std::string get_pure_hostname(RequestPacket &packet);
+std::string getPureHostname(RequestPacket &packet);

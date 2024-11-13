@@ -40,8 +40,6 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 		case Method::DELETE:
 			handle_delete(request_packet, *response, valid_config.value());
 			break;
-		default:
-			return bad_request();
 		}
 	}
 	catch (std::exception &e)
@@ -63,7 +61,7 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
 	{
 		// check against server_name
 		auto server_names = it->getServerNames();
-		if (std::find(server_names.begin(), server_names.end(), get_pure_hostname(packet)) == server_names.end())
+		if (std::find(server_names.begin(), server_names.end(), getPureHostname(packet)) == server_names.end())
 		{
 			it = configs.erase(it);
 			continue;
@@ -90,7 +88,11 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
 	}
 
 	if (configs.size() == 0)
-		return std::nullopt;
+	{
+		valid_config.first = available_configs[0];
+		valid_config.second = available_configs[0].getRoutes().at(find_longest_matching_route(packet.getUri(), available_configs[0].getRoutes()));
+		return valid_config;
+	}
 	else if (configs.size() == 1)
 	{
 		valid_config.first = configs[0];

@@ -62,7 +62,7 @@ void RouteConfig::setAcceptedMethods(const std::vector<std::string> &methods)
 	{
 		if (std::find(_accepted_methods.begin(), _accepted_methods.end(), method) != _accepted_methods.end())
 			return;
-		if (method != "GET" && method != "POST" && method != "DELETE" && method != "PUT")
+		if (method != "GET" && method != "POST" && method != "DELETE")
 			throw std::invalid_argument("Invalid method: " + method);
 		_accepted_methods.push_back(method);
 	}
