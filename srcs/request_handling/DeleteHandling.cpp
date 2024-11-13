@@ -1,4 +1,5 @@
 #include "RequestHandler.hpp"
+#include <filesystem>
 
 std::shared_ptr<ResponsePacket> handle_delete(const RequestPacket &request_packet, const std::pair<ServerConfig, RouteConfig> &config_pair)
 {
@@ -44,27 +45,10 @@ std::shared_ptr<ResponsePacket> handle_delete(const RequestPacket &request_packe
     if (is_directory)
     {
         TRACE("Deleting directory: " + full_path);
-        // Check if directory is empty
-        DIR *dir = opendir(full_path.c_str());
-        if (dir != NULL)
+        if (!std::filesystem::is_empty(full_path))
         {
-            struct dirent *entry;
-            bool is_empty = true;
-            while ((entry = readdir(dir)) != NULL)
-            {
-                if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0)
-                {
-                    is_empty = false;
-                    break;
-                }
-            }
-            closedir(dir);
-
-            if (!is_empty)
-            {
-                TRACE("Directory not empty: " + full_path);
-                return conflict();
-            }
+            TRACE("Directory is not empty: " + full_path);
+            return conflict();
         }
         result = rmdir(full_path.c_str());
     }
