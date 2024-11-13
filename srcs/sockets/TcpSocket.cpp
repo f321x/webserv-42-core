@@ -116,6 +116,17 @@ std::string TcpSocket::read_once()
 		// Data received, append to result
 		result.append(buffer, bytes_read);
 	}
+	else if (bytes_read == 0)
+	{
+		// This should not happen because of poll()
+		ERROR("TcpSocket read_once(): i should not happen");
+		return result;
+	}
+	else
+	{
+		// Error
+		throw std::runtime_error("TcpSocket: failed to read data");
+	}
 	return result;
 }
 
