@@ -138,7 +138,12 @@ bool TcpSocket::write_data(const std::string &data)
 		written_bytes = 0;
 		return true; // wrote all data
 	}
-	else if (send_res <= 0)
+	else if (send_res == 0)
+	{
+		ERROR("TcpSocket write_data(): i should not happen");
+		return false;
+	}
+	else if (send_res < 0)
 	{
 		throw std::runtime_error("TcpSocket: failed to write data");
 	}
