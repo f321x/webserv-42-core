@@ -89,7 +89,7 @@ void WebServer::serve()
 				}
 				catch (const std::exception &e)
 				{
-					DEBUG("Reading failed: " + std::string(e.what()));
+					ERROR("Reading failed: " + std::string(e.what()));
 					_remove_socket(_pollfds[i].fd);
 				}
 			}
