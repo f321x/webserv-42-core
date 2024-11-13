@@ -24,7 +24,8 @@ std::shared_ptr<ResponsePacket> handle_delete(const RequestPacket &request_packe
     }
 
     bool is_directory = S_ISDIR(path_stat.st_mode);
-    bool ends_with_slash = request_packet.getUri().back() == '/';
+    std::string uri = request_packet.getUri();
+    bool ends_with_slash = !uri.empty() && uri.back() == '/';
 
     // URI ends with slash but target is a file
     if (ends_with_slash && !is_directory)
