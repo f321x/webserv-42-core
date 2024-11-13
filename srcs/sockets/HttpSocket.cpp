@@ -72,40 +72,44 @@ size_t HttpSocket::_smallest_max_body_size() const
 
 void HttpSocket::handle_client_data()
 {
-	TRACE("HANDLING CLIENT DATA");
-	_last_activity = std::chrono::steady_clock::now();
-	if (is_bind_socket)
-		throw IsBindSocketErr("HttpSocket: Cannot handle client data on a bind socket");
-	// TODO: check optional / shared pointer response
-	if (this->_response.has_value())
-		throw HttpSocketError("Response already exists, skipping handle_client_data");
+    TRACE("HANDLING CLIENT DATA");
+    _last_activity = std::chrono::steady_clock::now();
+    if (is_bind_socket)
+        throw IsBindSocketErr("HttpSocket: Cannot handle client data on a bind socket");
+    if (this->response.has_value())
+        throw HttpSocketError("Response already exists, skipping handle_client_data");
 
-	bool complete_request = false;
-	try
-	{
-		// read the request from the client
-		std::string client_data = _socket->read_once();
-		// TRACE("Received data from client: " + client_data);
-		// append the data to the request class
-		complete_request = this->request->append(client_data);
-	}
-	catch (const RequestPacket::InvalidPacketException &e)
-	{
-		TRACE("Invalid packet received");
-		this->_response.emplace(bad_request());
-	}
-	catch (const std::exception &e)
-	{
-		throw ReadingFailedErr(e.what());
-	}
+    bool complete_request = false;
+    try
+    {
+        // read the request from the client
+        std::string client_data = _socket->read_once();
+        // TRACE("Received data from client: " + client_data);
+        // append the data to the request class
+        complete_request = this->request->append(client_data);
+    }
+    catch (const RequestPacket::InvalidPacketException &e)
+    {
+        TRACE("Invalid packet received");
+        this->response.emplace(bad_request());
+    }
+    catch (const RequestPacket::UnknownMethodException &e)
+    {
+        TRACE("Unknown method received");
+        this->response.emplace(not_implemented());
+    }
+    catch (const std::exception &e)
+    {
+        throw ReadingFailedErr(e.what());
+    }
 
-	if (complete_request)
-	{
-		this->_response.emplace(handle_request(*request, _available_configs)); // placing the response in optional to signal we are ready to write
-		// reset this->request to a new RequestPacket for next request
-		// pass max_body_size to constructor so the parsing can check if the packet is bigger than allowed
-		this->request = std::make_unique<RequestPacket>(_smallest_max_body_size());
-	}
+    if (complete_request)
+    {
+        this->response.emplace(handle_request(*request, _available_configs)); // placing the response in optional to signal we are ready to write
+        // reset this->request to a new RequestPacket for next request
+        // pass max_body_size to constructor so the parsing can check if the packet is bigger than allowed
+        this->request = std::make_unique<RequestPacket>(_smallest_max_body_size());
+    }
 }
 
 bool HttpSocket::_write_client_response()

@@ -104,3 +104,21 @@ std::shared_ptr<ResponsePacket> created(const std::string &location)
 	response_packet->setResponseReady(true);
 	return response_packet;
 }
+
+std::unique_ptr<ResponsePacket> not_implemented()
+{
+	auto response_packet = std::make_unique<ResponsePacket>();
+	response_packet->set_status_code(501);
+	response_packet->set_status_message("Not Implemented");
+	response_packet->set_final_response();
+	return response_packet;
+}
+
+std::unique_ptr<ResponsePacket> method_not_allowed()
+{
+	auto response_packet = std::make_unique<ResponsePacket>();
+	response_packet->set_status_code(405);
+	response_packet->set_status_message("Method Not Allowed");
+	response_packet->set_final_response();
+	return response_packet;
+}

@@ -65,7 +65,6 @@
 		"stop_token": "cpp",
 		"thread": "cpp",
 		"condition_variable": "cpp",
-		"future": "cpp",
 		"mutex": "cpp"
 	},
 	"C_Cpp.default.includePath": [
