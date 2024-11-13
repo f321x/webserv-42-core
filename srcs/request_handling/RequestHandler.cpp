@@ -11,6 +11,13 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 		TRACE("No valid config found");
 		return bad_request(); // use correct error type | (niklas) did also return 400 when the method wasnt allowed -> 405?
 	}
+
+	if (request_packet.isMethodNotAllowed())
+	{
+		TRACE("Method not allowed");
+		return method_not_allowed();
+	}
+
 	auto response = std::make_shared<ResponsePacket>();
 	TRACE("Valid config found");
 	// TODO: check if the request is a valid cgi request (extension matches with a cgi path)
@@ -79,14 +86,6 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
 			continue;
 		}
 
-		// validate method
-		auto accepted_methods = routes.at(matching_route).getAcceptedMethods();
-		if (std::find(accepted_methods.begin(), accepted_methods.end(), packet.getMethod()) == accepted_methods.end())
-		{
-			it = configs.erase(it);
-			continue;
-		}
-
 		it++;
 	}
 
@@ -94,14 +93,19 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
 	{
 		valid_config.first = available_configs[0];
 		valid_config.second = available_configs[0].getRoutes().at(find_longest_matching_route(packet.getUri(), available_configs[0].getRoutes()));
-		return valid_config;
 	}
 	else if (configs.size() == 1)
 	{
 		valid_config.first = configs[0];
 		valid_config.second = configs[0].getRoutes().at(find_longest_matching_route(packet.getUri(), configs[0].getRoutes()));
-		return valid_config;
 	}
 	else
 		throw std::runtime_error("Multiple configurations found");
+
+	// Check if method is allowed
+	auto accepted_methods = valid_config.second.getAcceptedMethods();
+	if (std::find(accepted_methods.begin(), accepted_methods.end(), packet.getMethod()) == accepted_methods.end())
+		packet.setMethodNotAllowed(true);
+
+	return valid_config;
 }
