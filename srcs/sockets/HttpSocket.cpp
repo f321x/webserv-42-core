@@ -105,6 +105,7 @@ void HttpSocket::handle_client_data()
 
 	if (complete_request)
 	{
+		TRACE("Request complete, handling request");
 		this->response.emplace(handle_request(*request, _available_configs)); // placing the response in optional to signal we are ready to write
 		// reset this->request to a new RequestPacket for next request
 		// pass max_body_size to constructor so the parsing can check if the packet is bigger than allowed

@@ -7,15 +7,18 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 	// Find the server config
 	auto valid_config = find_valid_configuration(request_packet, *available_configs);
 	if (!valid_config.has_value())
+	{
+		TRACE("No valid config found");
 		return bad_request(); // use correct error type | (niklas) did also return 400 when the method wasnt allowed -> 405?
+	}
 	auto response = std::make_shared<ResponsePacket>();
-	DEBUG("Valid config found");
+	TRACE("Valid config found");
 	// TODO: check if the request is a valid cgi request (extension matches with a cgi path)
-	DEBUG("weirde cgi check:" + std::to_string(request_packet.getUri().find_last_of('.')));
+	TRACE("weirde cgi check:" + std::to_string(request_packet.getUri().find_last_of('.')));
 	size_t pos = request_packet.getUri().find_last_of('.');
 	if (pos != std::string::npos && !valid_config->second.getCgi(request_packet.getUri().substr(pos)).empty() && (request_packet.getMethod() == Method::POST || request_packet.getMethod() == Method::GET))
 	{
-		DEBUG("CGI handling started");
+		TRACE("CGI handling started");
 		std::thread cgi_thread(handleCgiRequest, std::move(request_packet), std::move(valid_config.value()), response);
 		cgi_thread.detach();
 		// return handleCgiRequest(request_packet, valid_config);
@@ -44,10 +47,10 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 	}
 	catch (std::exception &e)
 	{
-		DEBUG("Failed to handle request: " + std::string(e.what()));
+		TRACE("Failed to handle request: " + std::string(e.what()));
 		return internal_server_error();
 	}
-	DEBUG("Request handled");
+	TRACE("Request handled");
 	response->setResponseReady(true);
 	return response;
 }
