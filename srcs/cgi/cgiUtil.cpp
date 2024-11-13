@@ -24,5 +24,5 @@ void handleCgiRequest(
 		DEBUG("CGI error: " + std::string(e.what()));
 		response = internal_server_error();
 	}
-	TRACE("CGI response: " + response->getContent());
+	TRACE("Got CGI response");
 }

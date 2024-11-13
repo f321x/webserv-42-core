@@ -197,7 +197,7 @@ void Cgi::writeToPipe(const std::string &content, int fd)
 		}
 	}
 
-	DEBUG("Successfully wrote " + std::to_string(written) + " bytes to CGI input pipe");
+	TRACE("Successfully wrote " + std::to_string(written) + " bytes to CGI input pipe");
 }
 
 std::string Cgi::readFromPipe(int fd)
@@ -235,7 +235,7 @@ std::string Cgi::readFromPipe(int fd)
 			break; // Pipe closed
 	}
 
-	DEBUG("Captured CGI output: \n" + output);
+	TRACE("Captured CGI output");
 	return output;
 }
 
