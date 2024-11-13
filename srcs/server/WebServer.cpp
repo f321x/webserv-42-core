@@ -57,12 +57,12 @@ void WebServer::serve()
 		{
 			// TRACE("Checking socket " + std::to_string(_pollfds[i].fd) + " REVENT: " + std::to_string(_pollfds[i].revents));
 
-			if (_pollfds[i].revents & POLLOUT && _sockets[i]->_response.has_value() && _sockets[i]->_response->get()->getResponseReady())
+			if (_pollfds[i].revents & POLLOUT && _sockets[i]->response.has_value() && _sockets[i]->response->get()->getResponseReady())
 			{
 				DEBUG("Writing response to client");
 				try
 				{
-					if (_sockets[i]->_write_client_response())
+					if (_sockets[i]->write_client_response())
 						_remove_socket(_pollfds[i].fd);
 					break;
 				}

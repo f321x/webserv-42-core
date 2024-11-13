@@ -27,8 +27,8 @@ public:
 	pollfd new_pfd() const;
 	void handle_client_data();
 	std::chrono::steady_clock::time_point last_activity() const;
-	std::optional<std::shared_ptr<ResponsePacket>> _response;
-	bool _write_client_response();
+	std::optional<std::shared_ptr<ResponsePacket>> response;
+	bool write_client_response();
 
 private:
 	// private variables
