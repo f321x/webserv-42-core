@@ -46,10 +46,18 @@ std::shared_ptr<ResponsePacket> handle_delete(const RequestPacket &request_packe
     if (is_directory)
     {
         TRACE("Deleting directory: " + full_path);
-        if (!std::filesystem::is_empty(full_path))
+        try
         {
-            TRACE("Directory is not empty: " + full_path);
-            return conflict();
+            if (!std::filesystem::is_empty(full_path))
+            {
+                TRACE("Directory is not empty: " + full_path);
+                return conflict();
+            }
+        }
+        catch (const std::filesystem::filesystem_error &e)
+        {
+            TRACE("Error checking if directory is empty: " + std::string(e.what()));
+            return internal_server_error();
         }
         result = rmdir(full_path.c_str());
     }
