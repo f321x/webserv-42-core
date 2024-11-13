@@ -27,8 +27,6 @@ std::unique_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 		case Method::DELETE:
 			handle_delete(request_packet, *response_packet, valid_config.value());
 			break;
-		default:
-			return bad_request();
 		}
 	}
 	catch (std::exception &e)

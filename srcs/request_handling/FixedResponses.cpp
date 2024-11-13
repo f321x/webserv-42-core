@@ -103,3 +103,12 @@ std::unique_ptr<ResponsePacket> not_implemented()
 	response_packet->set_final_response();
 	return response_packet;
 }
+
+std::unique_ptr<ResponsePacket> method_not_allowed()
+{
+	auto response_packet = std::make_unique<ResponsePacket>();
+	response_packet->set_status_code(405);
+	response_packet->set_status_message("Method Not Allowed");
+	response_packet->set_final_response();
+	return response_packet;
+}
