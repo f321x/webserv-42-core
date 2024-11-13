@@ -98,8 +98,14 @@ void HttpSocket::handle_client_data()
 		TRACE("Unknown method received");
 		this->response.emplace(internal_server_error()); // TODO: check which error code -> write new fixed response
 	}
+	catch (const RequestPacket::PayloadTooLargeException &e)
+	{
+		TRACE("Payload too large");
+		this->response.emplace(payload_too_large());
+	}
 	catch (const std::exception &e)
 	{
+		ERROR("Reading failed: " + std::string(e.what()));
 		throw ReadingFailedErr(e.what());
 	}
 
