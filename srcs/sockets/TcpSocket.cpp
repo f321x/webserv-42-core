@@ -119,7 +119,6 @@ std::string TcpSocket::read_once()
 	else if (bytes_read == 0)
 	{
 		// This should not happen because of poll()
-		ERROR("TcpSocket read_once(): i should not happen");
 		return result;
 	}
 	else
@@ -151,7 +150,6 @@ bool TcpSocket::write_data(const std::string &data)
 	}
 	else if (send_res == 0)
 	{
-		ERROR("TcpSocket write_data(): i should not happen");
 		return false;
 	}
 	else if (send_res < 0)
