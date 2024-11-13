@@ -113,7 +113,7 @@ bool HttpSocket::_write_client_response()
 	// write response to client
 	try
 	{
-		// TRACE("Sending response to client: " + response.value()->serialize());
+		TRACE("Sending response to client: " + _response.value()->serialize());
 		if (_socket->write_data(_response.value()->serialize()))
 		{
 			bool is_final_response = _response.value()->is_final_response();

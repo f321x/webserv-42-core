@@ -8,35 +8,37 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 	auto valid_config = find_valid_configuration(request_packet, *available_configs);
 	if (!valid_config.has_value())
 		return bad_request(); // use correct error type | (niklas) did also return 400 when the method wasnt allowed -> 405?
+	auto response = std::make_shared<ResponsePacket>();
 	DEBUG("Valid config found");
 	// TODO: check if the request is a valid cgi request (extension matches with a cgi path)
 	DEBUG("weirde cgi check:" + std::to_string(request_packet.getUri().find_last_of('.')));
 	size_t pos = request_packet.getUri().find_last_of('.');
 	if (pos != std::string::npos && !valid_config->second.getCgi(request_packet.getUri().substr(pos)).empty() && (request_packet.getMethod() == Method::POST || request_packet.getMethod() == Method::GET))
 	{
-		DEBUG("CGI happening");
-		// std::thread cgi_thread(handleCgiRequest, std::ref(*request_packet), response_packet, std::ref(valid_config));
-		// cgi_thread.detach();
-		return handleCgiRequest(request_packet, valid_config);
-		// return response_packet;
+		DEBUG("CGI handling started");
+		std::thread cgi_thread(handleCgiRequest, std::move(request_packet), std::move(valid_config.value()), response);
+		cgi_thread.detach();
+		// return handleCgiRequest(request_packet, valid_config);
+		return response;
 	}
 
-	std::shared_ptr<ResponsePacket> response_packet = std::make_shared<ResponsePacket>();
+	// std::shared_ptr<ResponsePacket> response = std::make_shared<ResponsePacket>();
 	if (!check_keep_alive(request_packet))
-		response_packet->set_final_response();
+		response->set_final_response();
+	response->setResponseReady(true);
 	// Handle the request according to the requested method
 	try
 	{
 		switch (request_packet.getMethod())
 		{
 		case Method::GET:
-			response_packet = handle_get(request_packet, response_packet, valid_config.value());
+			response = handle_get(request_packet, response, valid_config.value());
 			break;
 		case Method::POST:
-			response_packet = handle_post(request_packet, response_packet, valid_config.value());
+			response = handle_post(request_packet, response, valid_config.value());
 			break;
 		case Method::DELETE:
-			handle_delete(request_packet, *response_packet, valid_config.value());
+			handle_delete(request_packet, *response, valid_config.value());
 			break;
 		default:
 			return bad_request();
@@ -48,8 +50,8 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 		return internal_server_error();
 	}
 	DEBUG("Request handled");
-	// response_packet->setResponseReady(true);
-	return response_packet;
+	response->setResponseReady(true);
+	return response;
 }
 
 std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(RequestPacket &packet, const std::vector<ServerConfig> &available_configs)
