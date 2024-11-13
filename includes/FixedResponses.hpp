@@ -9,8 +9,7 @@
 // Helper function
 std::shared_ptr<ResponsePacket> build_fixed_response(int status_code, const std::string &status_message);
 
-// 2xx Success
-std::shared_ptr<ResponsePacket> dummy_response();                                                                        // 200
+// 2xx Success                                                                    // 200
 std::shared_ptr<ResponsePacket> ok_with_content(File &file, std::shared_ptr<ResponsePacket> response_packet);            // 200
 std::shared_ptr<ResponsePacket> autoindex_response(std::string &index, std::shared_ptr<ResponsePacket> response_packet); // 200
 std::shared_ptr<ResponsePacket> created();                                                                               // 201

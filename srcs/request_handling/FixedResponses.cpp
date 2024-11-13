@@ -10,14 +10,6 @@ std::shared_ptr<ResponsePacket> build_fixed_response(int status_code, const std:
 	return response_packet;
 }
 
-std::shared_ptr<ResponsePacket> dummy_response()
-{
-	auto response_packet = build_fixed_response(200, "OK");
-	response_packet->setHeader("Content-Type", "text/html");
-	response_packet->setContent("<html><body><h1>Hello, Browser!</h1></body></html>");
-	return response_packet;
-}
-
 std::shared_ptr<ResponsePacket> ok_with_content(File &file, std::shared_ptr<ResponsePacket> response_packet)
 {
 	response_packet->set_status_code(200);
@@ -62,7 +54,7 @@ std::shared_ptr<ResponsePacket> bad_request()
 
 std::shared_ptr<ResponsePacket> not_found(const std::string &error_page)
 {
-	auto response_packet = build_fixed_response(404, "Not found");
+	auto response_packet = build_fixed_response(404, "Not Found");
 	response_packet->setContent(error_page);
 	response_packet->setHeader("Content-Type", "text/html");
 	return response_packet;
