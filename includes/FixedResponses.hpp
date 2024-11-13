@@ -17,3 +17,4 @@ std::unique_ptr<ResponsePacket> payload_too_large();
 std::unique_ptr<ResponsePacket> forbidden();
 std::unique_ptr<ResponsePacket> created(const std::string &location);
 std::unique_ptr<ResponsePacket> not_implemented();
+std::unique_ptr<ResponsePacket> method_not_allowed();
