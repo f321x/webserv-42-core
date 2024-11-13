@@ -2,72 +2,72 @@
 
 HttpSocket::HttpSocket(const HostPortPair &host, const WebServerConfig &config) : is_bind_socket(true)
 {
-    // create bind socket for the given port
-    sockaddr_in address = _compose_sockaddr(host.host, host.port);
-    _socket = _create_bind_socket(address);
+	// create bind socket for the given port
+	sockaddr_in address = _compose_sockaddr(host.host, host.port);
+	_socket = _create_bind_socket(address);
 
-    // store all ports listening to this port
-    _available_configs = std::make_shared<std::vector<ServerConfig>>();
-    for (const ServerConfig &server_config : config.getServerConfigs())
-    {
-        if (server_config.getPort() == host.port && server_config.getHost() == host.host)
-        {
-            _available_configs->push_back(server_config);
-        }
-    }
+	// store all ports listening to this port
+	_available_configs = std::make_shared<std::vector<ServerConfig>>();
+	for (const ServerConfig &server_config : config.getServerConfigs())
+	{
+		if (server_config.getPort() == host.port && server_config.getHost() == host.host)
+		{
+			_available_configs->push_back(server_config);
+		}
+	}
 }
 
 HttpSocket::HttpSocket(std::unique_ptr<TcpSocket> socket, std::shared_ptr<std::vector<ServerConfig>> available_configs) : is_bind_socket(false)
 {
-    _socket = std::move(socket);
-    _available_configs = available_configs;
-    _last_activity = std::chrono::steady_clock::now();
-    request = std::make_unique<RequestPacket>(_smallest_max_body_size());
+	_socket = std::move(socket);
+	_available_configs = available_configs;
+	_last_activity = std::chrono::steady_clock::now();
+	request = std::make_unique<RequestPacket>(_smallest_max_body_size());
 }
 
 HttpSocket::~HttpSocket()
 {
-    TRACE("HttpSocket destructed");
+	TRACE("HttpSocket destructed");
 }
 
 HttpSocket::HttpSocket(const HttpSocket &other)
 {
-    _socket = std::make_unique<TcpSocket>(*other._socket);
-    _available_configs = other._available_configs;
+	_socket = std::make_unique<TcpSocket>(*other._socket);
+	_available_configs = other._available_configs;
 }
 
 HttpSocket &HttpSocket::operator=(const HttpSocket &other)
 {
-    if (this != &other)
-    {
-        _socket = std::make_unique<TcpSocket>(*other._socket);
-        _available_configs = other._available_configs;
-    }
-    return *this;
+	if (this != &other)
+	{
+		_socket = std::make_unique<TcpSocket>(*other._socket);
+		_available_configs = other._available_configs;
+	}
+	return *this;
 }
 
 std::unique_ptr<HttpSocket> HttpSocket::accept_connection()
 {
-    std::unique_ptr<TcpSocket> new_client_socket = _socket->accept_connection();
-    return std::make_unique<HttpSocket>(std::move(new_client_socket), _available_configs);
+	std::unique_ptr<TcpSocket> new_client_socket = _socket->accept_connection();
+	return std::make_unique<HttpSocket>(std::move(new_client_socket), _available_configs);
 }
 
 pollfd HttpSocket::new_pfd() const
 {
-    return _socket->new_pfd();
+	return _socket->new_pfd();
 }
 
 size_t HttpSocket::_smallest_max_body_size() const
 {
-    size_t smallest = INT_MAX;
-    for (const ServerConfig &config : *_available_configs)
-    {
-        if (config.getClientMaxBodySize() < smallest)
-        {
-            smallest = config.getClientMaxBodySize();
-        }
-    }
-    return smallest;
+	size_t smallest = INT_MAX;
+	for (const ServerConfig &config : *_available_configs)
+	{
+		if (config.getClientMaxBodySize() < smallest)
+		{
+			smallest = config.getClientMaxBodySize();
+		}
+	}
+	return smallest;
 }
 
 void HttpSocket::handle_client_data()
@@ -112,49 +112,49 @@ void HttpSocket::handle_client_data()
     }
 }
 
-bool HttpSocket::write_client_response()
+bool HttpSocket::_write_client_response()
 {
-    // write response to client
-    try
-    {
-        // TRACE("Sending response to client: " + response.value()->serialize());
-        if (_socket->write_data(response.value()->serialize()))
-        {
-            bool is_final_response = response.value()->is_final_response();
-            this->response.reset();
-            return is_final_response;
-        }
-    }
-    catch (const std::exception &e)
-    {
-        throw WritingFailedErr(e.what());
-    }
-    return false;
+	// write response to client
+	try
+	{
+		TRACE("Sending response to client: " + _response.value()->serialize());
+		if (_socket->write_data(_response.value()->serialize()))
+		{
+			bool is_final_response = _response.value()->is_final_response();
+			this->_response.reset();
+			return is_final_response;
+		}
+	}
+	catch (const std::exception &e)
+	{
+		throw WritingFailedErr(e.what());
+	}
+	return false;
 }
 
 std::unique_ptr<TcpSocket> HttpSocket::_create_bind_socket(const sockaddr_in &address)
 {
-    auto new_bind_socket = std::make_unique<TcpSocket>();
+	auto new_bind_socket = std::make_unique<TcpSocket>();
 
-    // create a socket and bind it to the configured address
-    new_bind_socket->bind_to_address(address);
+	// create a socket and bind it to the configured address
+	new_bind_socket->bind_to_address(address);
 
-    // begin listening for incoming connections
-    new_bind_socket->listen_on_socket();
-    return new_bind_socket;
+	// begin listening for incoming connections
+	new_bind_socket->listen_on_socket();
+	return new_bind_socket;
 }
 
 sockaddr_in HttpSocket::_compose_sockaddr(const std::string &addr, int port)
 {
-    sockaddr_in sockaddr;
-    memset(&sockaddr, 0, sizeof(sockaddr));
-    sockaddr.sin_family = AF_INET;
-    sockaddr.sin_port = htons(port);
-    sockaddr.sin_addr.s_addr = inet_addr(addr.c_str());
-    return sockaddr;
+	sockaddr_in sockaddr;
+	memset(&sockaddr, 0, sizeof(sockaddr));
+	sockaddr.sin_family = AF_INET;
+	sockaddr.sin_port = htons(port);
+	sockaddr.sin_addr.s_addr = inet_addr(addr.c_str());
+	return sockaddr;
 }
 
 std::chrono::steady_clock::time_point HttpSocket::last_activity() const
 {
-    return _last_activity;
+	return _last_activity;
 }
