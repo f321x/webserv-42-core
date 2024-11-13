@@ -11,22 +11,57 @@ void shutdownApplication(int signal)
 	}
 }
 
+void printUsage()
+{
+	std::cout << "Usage: ./webserv [configfile_path] [--log-level <level>]" << std::endl;
+	std::cout << "Log levels: TRACE, DEBUG, INFO, WARN, ERROR" << std::endl;
+}
+
+int parseArguments(const int argc, char **argv, std::string &config_path)
+{
+	for (int i = 1; i < argc; i++)
+	{
+		std::string arg = argv[i];
+		if (arg == "--log-level")
+		{
+			if (i + 1 >= argc)
+			{
+				ERROR("Missing log level value");
+				printUsage();
+				return EXIT_FAILURE;
+			}
+			try
+			{
+				setLogLevel(parseLogLevel(argv[++i]));
+			}
+			catch (const std::exception &e)
+			{
+				ERROR(e.what());
+				printUsage();
+				return EXIT_FAILURE;
+			}
+		}
+		else if (arg[0] != '-')
+		{
+			config_path = arg;
+		}
+		else
+		{
+			ERROR("Unknown argument: " + arg);
+			printUsage();
+			return EXIT_FAILURE;
+		}
+	}
+	return EXIT_SUCCESS;
+}
+
 int main(const int argc, char **argv)
 {
-	std::string config_path;
-	// check arg count ./webserv configfile_path
-	if (argc > 2)
-	{
-		ERROR("Usage: ./webserv configfile_path");
-		return (1);
-	}
-	else if (argc == 1)
-	{
-		WARN("No config file provided, using default config");
-		config_path = "config/test.conf";
-	}
-	else
-		config_path = argv[1];
+	std::string config_path = "config/test.conf";
+
+	if (parseArguments(argc, argv, config_path) != EXIT_SUCCESS)
+		return EXIT_FAILURE;
+
 	signal(SIGINT, shutdownApplication);
 
 	try
@@ -41,11 +76,11 @@ int main(const int argc, char **argv)
 	catch (std::exception &e)
 	{
 		ERROR(e.what());
-		return (1);
+		return EXIT_FAILURE;
 	}
 
 	// start server
 	server->serve();
 
-	return 0;
+	return EXIT_SUCCESS;
 }

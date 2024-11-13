@@ -2,6 +2,13 @@
 #include <iomanip>
 #include <sstream>
 
+LogLevel LOG_LEVEL = INFO;
+
+void setLogLevel(LogLevel level)
+{
+	LOG_LEVEL = level;
+}
+
 std::string get_timestamp()
 {
 	// get current times
@@ -41,4 +48,19 @@ void log(const std::string &message, LogLevel level)
 	}
 	std::string timestamp = get_timestamp();
 	std::cout << "[" << timestamp << "]:" << std::left << std::setw(20) << level_str << message << std::endl;
+}
+
+LogLevel parseLogLevel(const std::string &level)
+{
+	if (level == "TRACE")
+		return TRACE;
+	if (level == "DEBUG")
+		return DEBUG;
+	if (level == "INFO")
+		return INFO;
+	if (level == "WARN")
+		return WARNING;
+	if (level == "ERROR")
+		return ERROR;
+	throw std::runtime_error("Invalid log level: " + level);
 }

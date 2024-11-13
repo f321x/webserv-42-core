@@ -16,7 +16,10 @@ enum LogLevel
 };
 
 // set the log level for the webserver
-const LogLevel LOG_LEVEL = TRACE;
+extern LogLevel LOG_LEVEL;
+
+LogLevel parseLogLevel(const std::string &level);
+void setLogLevel(LogLevel level);
 
 void log(const std::string &message, LogLevel level = INFO);
 
