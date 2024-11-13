@@ -93,6 +93,11 @@ void HttpSocket::handle_client_data()
         TRACE("Invalid packet received");
         this->response.emplace(bad_request());
     }
+    catch (const RequestPacket::UnknownMethodException &e)
+    {
+        TRACE("Unknown method received");
+        this->response.emplace(not_implemented());
+    }
     catch (const std::exception &e)
     {
         throw ReadingFailedErr(e.what());

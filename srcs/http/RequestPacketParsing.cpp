@@ -113,7 +113,7 @@ bool RequestPacket::_validFirstLine(const std::string &line)
 		return false;
 
 	if (method_str != "GET" && method_str != "POST" && method_str != "DELETE")
-		return false;
+		throw UnknownMethodException();
 
 	return true;
 }
