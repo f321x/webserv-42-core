@@ -19,15 +19,16 @@
 #include <ctime>
 #include <utility>
 #include <sys/stat.h>
+#include <thread>
 
-std::unique_ptr<ResponsePacket> handle_request(RequestPacket &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
+std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request, const std::shared_ptr<std::vector<ServerConfig>> &available_configs);
 std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(RequestPacket &packet, const std::vector<ServerConfig> &available_configs);
 
 // POST handling
-std::unique_ptr<ResponsePacket> handle_post(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
+std::shared_ptr<ResponsePacket> handle_post(const RequestPacket &request_packet, std::shared_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
 
 // GET handling
-std::unique_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, std::unique_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
+std::shared_ptr<ResponsePacket> handle_get(const RequestPacket &request_packet, std::shared_ptr<ResponsePacket> response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
 UriInfo getUri_info(const std::string &uri, const RouteConfig &route_config);
 std::optional<File> load_file_with_cache(const std::string &filepath);
 std::string load_error_page(int status_code, const ServerConfig &server);

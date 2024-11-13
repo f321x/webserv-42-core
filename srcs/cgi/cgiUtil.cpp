@@ -3,19 +3,26 @@
 #include <string>
 #include <set>
 
-bool validCgiFileEnding(const std::string &path)
+void handleCgiRequest(
+	const RequestPacket request_packet,
+	const std::pair<ServerConfig, RouteConfig> valid_config,
+	std::shared_ptr<ResponsePacket> response)
 {
-	// List of allowed CGI file extensions
-	static const std::set<std::string> allowed_extensions = {".pl", ".php", ".py"};
-
-	// Find the last dot in the path to extract the file extension
-	size_t dot_position = path.find_last_of('.');
-	if (dot_position == std::string::npos)
-		return false; // No extension found
-
-	// Extract the file extension from the path
-	std::string extension = path.substr(dot_position);
-
-	// Check if the extension is in the set of allowed extensions
-	return allowed_extensions.find(extension) != allowed_extensions.end();
+	try
+	{
+		Cgi cgi(request_packet, valid_config);
+		cgi.execute(request_packet);
+		auto cgi_response = cgi.getResponse();
+		response->constructCgiResponse(cgi_response);
+		if (!check_keep_alive(request_packet))
+			response->set_final_response();
+		response->setResponseReady(true);
+		DEBUG("CGI request handled");
+	}
+	catch (std::exception &e)
+	{
+		DEBUG("CGI error: " + std::string(e.what()));
+		response = internal_server_error();
+	}
+	TRACE("CGI response: " + response->getContent());
 }
