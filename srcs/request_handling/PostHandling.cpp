@@ -16,7 +16,7 @@ std::shared_ptr<ResponsePacket> handle_post(const RequestPacket &request_packet,
 		return forbidden();
 	}
 	if (handleUpload(request_packet, response_packet, config_pair))
-		return created(config_pair.second.getUploadDirectory());
+		return created();
 	return internal_server_error();
 	return response_packet;
 }

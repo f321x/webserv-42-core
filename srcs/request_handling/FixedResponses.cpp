@@ -1,30 +1,10 @@
 #include "FixedResponses.hpp"
 
-std::shared_ptr<ResponsePacket> internal_server_error()
+std::shared_ptr<ResponsePacket> build_fixed_response(int status_code, const std::string &status_message)
 {
 	auto response_packet = std::make_shared<ResponsePacket>();
-	response_packet->set_status_code(500);
-	response_packet->set_status_message("Internal Server Error");
-	response_packet->set_final_response();
-	response_packet->setResponseReady(true);
-	return response_packet;
-}
-
-std::shared_ptr<ResponsePacket> bad_request()
-{
-	auto response_packet = std::make_shared<ResponsePacket>();
-	response_packet->set_status_code(400);
-	response_packet->set_status_message("Bad Request");
-	response_packet->set_final_response();
-	response_packet->setResponseReady(true);
-	return response_packet;
-}
-
-std::shared_ptr<ResponsePacket> payload_too_large()
-{
-	auto response_packet = std::make_shared<ResponsePacket>();
-	response_packet->set_status_code(413);
-	response_packet->set_status_message("Payload Too Large");
+	response_packet->set_status_code(status_code);
+	response_packet->set_status_message(status_message);
 	response_packet->set_final_response();
 	response_packet->setResponseReady(true);
 	return response_packet;
@@ -32,24 +12,9 @@ std::shared_ptr<ResponsePacket> payload_too_large()
 
 std::shared_ptr<ResponsePacket> dummy_response()
 {
-	auto response_packet = std::make_shared<ResponsePacket>();
-	response_packet->set_status_code(200);
-	response_packet->set_status_message("OK");
+	auto response_packet = build_fixed_response(200, "OK");
 	response_packet->setHeader("Content-Type", "text/html");
 	response_packet->setContent("<html><body><h1>Hello, Browser!</h1></body></html>");
-	response_packet->setResponseReady(true);
-	return response_packet;
-}
-
-std::shared_ptr<ResponsePacket> not_found(const std::string &error_page)
-{
-	auto response_packet = std::make_shared<ResponsePacket>();
-	response_packet->set_status_code(404);
-	response_packet->set_status_message("Not found");
-	response_packet->setContent(error_page);
-	response_packet->setHeader("Content-Type", "text/html");
-	response_packet->set_final_response();
-	response_packet->setResponseReady(true);
 	return response_packet;
 }
 
@@ -59,17 +24,6 @@ std::shared_ptr<ResponsePacket> ok_with_content(File &file, std::shared_ptr<Resp
 	response_packet->set_status_message("OK");
 	response_packet->setHeader("Content-Type", getContent_type(file.file_ending));
 	response_packet->setContent(file.content);
-	response_packet->setResponseReady(true);
-	return response_packet;
-}
-
-std::shared_ptr<ResponsePacket> redirect(const std::string &location)
-{
-	auto response_packet = std::make_shared<ResponsePacket>();
-	response_packet->set_status_code(301);
-	response_packet->set_status_message("Moved Permanently");
-	response_packet->setHeader("Location", location);
-	response_packet->set_final_response();
 	response_packet->setResponseReady(true);
 	return response_packet;
 }
@@ -84,41 +38,62 @@ std::shared_ptr<ResponsePacket> autoindex_response(std::string &index, std::shar
 	return response_packet;
 }
 
+std::shared_ptr<ResponsePacket> created()
+{
+	return build_fixed_response(201, "Created");
+}
+
+std::shared_ptr<ResponsePacket> no_content()
+{
+	return build_fixed_response(204, "No Content");
+}
+
+std::shared_ptr<ResponsePacket> redirect(const std::string &location)
+{
+	auto response_packet = build_fixed_response(301, "Moved Permanently");
+	response_packet->setHeader("Location", location);
+	return response_packet;
+}
+
+std::shared_ptr<ResponsePacket> bad_request()
+{
+	return build_fixed_response(400, "Bad Request");
+}
+
+std::shared_ptr<ResponsePacket> not_found(const std::string &error_page)
+{
+	auto response_packet = build_fixed_response(404, "Not found");
+	response_packet->setContent(error_page);
+	response_packet->setHeader("Content-Type", "text/html");
+	return response_packet;
+}
+
 std::shared_ptr<ResponsePacket> forbidden()
 {
-	auto response_packet = std::make_shared<ResponsePacket>();
-	response_packet->set_status_code(403);
-	response_packet->set_status_message("Forbidden");
-	response_packet->set_final_response();
-	response_packet->setResponseReady(true);
-	return response_packet;
+	return build_fixed_response(403, "Forbidden");
 }
 
-std::shared_ptr<ResponsePacket> created(const std::string &location)
+std::shared_ptr<ResponsePacket> method_not_allowed()
 {
-	auto response_packet = std::make_shared<ResponsePacket>();
-	response_packet->set_status_code(201);
-	response_packet->set_status_message("Created");
-	response_packet->setHeader("Location", location);
-	response_packet->set_final_response();
-	response_packet->setResponseReady(true);
-	return response_packet;
+	return build_fixed_response(405, "Method Not Allowed");
 }
 
-std::unique_ptr<ResponsePacket> not_implemented()
+std::shared_ptr<ResponsePacket> conflict()
 {
-	auto response_packet = std::make_unique<ResponsePacket>();
-	response_packet->set_status_code(501);
-	response_packet->set_status_message("Not Implemented");
-	response_packet->set_final_response();
-	return response_packet;
+	return build_fixed_response(409, "Conflict");
 }
 
-std::unique_ptr<ResponsePacket> method_not_allowed()
+std::shared_ptr<ResponsePacket> payload_too_large()
 {
-	auto response_packet = std::make_unique<ResponsePacket>();
-	response_packet->set_status_code(405);
-	response_packet->set_status_message("Method Not Allowed");
-	response_packet->set_final_response();
-	return response_packet;
+	return build_fixed_response(413, "Payload Too Large");
+}
+
+std::shared_ptr<ResponsePacket> internal_server_error()
+{
+	return build_fixed_response(500, "Internal Server Error");
+}
+
+std::shared_ptr<ResponsePacket> not_implemented()
+{
+	return build_fixed_response(501, "Not Implemented");
 }
