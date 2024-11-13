@@ -17,8 +17,7 @@ std::shared_ptr<ResponsePacket> handle_post(const RequestPacket &request_packet,
 	}
 	if (handleUpload(request_packet, response_packet, config_pair))
 		return created();
-	return internal_server_error();
-	return response_packet;
+	return bad_request();
 }
 
 // Corrected handleUpload function
