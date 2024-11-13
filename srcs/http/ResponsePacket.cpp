@@ -8,8 +8,11 @@ ResponsePacket::ResponsePacket()
 	_final_response = false;
 }
 
-ResponsePacket::ResponsePacket(const std::string &cgi_response) : BasePacket(), _status_code(200), _status_message("OK"), _final_response(false)
+void ResponsePacket::constructCgiResponse(const std::string &cgi_response)
 {
+	_status_code = 200;
+	_status_message = "OK";
+	_final_response = false;
 	bool crlf = true;
 	// Separate headers from body
 	size_t header_end = cgi_response.find("\r\n\r\n");
@@ -111,15 +114,15 @@ bool ResponsePacket::is_final_response() const
 	return _final_response;
 }
 
-// bool ResponsePacket::getResponseReady() const
-// {
-// 	return _response_ready.load();
-// }
+bool ResponsePacket::getResponseReady() const
+{
+	return _response_ready.load();
+}
 
-// void ResponsePacket::setResponseReady(bool flag)
-// {
-// 	_response_ready = flag;
-// }
+void ResponsePacket::setResponseReady(bool flag)
+{
+	_response_ready.store(flag);
+}
 
 std::string ResponsePacket::serialize()
 {

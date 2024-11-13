@@ -3,24 +3,26 @@
 #include <string>
 #include <set>
 
-std::shared_ptr<ResponsePacket> handleCgiRequest(const RequestPacket &request_packet, std::optional<std::pair<ServerConfig, RouteConfig>> &valid_config)
+void handleCgiRequest(
+	const RequestPacket request_packet,
+	const std::pair<ServerConfig, RouteConfig> valid_config,
+	std::shared_ptr<ResponsePacket> response)
 {
-	std::shared_ptr<ResponsePacket> response;
-
 	try
 	{
-		auto cgi = Cgi(request_packet, valid_config.value());
+		Cgi cgi(request_packet, valid_config);
 		cgi.execute(request_packet);
 		auto cgi_response = cgi.getResponse();
-		response = std::make_shared<ResponsePacket>(cgi_response);
+		response->constructCgiResponse(cgi_response);
 		if (!check_keep_alive(request_packet))
 			response->set_final_response();
+		response->setResponseReady(true);
+		DEBUG("CGI request handled");
 	}
 	catch (std::exception &e)
 	{
 		DEBUG("CGI error: " + std::string(e.what()));
 		response = internal_server_error();
 	}
-	// response_packet->setResponseReady(true);
-	return response;
+	TRACE("CGI response: " + response->getContent());
 }

@@ -13,6 +13,7 @@
 #include <cstring>
 #include <optional> // For std::optional
 #include <memory>
+#include <signal.h>
 
 #include "RequestPacket.hpp"
 #include "ResponsePacket.hpp"
@@ -41,4 +42,4 @@ public:
 	std::string getResponse() const;
 };
 
-std::shared_ptr<ResponsePacket> handleCgiRequest(const RequestPacket &request_packet, std::optional<std::pair<ServerConfig, RouteConfig>> &valid_config);
+void handleCgiRequest(const RequestPacket request_packet, const std::pair<ServerConfig, RouteConfig> valid_config, std::shared_ptr<ResponsePacket> response);
