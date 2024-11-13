@@ -37,6 +37,13 @@ public:
 			return "Unknown method";
 		}
 	};
+	class PayloadTooLargeException : public std::exception
+	{
+		const char *what() const noexcept override
+		{
+			return "Payload too large";
+		}
+	};
 
 private:
 	RequestPacket();
