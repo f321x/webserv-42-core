@@ -168,13 +168,13 @@ std::string getContent_type(const std::string &file_ending)
     return "application/octet-stream";
 }
 
-std::string get_pure_hostname(RequestPacket &packet)
+std::string getPureHostname(RequestPacket &packet)
 {
     std::string host = packet.getHeader("Host");
     size_t colonPos = host.find(':');
     if (colonPos != std::string::npos)
-    {
         host.resize(colonPos);
-    }
+
+    toLowerCaseInPlace(host);
     return host;
 }
