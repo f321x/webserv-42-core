@@ -35,4 +35,4 @@ std::string load_error_page(int status_code, const ServerConfig &server);
 std::string get_autoindex(std::string path, const std::string &uri);
 
 // DELETE handling
-void handle_delete(const RequestPacket &request_packet, ResponsePacket &response_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
+std::shared_ptr<ResponsePacket> handle_delete(const RequestPacket &request_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
