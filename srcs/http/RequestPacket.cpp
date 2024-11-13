@@ -182,7 +182,7 @@ bool RequestPacket::_appendContent()
 	if (!getHeader("Content-Length").empty() && getContentLengthHeader() != _buffer.size())
 		return false;
 
-	DEBUG("Body: " + _buffer);
+	// DEBUG("Body: " + _buffer);
 	setContent(_buffer);
 	_buffer.clear();
 	return true;
