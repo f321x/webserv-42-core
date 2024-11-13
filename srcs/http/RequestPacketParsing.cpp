@@ -189,7 +189,7 @@ void RequestPacket::_parseContentLength()
 		}
 
 		if (_content_length_header > _max_body_size)
-			throw InvalidPacketException();
+			throw PayloadTooLargeException();
 	}
 }
 
