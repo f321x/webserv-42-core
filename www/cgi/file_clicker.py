@@ -4,14 +4,14 @@ import os
 import fcntl
 
 # Define the path to the count file
-count_file = "./tmp/count.txt"
+count_file = "./db"
 
 def increment_count():
     """Increment the count with an exclusive lock and save it back to the file."""
-    # check if the file exists
+    # Ensure the directory exists
     os.makedirs(os.path.dirname(count_file), exist_ok=True)
 
-    # Open the file in read-write mode
+    # Open the file in read-write mode, creating it if it doesn't exist
     with open(count_file, "a+") as f:
         try:
             # Try to acquire an exclusive lock without blocking
@@ -19,14 +19,21 @@ def increment_count():
         except BlockingIOError:
             # Handle the case where the lock is not available
             raise Exception("Could not acquire file lock")
+        
         try:
+            # Move to the start of the file and read existing data
             f.seek(0)
             data = f.read()
+            
+            # Initialize or increment the count
             try:
                 count = int(data) if data else 0
             except ValueError:
                 count = 0
+            
             count += 1
+            
+            # Write the updated count to the file
             f.seek(0)
             f.truncate()
             f.write(str(count))
@@ -34,6 +41,7 @@ def increment_count():
         finally:
             # Always release the lock
             fcntl.flock(f, fcntl.LOCK_UN)
+    
     return count
 
 try:
