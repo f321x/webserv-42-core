@@ -34,6 +34,14 @@ public:
 	bool write_data(const std::string &data);		// write data to the socket
 	bool is_bind_socket() const;					// check if the socket belongs to the main listening sockets
 
+	class ReadZeroBytesException : public std::exception
+	{
+		const char *what() const noexcept override
+		{
+			return "Read zero bytes";
+		}
+	};
+
 private:
 	sockaddr_in _address;
 	int _socket_fd;			   // the file descriptor of the socket

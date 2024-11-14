@@ -106,11 +106,6 @@ void HttpSocket::handle_client_data()
 		TRACE("Payload too large");
 		this->response.emplace(payload_too_large());
 	}
-	catch (const std::exception &e)
-	{
-		ERROR("Reading failed: " + std::string(e.what()));
-		throw ReadingFailedErr(e.what());
-	}
 
 	if (complete_request)
 	{

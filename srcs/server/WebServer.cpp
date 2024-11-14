@@ -87,6 +87,11 @@ void WebServer::serve()
 				{
 					_sockets[i]->handle_client_data(); // handle the client data
 				}
+				catch (const TcpSocket::ReadZeroBytesException &e)
+				{
+					DEBUG("Read zero bytes");
+					_remove_socket(_pollfds[i].fd);
+				}
 				catch (const std::exception &e)
 				{
 					ERROR("Reading failed: " + std::string(e.what()));

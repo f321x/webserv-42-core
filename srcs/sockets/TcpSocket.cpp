@@ -117,10 +117,7 @@ std::string TcpSocket::read_once()
 		result.append(buffer, bytes_read);
 	}
 	else if (bytes_read == 0)
-	{
-		// This should not happen because of poll()
-		return result;
-	}
+		throw ReadZeroBytesException();
 	else
 	{
 		// Error
