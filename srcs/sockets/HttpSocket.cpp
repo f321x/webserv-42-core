@@ -96,7 +96,7 @@ void HttpSocket::handle_client_data()
 	catch (const RequestPacket::UnknownMethodException &e)
 	{
 		TRACE("Unknown method received");
-		this->response.emplace(internal_server_error()); // TODO: check which error code -> write new fixed response
+		this->response.emplace(not_implemented()); // TODO: check which error code -> write new fixed response
 	}
 	catch (const RequestPacket::PayloadTooLargeException &e)
 	{

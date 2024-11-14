@@ -6,6 +6,7 @@ RequestPacket::RequestPacket() : _max_body_size(0)
 	_buffer = "";
 	_parsed_header = false;
 	_method = GET;
+	_method_not_allowed = false;
 	_uri = "";
 	_http_version = "";
 }
@@ -15,6 +16,7 @@ RequestPacket::RequestPacket(size_t max_body_size) : _max_body_size(max_body_siz
 	_buffer = "";
 	_parsed_header = false;
 	_method = GET;
+	_method_not_allowed = false;
 	_uri = "";
 	_http_version = "";
 }
@@ -29,6 +31,7 @@ RequestPacket &RequestPacket::operator=(const RequestPacket &other)
 	_buffer = other._buffer;
 	_parsed_header = other._parsed_header;
 	_method = other._method;
+	_method_not_allowed = other._method_not_allowed;
 	_uri = other._uri;
 	_http_version = other._http_version;
 	return *this;
@@ -49,6 +52,16 @@ std::string RequestPacket::getUri() const
 Method RequestPacket::getMethod() const
 {
 	return _method;
+}
+
+void RequestPacket::setMethodNotAllowed(bool value)
+{
+	_method_not_allowed = value;
+}
+
+bool RequestPacket::isMethodNotAllowed() const
+{
+	return _method_not_allowed;
 }
 
 size_t RequestPacket::getContentLengthHeader() const
@@ -77,4 +90,3 @@ void RequestPacket::addToContent(const std::string &new_content)
 		throw InvalidPacketException();
 	_content += new_content;
 }
-

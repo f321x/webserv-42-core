@@ -14,6 +14,8 @@ public:
 	std::string getHttpVersion() const;
 	std::string getUri() const;
 	Method getMethod() const;
+	bool isMethodNotAllowed() const;
+	void setMethodNotAllowed(bool value);
 	size_t getContentLengthHeader() const;
 	bool isChunked() const;
 	size_t getContentSize() const;
@@ -51,6 +53,7 @@ private:
 	std::string _buffer;
 	bool _parsed_header;
 	Method _method;
+	bool _method_not_allowed;
 	std::string _uri;
 	std::string _query_string;
 	std::string _http_version;
