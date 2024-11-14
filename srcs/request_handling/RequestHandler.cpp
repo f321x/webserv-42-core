@@ -35,7 +35,7 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 	// std::shared_ptr<ResponsePacket> response = std::make_shared<ResponsePacket>();
 	if (!check_keep_alive(request_packet))
 		response->set_final_response();
-	response->setResponseReady(true);
+	// response->setResponseReady(true);
 	// Handle the request according to the requested method
 	try
 	{
