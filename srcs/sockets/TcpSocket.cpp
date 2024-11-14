@@ -105,7 +105,7 @@ pollfd TcpSocket::new_pfd() const
 std::string TcpSocket::read_once()
 {
 	std::string result;
-	char buffer[65536];
+	char buffer[1024];
 	ssize_t bytes_read;
 	bytes_read = recv(_socket_fd, buffer, sizeof(buffer), 0);
 	buffer[bytes_read] = '\0';
