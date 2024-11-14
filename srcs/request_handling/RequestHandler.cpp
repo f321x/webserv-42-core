@@ -21,7 +21,7 @@ std::shared_ptr<ResponsePacket> handle_request(RequestPacket &request_packet, co
 	auto response = std::make_shared<ResponsePacket>();
 	TRACE("Valid config found");
 	// TODO: check if the request is a valid cgi request (extension matches with a cgi path)
-	TRACE("weirde cgi check:" + std::to_string(request_packet.getUri().find_last_of('.')));
+
 	size_t pos = request_packet.getUri().find_last_of('.');
 	if (pos != std::string::npos && !valid_config->second.getCgi(request_packet.getUri().substr(pos)).empty() && (request_packet.getMethod() == Method::POST || request_packet.getMethod() == Method::GET))
 	{
