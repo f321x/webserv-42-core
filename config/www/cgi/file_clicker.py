@@ -2,9 +2,6 @@
 
 import os
 import fcntl
-import cgitb
-
-cgitb.enable()  # Enable debugging
 
 # Define the path to the count file
 count_file = "./tmp/count.txt"
