@@ -40,6 +40,13 @@ public:
 	~Cgi();
 	std::string execute(const RequestPacket &request_packet);
 	std::string getResponse() const;
+	class TimedOutException : public std::exception
+	{
+		const char *what() const noexcept override
+		{
+			return "Cgi execution timed out";
+		}
+	};
 };
 
 void handleCgiRequest(const RequestPacket request_packet, const std::pair<ServerConfig, RouteConfig> valid_config, std::shared_ptr<ResponsePacket> response);

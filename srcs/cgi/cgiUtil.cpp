@@ -14,15 +14,20 @@ void handleCgiRequest(
 		auto cgi_response = cgi.execute(request_packet);
 		// auto cgi_response = cgi.getResponse();
 		response->constructCgiResponse(cgi_response);
-		if (!check_keep_alive(request_packet))
-			response->set_final_response();
-		response->setResponseReady(true);
 		DEBUG("CGI request handled");
+	}
+	catch (Cgi::TimedOutException &e)
+	{
+		ERROR("CGI timed out");
+		*response = *build_fixed_response(504, "Gateway Timeout");
 	}
 	catch (std::exception &e)
 	{
 		DEBUG("CGI error: " + std::string(e.what()));
-		response = internal_server_error();
+		*response = *internal_server_error();
 	}
+	if (!check_keep_alive(request_packet))
+		response->set_final_response();
+	response->setResponseReady(true);
 	TRACE("Got CGI response");
 }
