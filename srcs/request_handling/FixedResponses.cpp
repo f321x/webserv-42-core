@@ -42,8 +42,11 @@ std::shared_ptr<ResponsePacket> no_content()
 
 std::shared_ptr<ResponsePacket> redirect(const std::string &location)
 {
-	auto response_packet = build_fixed_response(301, "Moved Permanently");
+	auto response_packet = std::make_shared<ResponsePacket>();
+	response_packet->set_status_code(301);
+	response_packet->set_status_message("Moved Permanently");
 	response_packet->setHeader("Location", location);
+	response_packet->setResponseReady(true);
 	return response_packet;
 }
 
