@@ -1,6 +1,5 @@
 webserv
 /obj
-test
 /rust_target
 /tests/request_tester/target
 /tests/webserv_tester_fredrikalindh/venv
@@ -8,4 +7,4 @@ test
 /tmp
 .DS_Store
 *.txt
-/config/www/upload
+/www/upload
