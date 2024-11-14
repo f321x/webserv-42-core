@@ -67,6 +67,7 @@ std::optional<std::pair<ServerConfig, RouteConfig>> find_valid_configuration(Req
 	std::vector<ServerConfig> configs(available_configs.begin(), available_configs.end());
 	std::pair<ServerConfig, RouteConfig> valid_config;
 
+	TRACE("Finding valid config for: " + getPureHostname(packet));
 	for (auto it = configs.begin(); it != configs.end();)
 	{
 		// check against server_name
