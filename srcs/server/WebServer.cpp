@@ -64,13 +64,14 @@ void WebServer::serve()
 				{
 					if (_sockets[i]->write_client_response())
 						_remove_socket(_pollfds[i].fd);
-					break;
 				}
 				catch (WritingFailedErr &e)
 				{
 					DEBUG(std::string(e.what()));
 					_remove_socket(_pollfds[i].fd);
 				}
+
+				break;
 			}
 			else if (_pollfds[i].revents & POLLIN) // POLLIN is set if there is data to read
 			{
@@ -85,13 +86,14 @@ void WebServer::serve()
 				try
 				{
 					_sockets[i]->handle_client_data(); // handle the client data
-					break;							   // we have to break to respect the subject (only read/write after poll)
 				}
 				catch (const std::exception &e)
 				{
 					ERROR("Reading failed: " + std::string(e.what()));
 					_remove_socket(_pollfds[i].fd);
 				}
+
+				break;
 			}
 			else if (_pollfds[i].revents & POLLERR || _pollfds[i].revents & POLLHUP || _pollfds[i].revents & POLLNVAL || _pollfds[i].revents & POLLPRI)
 			{
