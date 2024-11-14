@@ -38,7 +38,7 @@ private:
 public:
 	Cgi(const RequestPacket &request_packet, const std::pair<ServerConfig, RouteConfig> &config_pair);
 	~Cgi();
-	void execute(const RequestPacket &request_packet);
+	std::string execute(const RequestPacket &request_packet);
 	std::string getResponse() const;
 };
 

@@ -11,8 +11,8 @@ void handleCgiRequest(
 	try
 	{
 		Cgi cgi(request_packet, valid_config);
-		cgi.execute(request_packet);
-		auto cgi_response = cgi.getResponse();
+		auto cgi_response = cgi.execute(request_packet);
+		// auto cgi_response = cgi.getResponse();
 		response->constructCgiResponse(cgi_response);
 		if (!check_keep_alive(request_packet))
 			response->set_final_response();

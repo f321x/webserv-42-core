@@ -59,8 +59,9 @@ Cgi::~Cgi()
 	close(_output_pipe[1]);
 }
 
-void Cgi::execute(const RequestPacket &request_packet)
+std::string Cgi::execute(const RequestPacket &request_packet)
 {
+	std::string cgi_response;
 	DEBUG("Forking process for CGI execution");
 	_pid = fork();
 
@@ -71,7 +72,7 @@ void Cgi::execute(const RequestPacket &request_packet)
 		close(_input_pipe[1]);
 		close(_output_pipe[0]);
 		close(_output_pipe[1]);
-		return;
+		throw std::runtime_error("Fork failed");
 	}
 
 	if (_pid == 0)
@@ -126,12 +127,12 @@ void Cgi::execute(const RequestPacket &request_packet)
 			waitpid(_pid, nullptr, 0);
 			close(_input_pipe[1]);
 			close(_output_pipe[0]);
-			return;
+			throw std::runtime_error("Error writing to CGI input pipe: " + std::string(e.what()));
 		}
 		close(_input_pipe[1]);
 		try
 		{
-			_cgi_response = readFromPipe(_output_pipe[0]);
+			cgi_response = readFromPipe(_output_pipe[0]);
 		}
 		catch (const std::exception &e)
 		{
@@ -158,6 +159,10 @@ void Cgi::execute(const RequestPacket &request_packet)
 			ERROR("Child process timed out");
 			kill(_pid, SIGKILL);
 			waitpid(_pid, &status, 0);
+			cgi_response = "HTTP/1.1 504 Gateway Timeout\r\n"
+						   "Content-Type: text/plain\r\n"
+						   "Content-Length: 31\r\n\r\n"
+						   "CGI script execution timed out.";
 		}
 		else if (wait_result > 0)
 			DEBUG("Child process finished with status: " + std::to_string(status));
@@ -166,6 +171,7 @@ void Cgi::execute(const RequestPacket &request_packet)
 
 		DEBUG("CGI execution completed");
 	}
+	return cgi_response;
 }
 
 void Cgi::writeToPipe(const std::string &content, int fd)
