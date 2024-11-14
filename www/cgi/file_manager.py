@@ -81,6 +81,10 @@ html_content = """
 
 # List files in the directory
 try:
+    # create upload dir if it doesn't exist
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+
     files = os.listdir(upload_dir)
     for filename in files:
         if filename.startswith('.'):
