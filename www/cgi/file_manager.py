@@ -5,7 +5,7 @@ import html
 
 print("Content-Type: text/html\n")
 
-upload_dir = "/workspace/config/www/upload/"
+upload_dir = "www/upload/"
 
 html_content = """
 <!DOCTYPE html>

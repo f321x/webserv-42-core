@@ -1,1 +1,0 @@
-This is the required directory for the 42 intra tester
