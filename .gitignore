@@ -7,4 +7,4 @@ webserv
 /tmp
 .DS_Store
 *.txt
-/www/upload
+/www/upload/*
