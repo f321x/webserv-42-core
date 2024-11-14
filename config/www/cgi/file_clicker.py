@@ -11,6 +11,9 @@ count_file = "./tmp/count.txt"
 
 def increment_count():
     """Increment the count with an exclusive lock and save it back to the file."""
+    # check if the file exists
+    os.makedirs(os.path.dirname(count_file), exist_ok=True)
+
     # Open the file in read-write mode
     with open(count_file, "a+") as f:
         try:
@@ -58,7 +61,7 @@ try:
     </head>
     <body>
         <h1>Button clicked {count} times.</h1>
-        <form action="script.py" method="post">
+        <form action="file_clicker.py" method="post">
             <button type="submit">Click Me</button>
         </form>
     </body>
