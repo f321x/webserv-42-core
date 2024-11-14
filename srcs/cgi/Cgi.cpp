@@ -159,10 +159,7 @@ std::string Cgi::execute(const RequestPacket &request_packet)
 			ERROR("Child process timed out");
 			kill(_pid, SIGKILL);
 			waitpid(_pid, &status, 0);
-			cgi_response = "HTTP/1.1 504 Gateway Timeout\r\n"
-						   "Content-Type: text/plain\r\n"
-						   "Content-Length: 31\r\n\r\n"
-						   "CGI script execution timed out.";
+			throw TimedOutException();
 		}
 		else if (wait_result > 0)
 			DEBUG("Child process finished with status: " + std::to_string(status));
