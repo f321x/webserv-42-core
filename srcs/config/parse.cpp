@@ -64,10 +64,7 @@ void parseServerNames(ServerConfig &server, std::istringstream &stream)
 		if (server_name.back() == ';')
 		{
 			server_name.pop_back(); // Remove trailing semicolon
-			std::transform(server_name.begin(), server_name.end(), server_name.begin(), ::tolower);
-			server.addServerName(server_name);
 			semicolon = true;
-			break; // End of directive
 		}
 		server.addServerName(server_name);
 	}
